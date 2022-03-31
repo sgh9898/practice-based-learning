@@ -1,0 +1,40 @@
+# 通用
+/logs/
+/target
+target/
+
+# 保留的文件(从 ignore 中排除)
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**
+
+# test
+**/src/test/**
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/dist/
+/.nb-gradle/
+/nbbuild/
+/nbdist/
+/nbproject/private/
+build/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
