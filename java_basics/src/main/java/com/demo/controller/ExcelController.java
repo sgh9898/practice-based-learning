@@ -1,17 +1,17 @@
 package com.demo.controller;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.demo.service.ExcelService;
 import com.demo.util.ResultUtil;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.Explode;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -24,11 +24,11 @@ import java.util.Map;
  *
  * @author Song gh on 2022/3/28.
  */
-@Api(tags = "Excel Controller")
+@Tag(name = "Excel Controller")
+@Slf4j
 @RestController
 @RequestMapping("/excel")
 public class ExcelController {
-    private static final Logger log = LoggerFactory.getLogger(ExcelController.class);
 
     // Services
     @Resource
@@ -40,12 +40,14 @@ public class ExcelController {
      * @param response 用于传输文件
      * @return 失败时返回含部分数据的 excel
      */
-    @ApiOperation("下载 Excel-to-Sql 模板")
+    @Operation(summary = "下载 [Excel --> Sql] 模板")
     @PostMapping("/sql/template")
-    public Map<String, Object> downloadTemplate(HttpServletResponse response) throws IOException {
-        log.debug("下载 Excel-to-Sql 模板");
+    public Map<String, Object> downloadSqlTemplate(HttpServletResponse response) throws IOException {
+        log.debug("下载 [Excel --> Sql] 模板");
         excelService.downloadTemplate(response);
-        return ResultUtil.success();
+
+        // response 下载文件后已自动关闭, 必须 return null
+        return null;
     }
 
     /**
@@ -54,15 +56,37 @@ public class ExcelController {
      * @param file 上传的 excel
      * @return sql 建表语句
      */
-    @ApiOperation("Excel-to-Sql 转换")
-    @PostMapping("/sql/convert")
-    @ApiImplicitParams({@ApiImplicitParam(name = "tableName", value = "数据库表名"),
-                    @ApiImplicitParam(name = "alias", value = "表别名")})
+    @Operation(summary = "Excel --> Sql")
+    @PostMapping("/sql/toSql")
+    @Parameters({@Parameter(name = "tableName", description = "数据库表名"),
+            @Parameter(name = "alias", description = "数据库表别名")})
     // @RequestPart("file") 解决 swagger 测试下接收不到文件的问题
-    public Map<String, Object> upload(@RequestPart("file") MultipartFile file, String tableName, String alias) throws IOException {
+    public Map<String, Object> excelToSql(@RequestPart("file") MultipartFile file,
+                                          String tableName, String alias) throws IOException {
+        // 校验
         if (file == null) {
             return ResultUtil.error("文件为空");
         }
+
+        log.debug("[Excel --> Sql]: {}", file.getOriginalFilename());
         return ResultUtil.success(excelService.excelToSql(file, tableName, alias));
+    }
+
+    @Operation(summary = "Json Array --> Excel (Json Object Key 一致)")
+    @PostMapping("/json/toExcel")
+    @Parameter(name = "jsonObject", in = ParameterIn.QUERY,explode = Explode.TRUE,
+            example = "{\"fileName\":\"\", " +
+                    "\"data\":[]}")
+    public Map<String, Object> jsonToExcel(@RequestBody JSONObject jsonObject,
+                                           HttpServletResponse response) throws IOException {
+        // 校验
+        JSONArray array = jsonObject.getJSONArray("data");
+        if (array == null || array.isEmpty()) {
+            return ResultUtil.error("数据为空");
+        }
+
+        log.debug("[Json Array --> Excel], {}", jsonObject);
+        excelService.jsonToExcel(array, jsonObject.getString("fileName"), response);
+        return null;
     }
 }

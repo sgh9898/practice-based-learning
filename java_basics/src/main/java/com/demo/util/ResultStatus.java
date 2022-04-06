@@ -3,6 +3,8 @@ package com.demo.util;
 
 /**
  * 常用错误代码及信息
+ *
+ * @author Song gh on 2022/3/28.
  */
 public enum ResultStatus {
 

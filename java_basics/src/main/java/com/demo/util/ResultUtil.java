@@ -5,6 +5,8 @@ import java.util.Map;
 
 /**
  * Linked Map 返回 request 结果 (用于 controller 层)
+ *
+ * @author Song gh on 2022/3/28.
  */
 public class ResultUtil {
 

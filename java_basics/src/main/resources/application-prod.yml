@@ -39,13 +39,16 @@ spring:
 
   # Elasticsearch
   elasticsearch:
-    rest:
-      uris: localhost
-      port: 9200
-      username: root
-      password: root
-      connection-timeout: 1000
-      read-timeout: 60000
+    uris: localhost:9200
+    username: root
+    password: root
+    connection-timeout: 1000
+    socket-timeout: 60000
+
+  mvc:
+    pathmatch:
+      # 用于解决因 Swagger 与 Spring 版本问题导致的报错
+      matching-strategy: ant_path_matcher
 
 # 日志
 logging:
@@ -54,17 +57,19 @@ logging:
     ROOT: info
   file:
     path: "logs"
-    max-history: 10
-    max-size: 100MB
   # 输出格式
   pattern:
     # 参数含义: {时间} [线程名] 日志级别 日志所属类. 方法名-行号 - 错误信息及换行
-    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}.%M-%L - %msg%n'
-    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}.%M-%L - %msg%n'
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %yellow(%logger{50}).%M-%L - %msg %n'
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %yellow(%logger{50}).%M-%L - %msg %n'
+  logback:
+    rollingpolicy:
+      # 最大保留时长(天)
+      max-history: 10
+      max-file-size: 100MB
 
 # Swagger
-springfox:
-  documentation:
-    swagger-ui:
-      # 默认启用 swagger, 生产环境应关闭
-      enabled: false
+springdoc:
+  swagger-ui:
+    # 测试环境启用, 生产环境需关闭
+    enabled: false

@@ -2,6 +2,7 @@ package com.demo.listener;
 
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
+import com.demo.exception.BaseException;
 import com.demo.pojo.ExcelToSql;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -81,10 +82,9 @@ public class ExcelToSqlListener extends AnalysisEventListener<ExcelToSql> {
 
     /** 根据 excel 单行数据构建 ddl */
     private void dealWithOneRow(ExcelToSql excelToSql) {
-
         // 校验必填项 name, type
         if (StringUtils.isBlank(excelToSql.getName()) || StringUtils.isBlank(excelToSql.getType())) {
-            throw new RuntimeException("参数名或类型为空");
+            throw new BaseException("参数名或类型为空");
         }
 
         // name

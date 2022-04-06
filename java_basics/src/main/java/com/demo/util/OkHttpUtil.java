@@ -1,5 +1,6 @@
 package com.demo.util;
 
+import com.demo.exception.BaseException;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +46,8 @@ public class OkHttpUtil {
             //* 验证
             // 信任所有 host (不推荐)
             .hostnameVerifier((hostName, session) -> true)
-            // 信任指定 host
-            // .hostnameVerifier(new StandardHostnameVerifier(trustedHosts))
+//            // 信任指定 host
+//             .hostnameVerifier(new StandardHostnameVerifier(trustedHosts))
             // 信任所有证书 (不推荐)
             .sslSocketFactory(createSSLSocketFactory(), new TrustAllCerts())
 
@@ -141,7 +142,7 @@ public class OkHttpUtil {
             return response.body() == null ? null : response.body().string();
         } catch (IOException e) {
             log.error(e.getMessage(), e);
-            throw new RuntimeException("OkHttp 访问失败: " + url);
+            throw new BaseException("OkHttp 访问失败: " + url);
         }
     }
 }
