@@ -1,33 +1,23 @@
-package com.demo.excluded;
+package com.demo.service.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.demo.excluded.ElasticService;
+import com.demo.service.ElasticService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.RangeQueryBuilder;
-import org.elasticsearch.index.query.TermsQueryBuilder;
-import org.elasticsearch.index.query.WildcardQueryBuilder;
-import org.elasticsearch.index.reindex.BulkByScrollResponse;
-import org.elasticsearch.index.reindex.DeleteByQueryRequest;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.sort.FieldSortBuilder;
-import org.elasticsearch.search.sort.SortOrder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchProperties;
+import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientProperties;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -40,55 +30,38 @@ import java.util.Map;
 /**
  * Elastic 常用功能: 搜索, 删除
  *
+ * @version 7.16.3
  * @author Song gh on 2021/12/17.
  */
+@Slf4j
 @Service
 public class ElasticServiceImpl implements ElasticService {
 
-    final Logger log = LoggerFactory.getLogger(getClass());
-
     @Resource
-    private ElasticsearchProperties properties;
-
-//    // Elastic 服务器连接配置
-//    @Value("${spring.elasticsearch.rest.uris}")
-//    private String ElasticServer;
-//
-//    @Value("${spring.elasticsearch.rest.port}")
-//    private int ElasticPort;
-//
-//    @Value("${spring.elasticsearch.rest.username}")
-//    private String ElasticUserName;
-//
-//    @Value("${spring.elasticsearch.rest.password}")
-//    private String ElasticPassword;
-//
-//    @Value("${spring.elasticsearch.rest.connection-timeout}")
-//    private int ConnectionTimeout;
-//
-//    @Value("${spring.elasticsearch.rest.read-timeout}")
-//    private int ReadTimeout;
-
+    ElasticsearchRestClientProperties prop;
 
     /**
-     * 连接服务器时认证
+     * Elastic 连接服务器时认证
      *
-     * @return 用于构建client
+     * @return 用于构建 client
      */
+    @Override
     public RestClientBuilder basicAuth() {
-        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 
         // 配置用户名及密码
         credentialsProvider.setCredentials(AuthScope.ANY,
-                new UsernamePasswordCredentials(properties.getUsername(), properties.getPassword()));
+                new UsernamePasswordCredentials(prop.getUsername(), prop.getPassword()));
 
-        RestClientBuilder builder = RestClient.builder(new HttpHost(properties.getUris().get(0), 9200))
+        // 配置地址及时间限制
+        return RestClient.builder(HttpHost.create(prop.getUris().get(0)))
                 .setHttpClientConfigCallback(httpClientBuilder -> {
-                    // 默认发送不含验证的请求, 收到 HTTP 401 response 时才会发送验证信息
                     httpClientBuilder.disableAuthCaching();
                     return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-                });
-        return builder;
+                })
+                .setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder
+                        .setConnectTimeout((int) prop.getConnectionTimeout().toMillis())
+                        .setSocketTimeout((int) prop.getReadTimeout().toMillis()));
     }
 
     /**

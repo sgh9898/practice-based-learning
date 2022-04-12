@@ -37,19 +37,13 @@ spring:
     # log 中打印 sql 语句, 便于排查错误
     show-sql: true
 
-#  # Elasticsearch
-#  elasticsearch:
-#    uris: localhost:9200
-#    username: root
-#    password: root
-#    connection-timeout: 1000
-#    socket-timeout: 60000
-
+  # Elasticsearch
   elasticsearch:
-    rest:
-      uris: http://192.168.11.181:9200
-      connection-timeout: 60000
-      read-timeout: 60000
+    uris: localhost:9200
+    username: root
+    password: root
+    connection-timeout: 1000
+    socket-timeout: 60000
 
   mvc:
     pathmatch:
@@ -78,4 +72,4 @@ logging:
 springdoc:
   swagger-ui:
     # 测试环境启用, 生产环境需关闭
-    enabled: true
+    enabled: false
