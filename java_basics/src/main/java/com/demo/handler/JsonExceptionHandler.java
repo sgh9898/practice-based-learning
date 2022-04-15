@@ -1,6 +1,5 @@
 package com.demo.handler;
 
-import com.demo.exception.BaseException;
 import com.demo.exception.JsonException;
 import com.demo.util.ResultUtil;
 import lombok.extern.slf4j.Slf4j;

@@ -8,6 +8,7 @@ server:
       # 使用当前配置文件进行编码, 可配合 charset: utf-8 使用
       force: true
 
+# Spring 自动配置
 spring:
   application:
     name: demo
@@ -17,16 +18,13 @@ spring:
 
   # 数据库
   datasource:
-    # 驱动
     driver-class-name: com.mysql.cj.jdbc.Driver
-    # 链接
     url: jdbc:mysql://localhost:3306/data?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
     # 用户信息
     username: root
     password: "12345678"
-    # 类型
-    type: com.zaxxer.hikari.HikariDataSource
     # 连接池
+    type: com.zaxxer.hikari.HikariDataSource
     hikari:
       minimum-idle: 3
       maximum-pool-size: 3
@@ -37,24 +35,11 @@ spring:
     # log 中打印 sql 语句, 便于排查错误
     show-sql: true
 
-#  # Elasticsearch
-#  elasticsearch:
-#    uris: localhost:9200
-#    username: root
-#    password: root
-#    connection-timeout: 1000
-#    socket-timeout: 60000
-
+  # Elasticsearch
   elasticsearch:
-    rest:
-      uris: http://192.168.11.181:9200
-      connection-timeout: 60000
-      read-timeout: 60000
-
-  mvc:
-    pathmatch:
-      # 用于解决因 Swagger 与 Spring 版本问题导致的报错
-      matching-strategy: ant_path_matcher
+    uris: http://localhost:9200
+    socket-timeout: 60000
+    connection-timeout: 60000
 
 # 日志
 logging:
@@ -69,7 +54,7 @@ logging:
     file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %yellow(%logger{50}).%M-%L - %msg %n'
     console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %yellow(%logger{50}).%M-%L - %msg %n'
   logback:
-    rollingpolicy:
+    rolling policy:
       # 最大保留时长(天)
       max-history: 10
       max-file-size: 100MB

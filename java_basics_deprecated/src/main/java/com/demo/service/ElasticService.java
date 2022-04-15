@@ -1,13 +1,13 @@
 package com.demo.service;
 
-import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.alibaba.fastjson.JSONObject;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestClientBuilder;
 
 /**
  * Elastic 常用功能: 搜索, 删除
  *
- * @version 7.16.3
+ * @version 7.6.2
  * @author Song gh on 2021/12/17.
  */
 public interface ElasticService {

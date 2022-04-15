@@ -1,13 +1,11 @@
-package com.demo.service.impl;
+package com.demo.excluded;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.demo.service.ElasticService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -17,28 +15,27 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
-import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientProperties;
+import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchProperties;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Elastic 常用功能: 搜索, 删除
  *
- * @version 7.16.3
  * @author Song gh on 2021/12/17.
+ * @version 7.16.3
  */
 @Slf4j
 @Service
 public class ElasticServiceImpl implements ElasticService {
 
     @Resource
-    ElasticsearchRestClientProperties prop;
+    ElasticsearchProperties prop;
 
     /**
      * Elastic 连接服务器时认证
@@ -61,7 +58,7 @@ public class ElasticServiceImpl implements ElasticService {
                 })
                 .setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder
                         .setConnectTimeout((int) prop.getConnectionTimeout().toMillis())
-                        .setSocketTimeout((int) prop.getReadTimeout().toMillis()));
+                        .setSocketTimeout((int) prop.getSocketTimeout().toMillis()));
     }
 
     /**
@@ -85,7 +82,6 @@ public class ElasticServiceImpl implements ElasticService {
         mustNot: {terms, wild, range}  同 not, 结构同上
         } */
         log.info("创建 Elastic 查询");
-        ElasticsearchClient client
 
         // 连接 Elastic
         RestHighLevelClient client = new RestHighLevelClient(basicAuth());

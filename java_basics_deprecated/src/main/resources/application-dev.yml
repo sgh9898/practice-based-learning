@@ -37,19 +37,13 @@ spring:
     # log 中打印 sql 语句, 便于排查错误
     show-sql: true
 
-#  # Elasticsearch
-#  elasticsearch:
-#    uris: localhost:9200
-#    username: root
-#    password: root
-#    connection-timeout: 1000
-#    socket-timeout: 60000
-
   elasticsearch:
     rest:
       uris: http://192.168.11.181:9200
       connection-timeout: 60000
       read-timeout: 60000
+      username: root
+      password: root
 
   mvc:
     pathmatch:

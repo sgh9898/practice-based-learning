@@ -24,7 +24,7 @@ public class ExcelToSqlListener extends AnalysisEventListener<ExcelToSql> {
     private int cnt = 0;
     private final StringBuffer ddl = new StringBuffer();
     private String ddlStr;
-    private String alias;
+    private final String alias;
 
     // 自定义
     /** invoke 循环间隔, 每 x 条数据 */
@@ -62,7 +62,7 @@ public class ExcelToSqlListener extends AnalysisEventListener<ExcelToSql> {
 
         // 达到单次处理上限
         if (cnt >= BATCH_COUNT) {
-            // ☆ do something here
+            // Todo: do something here
             cnt = 0;
         }
     }

@@ -6,10 +6,10 @@
 > * 添加详细注释, 便于学习各项功能的基础应用
 
 ### 功能 & 版本
-
-1. Elasicsearch [7.6.2]
+1. **Spring Boot [2.3.4]**
+2. Elasicsearch [7.6.2]
     -[x] 增删查改
-2. Excel
+3. Excel
     -[x] 根据 Excel 生成数据库建表语句
 
 ---
