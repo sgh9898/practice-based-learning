@@ -41,6 +41,12 @@ spring:
     socket-timeout: 60000
     connection-timeout: 60000
 
+  # 定时任务
+  task:
+    scheduling:
+      pool:
+        size: 10
+
 # 日志
 logging:
   level:
@@ -58,7 +64,6 @@ logging:
       # 最大保留时长(天)
       max-history: 10
       max-file-size: 100MB
-
 # Swagger
 springdoc:
   swagger-ui:
