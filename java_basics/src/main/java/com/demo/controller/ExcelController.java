@@ -60,9 +60,9 @@ public class ExcelController {
      */
     @Operation(summary = "Excel --> Sql")
     @PostMapping("/sql/toSql")
-    @Parameter(name = "tableName", description = "数据库表名")
-    @Parameter(name = "alias", description = "数据库表别名")
-    public Map<String, Object> excelToSql(MultipartFile file, String tableName, String alias) throws IOException {
+    public Map<String, Object> excelToSql(
+            MultipartFile file, @Parameter(description = "数据库表名") String tableName,
+            @Parameter(name = "alias", description = "数据库表别名") String alias) throws IOException {
         // 校验
         if (file == null) {
             return ResultUtil.error("文件为空");

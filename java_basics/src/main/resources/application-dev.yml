@@ -47,6 +47,11 @@ spring:
       pool:
         size: 10
 
+  # Redis
+  redis:
+    host: localhost
+    port: 6379
+
 # 日志
 logging:
   level:
