@@ -3,13 +3,12 @@ package com.demo.service.impl;
 import com.demo.service.KafkaService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * Kafka Service
@@ -30,11 +29,9 @@ public class KafkaServiceImpl implements KafkaService {
      */
     @Override
     public void asynchronousSend(String msg) {
-        if (StringUtils.isBlank(msg)) {
-            kafkaTemplate.send("demo-topic", "(default message) hello, kafka");
-        } else {
-            kafkaTemplate.send("demo-topic", msg);
-        }
+        String data;
+        data = "发送时间: " + new Date() + " [Async] " + (StringUtils.isBlank(msg) ? "Kafka 默认消息" : msg);
+        kafkaTemplate.send("demo-topic", data);
     }
 
     /**
@@ -44,17 +41,17 @@ public class KafkaServiceImpl implements KafkaService {
      */
     @Override
     public String synchronousSend(String msg) {
+        String data;
+        data = "发送时间: " + new Date() + " [Sync] " + (StringUtils.isBlank(msg) ? "Kafka 默认消息" : msg);
+
+        // 发送消息并计算耗时
         long start = System.currentTimeMillis();
-        if (StringUtils.isBlank(msg)) {
-            kafkaTemplate.send("demo-topic", "(default message) hello, kafka");
-        } else {
-            try {
-                SendResult<String, String> result = kafkaTemplate.send("demo-topic", msg).get();
-                return "耗时: " + (System.currentTimeMillis() - start) + "\n" + result.toString();
-            } catch (Exception e) {
-                log.error("kafka 同步发送失败", e);
-            }
+        try {
+            SendResult<String, String> result = kafkaTemplate.send("demo-topic", data).get();
+            log.debug("Kafka 同步发送耗时: {}, \n结果: {}", (System.currentTimeMillis() - start), result.toString());
+        } catch (Exception e) {
+            log.error("kafka 同步发送失败", e);
         }
-        return "kafka 同步发送失败";
+        return "Kafka Sync 耗时: " + (System.currentTimeMillis() - start);
     }
 }

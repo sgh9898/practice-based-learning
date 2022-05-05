@@ -71,7 +71,7 @@ public class ExcelToSqlListener extends AnalysisEventListener<ExcelToSql> {
     @Override
     public void doAfterAllAnalysed(AnalysisContext context) {
         // 删除最后一个逗号
-        ddl.deleteCharAt(ddl.length() - 1);
+        ddl.deleteCharAt(ddl.lastIndexOf(","));
 
         // 数据库表有无别名
         ddl.append(StringUtils.isNotBlank(alias) ? ") comment '" + alias + "';" : ");");

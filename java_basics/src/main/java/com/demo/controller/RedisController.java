@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.Map;
@@ -21,6 +23,8 @@ import java.util.concurrent.TimeUnit;
  * @author Song gh on 2022/4/18.
  */
 @Tag(name = "Redis Controller", description = "Redis 相关")
+@RestController
+@RequestMapping("/redis")
 public class RedisController {
 
     @Resource

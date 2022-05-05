@@ -1,7 +1,6 @@
 package com.demo.config;
 
 import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -12,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.*;
-import org.springframework.kafka.listener.ContainerProperties;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -39,19 +37,19 @@ public class KafkaConfig {
         return new KafkaAdmin(adminProps);
     }
 
-    /** 创建 topic */
-    @Bean
-    public NewTopic topic1() {
-        return new NewTopic("baeldung", 1, (short) 1);
-    }
+//    /** 创建 topic */
+//    @Bean
+//    public NewTopic demoTopic() {
+//        return new NewTopic("baeldung", 1, (short) 1);
+//    }
 
     /** 消息推送配置 */
     @Bean
     public ProducerFactory<String, String> producerFactory() {
         Map<String, Object> producerProps = new HashMap<>();
-
         // 通用配置
         producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, props.getBootstrapServers());
+        producerProps.put(ProducerConfig.ACKS_CONFIG, props.getProducer().getAcks());
 
         // 自定义配置
         producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -60,7 +58,7 @@ public class KafkaConfig {
         return new DefaultKafkaProducerFactory<>(producerProps);
     }
 
-    /** 模板, 用于发送消息 */
+    /** 模板--发送消息 */
     @Bean
     public KafkaTemplate<String, String> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
@@ -70,7 +68,6 @@ public class KafkaConfig {
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
         Map<String, Object> consumerProps = new HashMap<>();
-
         // 通用配置
         consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, props.getBootstrapServers());
         consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, props.getConsumer().getGroupId());
@@ -82,6 +79,7 @@ public class KafkaConfig {
         return new DefaultKafkaConsumerFactory<>(consumerProps);
     }
 
+    /** 消息接收--配置基础 listener */
     @Bean("BaseContainerFactory")
     public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();

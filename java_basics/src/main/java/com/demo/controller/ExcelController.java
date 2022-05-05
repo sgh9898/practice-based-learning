@@ -10,10 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -60,9 +57,9 @@ public class ExcelController {
      */
     @Operation(summary = "Excel --> Sql")
     @PostMapping("/sql/toSql")
-    public Map<String, Object> excelToSql(
-            MultipartFile file, @Parameter(description = "数据库表名") String tableName,
-            @Parameter(name = "alias", description = "数据库表别名") String alias) throws IOException {
+    @Parameter(name = "tableName", description = "数据库表名")
+    @Parameter(name = "alias", description = "数据库表别名")
+    public Map<String, Object> excelToSql(MultipartFile file, String tableName, String alias) throws IOException {
         // 校验
         if (file == null) {
             return ResultUtil.error("文件为空");

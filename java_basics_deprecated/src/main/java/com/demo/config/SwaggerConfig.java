@@ -54,7 +54,7 @@ public class SwaggerConfig {
     private ApiInfo apiInfo() {
 //        Contact contact = new Contact("author", "http://localhost:8080/demo/swagger-ui/");
         return new ApiInfoBuilder()
-                .title("接口文档模板")
+                .title("海盐教育项目")
                 .description("接口文档(开发用)")
 //                .contact(contact)
                 .version("1.0.0")
