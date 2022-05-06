@@ -8,7 +8,7 @@ target/
 !**/src/main/**
 
 # test
-**/src/test/**
+#**/src/test/**
 
 ### STS ###
 .apt_generated
