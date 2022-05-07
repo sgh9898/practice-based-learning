@@ -29,8 +29,20 @@ spring:
       minimum-idle: 3
       maximum-pool-size: 3
 
-  # 定时任务
+
   task:
+    # 线程池
+    execution:
+      pool:
+        max-size: 16
+        core-size: 16
+        keep-alive: 10s
+        queue-capacity: 100
+        allow-core-thread-timeout: true
+      # 线程名称前缀
+      thread-name-prefix: async-task-
+
+    # 定时任务
     scheduling:
       pool:
         size: 10

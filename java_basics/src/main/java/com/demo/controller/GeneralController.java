@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 /**
- * General Controller (基础功能)
+ * General Controller (未分类的普通功能)
  *
  * @author Song gh on 2022/3/28.
  */
-@Tag(name = "General Controller", description = "基础功能")
+@Tag(name = "General Controller", description = "普通功能")
 @Slf4j
 @RestController
 @RequestMapping("/basic")
