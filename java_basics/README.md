@@ -4,20 +4,31 @@
 > * 添加详细注释, 便于学习各项功能的基础应用
 ---
 
-### 内容
+### 功能
 
 1. Aspect Oriented Programming
-    - [x] 利用 AOP 拦截记录日志
-2. Elasticsearch [8.x]
-3. Excel
-    - [x] 根据 Excel 生成数据库建表语句
-4. Exception
-    - [x] Exception 异常类
-    - [x] Exception Handler 异常处理
-5. Kafka
-    - [x] 消息推送/接收
-6. Open Api [3.0]
+    - [x] [利用 AOP 拦截记录日志](src/main/java/com/demo/aop/LogAspect.java)
+2. Async
+    - [x] [异步执行任务](src/main/java/com/demo/service/AsyncService.java)
+3. Elasticsearch [8.x]
+4. Excel
+    - [x] [根据 Excel 生成数据库建表语句](src/main/java/com/demo/service/ExcelService.java)
+5. Exception
+    - [x] [异常类](src/main/java/com/demo/exception)
+    - [x] [异常处理](src/main/java/com/demo/handler)
+6. Kafka
+    - [x] [配置](src/main/java/com/demo/config/KafkaConfig.java)
+    - [x] [消息推送/接收](src/main/java/com/demo/service/KafkaService.java)
+8. Open Api [3.0]
     - [x] Swagger UI (Spring Doc)
+
+---
+
+### 工具类
+
+1. [加密/解密]工具
+2. Json 相关工具
+3. Http(s) 相关工具
 
 ---
 

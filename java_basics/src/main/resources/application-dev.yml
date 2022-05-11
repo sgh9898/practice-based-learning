@@ -97,6 +97,7 @@ springdoc:
   swagger-ui:
     # 测试环境启用, 生产环境需关闭
     enabled: true
+
 # 日志
 logging:
   level:
@@ -114,3 +115,7 @@ logging:
       max-file-size: 100MB
   file:
     path: "logs"
+
+rsa:
+  public-key:
+  private-key:
