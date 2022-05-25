@@ -84,7 +84,7 @@ public class ExcelToSqlListener extends AnalysisEventListener<ExcelToSql> {
     private void dealWithOneRow(ExcelToSql excelToSql) {
         // 校验必填项 name, type
         if (StringUtils.isBlank(excelToSql.getName()) || StringUtils.isBlank(excelToSql.getType())) {
-            throw new BaseException("参数名或类型为空");
+            return;
         }
 
         // name

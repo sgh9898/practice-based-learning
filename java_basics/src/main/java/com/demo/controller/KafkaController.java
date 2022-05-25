@@ -12,7 +12,7 @@ import javax.annotation.Resource;
 import java.util.Map;
 
 /**
- * Kafka Controller
+ * Kafka
  *
  * @author Song gh on 2022/4/27.
  */

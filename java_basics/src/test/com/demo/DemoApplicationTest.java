@@ -1,12 +1,12 @@
 package com.demo;
 
+import com.demo.database.entity.DemoEntity;
+import com.demo.util.JsonUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Spring 相关测试
@@ -20,7 +20,8 @@ class DemoApplicationTest {
     RedisProperties properties;
 
     @Test
-    void main() {
-        System.out.println(properties.getTimeout().getSeconds());
+    void main1() {
+        DemoEntity demoEntity = new DemoEntity();
+        demoEntity.setName("111");
     }
 }

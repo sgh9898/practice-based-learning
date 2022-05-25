@@ -15,10 +15,10 @@ import javax.persistence.*;
 @Entity
 @Getter
 @Setter
-@Table(name = "sample_entity")
+@Table(name = "demo_entity")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Schema(description = "演示类")
-public class SampleEntity {
+public class DemoEntity {
 
     /** id */
     @Id

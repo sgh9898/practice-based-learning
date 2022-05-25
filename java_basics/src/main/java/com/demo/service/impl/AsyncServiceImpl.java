@@ -27,9 +27,10 @@ public class AsyncServiceImpl implements AsyncService {
     @Async
     @Override
     public Future<Boolean> asyncTask(String name, int sleep) throws InterruptedException {
-        log.info("[Async]任务 {} 开始, 预计时间 {} 秒", name, sleep);
+        log.info("异步任务 {} 开始", name);
+        long start = System.currentTimeMillis();
         TimeUnit.SECONDS.sleep(sleep);
-        log.info("[Async]任务 {} 完成", name);
+        log.info("异步任务 {} 完成, 用时 {} ms", name, System.currentTimeMillis() - start);
         return new AsyncResult<>(Boolean.TRUE);
     }
 
@@ -41,8 +42,9 @@ public class AsyncServiceImpl implements AsyncService {
      */
     @Override
     public void syncTask(String name, int sleep) throws InterruptedException {
-        log.info("[Sync]任务 {} 开始, 预计时间 {} 秒", name, sleep);
+        log.info("同步任务 {} 开始", name);
+        long start = System.currentTimeMillis();
         TimeUnit.SECONDS.sleep(sleep);
-        log.info("[Sync]任务 {} 完成", name);
+        log.info("同步任务 {} 完成, 用时 {} ms", name, System.currentTimeMillis() - start);
     }
 }

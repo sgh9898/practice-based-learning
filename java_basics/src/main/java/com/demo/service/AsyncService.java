@@ -1,5 +1,7 @@
 package com.demo.service;
 
+import org.springframework.scheduling.annotation.Async;
+
 import java.util.concurrent.Future;
 
 /**

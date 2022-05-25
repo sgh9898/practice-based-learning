@@ -18,7 +18,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Redis Controller
+ * Redis
  *
  * @author Song gh on 2022/4/18.
  */

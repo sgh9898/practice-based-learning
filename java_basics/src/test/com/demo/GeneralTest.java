@@ -1,8 +1,15 @@
 package com.demo;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.demo.util.CipherUtil;
+import com.demo.database.entity.DemoEntity;
+import com.demo.util.JsonUtil;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 普通测试
@@ -15,10 +22,20 @@ class GeneralTest {
     private String publicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCQuATJA1DOXtgOR/es2wOLHyjKH842+/9yIrRTBhlTl12FIteWInok1AqYYC+7T2CVW8Hp8ACIK8xHIQku5clHY8HCdOsdCSHLCSAy3t3zKJfi0kx/L8e/E68H170ZvHULTp5lwGGlC09exyupVBRBhJnYm/r6SLe8wAzmg12CfQIDAQAB";
 
     @Test
-    void main() {
-        JSONObject json = new JSONObject();
-        json.put("test", "ceshi");
-        json.put("teeeeest", "haishiceshi");
-        System.out.println(CipherUtil.generateRsa());
+    void main1() {
+        JSONArray jsonArray = new JSONArray();
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("name", "111");
+        jsonObject.put("id", "222");
+        jsonObject.put("ddd", "222");
+        jsonArray.add(jsonObject);
+
+        List<Map<String, String>> list = new ArrayList<>();
+        Map<String, String> map = new HashMap<>();
+        map.put("name", "111");
+        list.add(map);
+        String str = "[{\"name\":\"111\",\"id\":\"222\"}]";
+        List<DemoEntity> list1 = JsonUtil.jsonArrStrToList(str, DemoEntity.class);
+        System.out.println(JSONArray.toJSONString(list1));
     }
 }
