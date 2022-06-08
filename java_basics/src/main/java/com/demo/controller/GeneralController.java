@@ -1,10 +1,12 @@
 package com.demo.controller;
 
+import com.demo.database.repository.DemoEntityRepository;
 import com.demo.service.AsyncService;
 import com.demo.util.ResultUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,6 +26,9 @@ import java.util.concurrent.Future;
 @RestController
 @RequestMapping("/general")
 public class GeneralController {
+
+    @Resource
+    private DemoEntityRepository demoEntityRepository;
 
     @Resource
     private AsyncService asyncService;
@@ -59,5 +64,11 @@ public class GeneralController {
         long time = System.currentTimeMillis() - start;
         log.info("同步任务总耗时: {}", time);
         return ResultUtil.success();
+    }
+
+    @Operation(summary = "分页查询测试")
+    @PostMapping("/pagination")
+    public Map<String, Object> pagination(String name, Pageable page) {
+        return ResultUtil.success(demoEntityRepository.findAllByName(name, page));
     }
 }

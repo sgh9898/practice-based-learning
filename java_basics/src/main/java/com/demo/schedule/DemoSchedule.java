@@ -13,7 +13,7 @@ import java.util.Date;
 @Component
 public class DemoSchedule {
 
-    /** 定时任务 (every 10s) */
+    /** 定时任务 (every minute) */
     @Scheduled(fixedDelayString = "PT1M")
     public void simpleTask() {
         System.out.println("一分钟定时任务 " + new Date());

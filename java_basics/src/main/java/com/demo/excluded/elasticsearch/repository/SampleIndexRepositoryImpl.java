@@ -30,7 +30,11 @@ public class SampleIndexRepositoryImpl implements SampleIndexRepositoryCustom {
     @Resource
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
-    /** 分页查询(分页参数在 dto 中) */
+    /**
+     * 分页查询(分页参数在 dto 中)
+     * 1. match 会对输入字段进行分词匹配, 如 "录用" 会被拆分为 "录", "用", 因此可匹配到 "登录"
+     * 2. term 不会对输入字段进行分词匹配, 必须包含全部输入字段
+     */
     @Override
     public Page<SampleIndex> pagination(SampleIndexQueryDto dto) {
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();

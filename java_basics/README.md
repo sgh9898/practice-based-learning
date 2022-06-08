@@ -21,7 +21,7 @@
 6. Kafka
     - [x] [配置](src/main/java/com/demo/config/KafkaConfig.java)
     - [x] [消息推送/接收](src/main/java/com/demo/service/KafkaService.java)
-8. Open Api [3.0]
+7. Open Api [3.0]
     - [x] Swagger UI (Spring Doc)
 
 ---

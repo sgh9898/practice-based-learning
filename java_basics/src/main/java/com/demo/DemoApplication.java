@@ -7,8 +7,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import javax.annotation.Resource;
-
 /**
  * Demo 应用, 包含通用功能或演示
  *

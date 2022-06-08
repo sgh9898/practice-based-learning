@@ -1,15 +1,10 @@
 package com.demo;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.demo.database.entity.DemoEntity;
-import com.demo.util.JsonUtil;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * 普通测试
@@ -23,19 +18,7 @@ class GeneralTest {
 
     @Test
     void main1() {
-        JSONArray jsonArray = new JSONArray();
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("name", "111");
-        jsonObject.put("id", "222");
-        jsonObject.put("ddd", "222");
-        jsonArray.add(jsonObject);
-
-        List<Map<String, String>> list = new ArrayList<>();
-        Map<String, String> map = new HashMap<>();
-        map.put("name", "111");
-        list.add(map);
-        String str = "[{\"name\":\"111\",\"id\":\"222\"}]";
-        List<DemoEntity> list1 = JsonUtil.jsonArrStrToList(str, DemoEntity.class);
-        System.out.println(JSONArray.toJSONString(list1));
+        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+        System.out.println(df.format(new Date()));
     }
 }
