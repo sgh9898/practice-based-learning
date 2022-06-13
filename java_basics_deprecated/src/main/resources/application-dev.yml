@@ -1,8 +1,6 @@
 server:
-  # 端口
-  port: 8080
+  port: 8081
   servlet:
-    # 访问路径前缀
     context-path: /demo
     encoding:
       # 使用当前配置文件进行编码, 可配合 charset: utf-8 使用
@@ -28,7 +26,6 @@ spring:
     hikari:
       minimum-idle: 3
       maximum-pool-size: 3
-
 
   task:
     # 线程池
@@ -91,12 +88,16 @@ spring:
   # Thymeleaf
   thymeleaf:
     check-template-location: false
+  # 解决 swagger 报错问题
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
 
 # Swagger
-springdoc:
-  swagger-ui:
-    # 测试环境启用, 生产环境需关闭
-    enabled: true
+springfox:
+  documentation:
+    swagger-ui:
+      enabled: true
 
 # 日志
 logging:
@@ -115,7 +116,3 @@ logging:
       max-file-size: 100MB
   file:
     path: "logs"
-
-rsa:
-  public-key:
-  private-key:
