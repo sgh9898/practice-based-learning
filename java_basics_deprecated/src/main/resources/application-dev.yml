@@ -8,6 +8,7 @@ server:
       # 使用当前配置文件进行编码, 可配合 charset: utf-8 使用
       force: true
 
+# Spring Auto-Configuration
 spring:
   application:
     name: demo
@@ -17,60 +18,104 @@ spring:
 
   # 数据库
   datasource:
-    # 驱动
     driver-class-name: com.mysql.cj.jdbc.Driver
-    # 链接
     url: jdbc:mysql://localhost:3306/data?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
     # 用户信息
     username: root
     password: "12345678"
-    # 类型
-    type: com.zaxxer.hikari.HikariDataSource
     # 连接池
+    type: com.zaxxer.hikari.HikariDataSource
     hikari:
       minimum-idle: 3
       maximum-pool-size: 3
-      idle-timeout: 120000
+
+
+  task:
+    # 线程池
+    execution:
+      pool:
+        max-size: 16
+        core-size: 16
+        keep-alive: 10s
+        queue-capacity: 100
+        allow-core-thread-timeout: true
+      # 线程名称前缀
+      thread-name-prefix: async-task-
+
+    # 定时任务
+    scheduling:
+      pool:
+        size: 10
+
+  # Elasticsearch
+  elasticsearch:
+    uris: http://localhost:9200
+    socket-timeout: 60000
+    connection-timeout: 60000
 
   # JPA
   jpa:
     # log 中打印 sql 语句, 便于排查错误
     show-sql: true
+    # true = 保持数据库连接直至 controller 执行完
+    open-in-view: false
 
-  elasticsearch:
-    rest:
-      uris: http://192.168.11.181:9200
-      connection-timeout: 60000
-      read-timeout: 60000
-      username: root
-      password: root
+  # Kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+    template:
+      default-topic: demo-topic
+    consumer:
+      group-id: demo-group
+      auto-offset-reset:
+    listener:
+      ack-mode: manual_immediate
+    producer:
+      # 0 不返回, 1 leader 收到返回成功, all/-1 全员收到返回成功
+      acks: 1
 
-  mvc:
-    pathmatch:
-      # 用于解决因 Swagger 与 Spring 版本问题导致的报错
-      matching-strategy: ant_path_matcher
+  # Redis
+  redis:
+    host: localhost
+    port: 6379
+    # 需要时间单位
+    timeout: 10s
+    lettuce:
+      pool:
+        max-active: 8
+        # 需要时间单位
+        max-wait: -1s
+        max-idle: 8
+        min-idle: 0
+
+  # Thymeleaf
+  thymeleaf:
+    check-template-location: false
+
+# Swagger
+springdoc:
+  swagger-ui:
+    # 测试环境启用, 生产环境需关闭
+    enabled: true
 
 # 日志
 logging:
   level:
     # 最低展示级别, 减少非必要信息的输出 (error > warn > info > debug)
     ROOT: info
-  file:
-    path: "logs"
   # 输出格式
   pattern:
-    # 参数含义: {时间} [线程名] 日志级别 日志所属类. 方法名-行号 - 错误信息及换行
+    # 参数: {时间} [线程名] 日志级别 日志所属类. 方法名-行号 - 错误信息及换行
     file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %yellow(%logger{50}).%M-%L - %msg %n'
     console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %yellow(%logger{50}).%M-%L - %msg %n'
   logback:
-    rollingpolicy:
+    rolling policy:
       # 最大保留时长(天)
       max-history: 10
       max-file-size: 100MB
+  file:
+    path: "logs"
 
-# Swagger
-springfox:
-  documentation:
-    swagger-ui:
-      # 测试环境启用, 生产环境需关闭
-      enabled:
+rsa:
+  public-key:
+  private-key:

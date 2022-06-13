@@ -2,7 +2,6 @@ package com.demo.listener;
 
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
-import com.demo.exception.BaseException;
 import com.demo.pojo.ExcelToSql;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -18,19 +17,18 @@ import org.slf4j.LoggerFactory;
 @Getter
 public class ExcelToSqlListener extends AnalysisEventListener<ExcelToSql> {
     private static final Logger log = LoggerFactory.getLogger(ExcelToSqlListener.class);
-
-    // Basics
-    private final ExcelToSql excelToSql;
-    private int cnt = 0;
-    private final StringBuffer ddl = new StringBuffer();
-    private String ddlStr;
-    private final String alias;
-
-    // 自定义
     /** invoke 循环间隔, 每 x 条数据 */
     private static final int BATCH_COUNT = 500;
     /** 默认 varchar 长度 */
     private static final String DEFAULT_VARCHAR = "varchar(128)";
+    // Basics
+    private final ExcelToSql excelToSql;
+    private final StringBuffer ddl = new StringBuffer();
+    private final String alias;
+
+    // 自定义
+    private int cnt = 0;
+    private String ddlStr;
 
     /** constructor */
     public ExcelToSqlListener(String tableName, String alias) {
@@ -48,6 +46,23 @@ public class ExcelToSqlListener extends AnalysisEventListener<ExcelToSql> {
                 .append(" (");
     }
 
+    /** String 驼峰转下划线 */
+    private static String camelToSnake(String str) {
+        if (str == null || "".equals(str.trim())) {
+            return "";
+        }
+        int len = str.length();
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; i++) {
+            char ch = str.charAt(i);
+            if (Character.isUpperCase(ch)) {
+                sb.append("_");
+            }
+            sb.append(Character.toLowerCase(ch));
+        }
+        return sb.toString();
+    }
+
     /**
      * 循环数据处理
      *
@@ -62,7 +77,7 @@ public class ExcelToSqlListener extends AnalysisEventListener<ExcelToSql> {
 
         // 达到单次处理上限
         if (cnt >= BATCH_COUNT) {
-            // ☆ do something here
+            // Todo: do something here
             cnt = 0;
         }
     }
@@ -71,7 +86,7 @@ public class ExcelToSqlListener extends AnalysisEventListener<ExcelToSql> {
     @Override
     public void doAfterAllAnalysed(AnalysisContext context) {
         // 删除最后一个逗号
-        ddl.deleteCharAt(ddl.length() - 1);
+        ddl.deleteCharAt(ddl.lastIndexOf(","));
 
         // 数据库表有无别名
         ddl.append(StringUtils.isNotBlank(alias) ? ") comment '" + alias + "';" : ");");
@@ -84,11 +99,12 @@ public class ExcelToSqlListener extends AnalysisEventListener<ExcelToSql> {
     private void dealWithOneRow(ExcelToSql excelToSql) {
         // 校验必填项 name, type
         if (StringUtils.isBlank(excelToSql.getName()) || StringUtils.isBlank(excelToSql.getType())) {
-            throw new BaseException("参数名或类型为空");
+            return;
         }
 
-        // name
-        String name = excelToSql.getName().trim();
+        // name, 转为下划线格式
+        String name = camelToSnake(excelToSql.getName().trim());
+
         ddl.append(name).append(' ');
 
         // type
@@ -116,5 +132,4 @@ public class ExcelToSqlListener extends AnalysisEventListener<ExcelToSql> {
         String primaryKey = excelToSql.getPrimaryKey().trim();
         ddl.append(primaryKey.equals("是") ? " primary key," : ", ");
     }
-
 }

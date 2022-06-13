@@ -1,5 +1,6 @@
 package com.demo.util;
 
+import com.alibaba.fastjson.JSONObject;
 import com.demo.exception.BaseException;
 import okhttp3.*;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -21,21 +23,13 @@ import java.util.concurrent.TimeUnit;
  */
 public class OkHttpUtil {
 
-    static final Logger log = LoggerFactory.getLogger(OkHttpUtil.class);
-
     // 基本配置
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-
     //* 自定义参数
     // 超时时间
     public static final int CONNECT_TIME_OUT = 60;
     public static final int READ_TIME_OUT = 60;
     public static final int WRITE_TIME_OUT = 60;
-
-    // 信任的 host
-    @Value("${okhttp.trustedHosts}")
-    private static HashSet<String> trustedHosts;
-
     // 构建 client
     public static final OkHttpClient client = new OkHttpClient.Builder()
             //* 超时时间
@@ -55,6 +49,10 @@ public class OkHttpUtil {
             // .followRedirects(true)
 
             .build();
+    static final Logger log = LoggerFactory.getLogger(OkHttpUtil.class);
+    // 信任的 host
+    @Value("${okhttp.trustedHosts}")
+    private static HashSet<String> trustedHosts;
 
     /**
      * post 访问, <b>Json Body</b>
@@ -66,7 +64,6 @@ public class OkHttpUtil {
     public static String postJson(String url, String json) {
         RequestBody body = RequestBody.create(JSON, json);
         Request request = new Request.Builder().url(url).post(body).build();
-
         return getStrResponse(request, url);
     }
 
@@ -81,8 +78,47 @@ public class OkHttpUtil {
     public static String postJsonWithHeaders(String url, Headers headers, String json) {
         RequestBody body = RequestBody.create(JSON, json);
         Request request = new Request.Builder().url(url).headers(headers).post(body).build();
-
         return getStrResponse(request, url);
+    }
+
+    /**
+     * post 访问, 自定义 Headers, <b>Form Body</b>
+     *
+     * @param url     接口 url
+     * @param headers headers
+     * @param params  FormBody
+     * @return (String) url 返回结果
+     */
+    public static String postFormWithHeaders(String url, Headers headers, JSONObject params) {
+        FormBody.Builder formBuilder = new FormBody.Builder();
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            formBuilder.add(entry.getKey(), (String) entry.getValue());
+        }
+        Request request = new Request.Builder().url(url).headers(headers).post(formBuilder.build()).build();
+        return getStrResponse(request, url);
+    }
+
+    /** 信任所有证书 (不推荐) */
+    private static SSLSocketFactory createSSLSocketFactory() {
+        SSLSocketFactory ssfFactory = null;
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{new TrustAllCerts()}, new SecureRandom());
+            ssfFactory = sslContext.getSocketFactory();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ssfFactory;
+    }
+
+    /** 返回 url 访问结果 (String) */
+    private static String getStrResponse(Request request, String url) {
+        try (Response response = client.newCall(request).execute()) {
+            return response.body() == null ? null : response.body().string();
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            throw new BaseException("OkHttp 访问失败: " + url);
+        }
     }
 
     /**
@@ -111,19 +147,6 @@ public class OkHttpUtil {
     }
 
     /** 信任所有证书 (不推荐) */
-    private static SSLSocketFactory createSSLSocketFactory() {
-        SSLSocketFactory ssfFactory = null;
-        try {
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, new TrustManager[]{new TrustAllCerts()}, new SecureRandom());
-            ssfFactory = sslContext.getSocketFactory();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return ssfFactory;
-    }
-
-    /** 信任所有证书 (不推荐) */
     private static class TrustAllCerts implements X509TrustManager {
         public void checkClientTrusted(X509Certificate[] chain, String authType) {
         }
@@ -133,16 +156,6 @@ public class OkHttpUtil {
 
         public X509Certificate[] getAcceptedIssuers() {
             return new X509Certificate[0];
-        }
-    }
-
-    /** 返回 url 访问结果 (String) */
-    private static String getStrResponse(Request request, String url) {
-        try (Response response = client.newCall(request).execute()) {
-            return response.body() == null ? null : response.body().string();
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
-            throw new BaseException("OkHttp 访问失败: " + url);
         }
     }
 }

@@ -7,22 +7,27 @@
 ### 功能
 
 1. Aspect Oriented Programming
-    - [x] [利用 AOP 拦截记录日志](src/main/java/com/demo/aop/LogAspect.java)
-    - [x] [过滤器](src/main/java/com/demo/aop/DemoFilter.java)
-    - [x] [拦截器](src/main/java/com/demo/aop/DemoInterceptor.java)
+   - [x] [利用 AOP 拦截记录日志](src/main/java/com/demo/aop/LogAspect.java)
+   - [x] [过滤器](src/main/java/com/demo/aop/DemoFilter.java)
+   - [x] [拦截器](src/main/java/com/demo/aop/DemoInterceptor.java)
 2. Async
-    - [x] [异步执行任务](src/main/java/com/demo/service/AsyncService.java)
+   - [x] [异步执行任务](src/main/java/com/demo/service/AsyncService.java)
 3. Elasticsearch [8.x]
 4. Excel
-    - [x] [根据 Excel 生成数据库建表语句](src/main/java/com/demo/service/ExcelService.java)
+   - [x] [根据 Excel 生成数据库建表语句](src/main/java/com/demo/service/ExcelService.java)
 5. Exception
-    - [x] [异常类](src/main/java/com/demo/exception)
-    - [x] [异常处理](src/main/java/com/demo/handler)
+   - [x] [异常类](src/main/java/com/demo/exception)
+   - [x] [异常处理](src/main/java/com/demo/handler)
 6. Kafka
-    - [x] [配置](src/main/java/com/demo/config/KafkaConfig.java)
-    - [x] [消息推送/接收](src/main/java/com/demo/service/KafkaService.java)
+   - [x] [配置](src/main/java/com/demo/config/KafkaConfig.java)
+   - [x] [消息推送/接收](src/main/java/com/demo/service/KafkaService.java)
 7. Open Api [3.0]
-    - [x] Swagger UI (Spring Doc)
+   - [x] Swagger UI (Spring Doc)
+8. WebMvc
+   - [x] [跨域](src/main/java/com/demo/config/WebMvcConfig.java)
+9. WebSocket
+   - [x] [配置](src/main/java/com/demo/config/WebSocketConfig.java)
+   - [x] [向前端推送消息](src/main/java/com/demo/config/WebSocketConfig.java)
 
 ---
 

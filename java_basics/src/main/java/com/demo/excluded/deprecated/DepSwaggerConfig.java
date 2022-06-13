@@ -24,7 +24,7 @@ import java.util.List;
  * @author Song gh on 2022/3/28.
  */
 @Configuration
-public class SwaggerConfig {
+public class DepSwaggerConfig {
 
     @Bean
     public Docket createRestApi() {

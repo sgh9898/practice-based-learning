@@ -20,7 +20,7 @@ public class LogAspect {
 //    // 当前范围: controller 目录下所有后缀为 Controller 文件中所有 public 方法
 //    @Pointcut("execution(public * com.demo.controller.*Controller.*(..))")
     // 当前范围: GeneralController 文件中所有以 aop 开头的方法
-    @Pointcut("execution(public * com.demo.controller.GeneralController.aop*(..))")
+    @Pointcut("execution(public * com.demo.controller.AopController.aop*(..))")
     public void controllerPoint() {
     }
 

@@ -83,6 +83,8 @@ public class ExcelServiceImpl implements ExcelService {
         EasyExcel.write(response.getOutputStream()).head(headList).sheet().doWrite(dataList);
     }
 
+//--------------------------------------------------
+
     /** 根据 json 填充 excel 列名及数据 (所有 json object 的 key 相同) */
     private void setHeadAndData(List<List<String>> headList, List<List<Object>> dataList, JSONArray jsonArray) {
         // 列名, 取首个 json object 做参照
@@ -100,6 +102,7 @@ public class ExcelServiceImpl implements ExcelService {
             for (List<String> headName : headList) {
                 data.add(jsonObject.get(headName.get(0)));
             }
+            dataList.add(data);
         }
     }
 }
