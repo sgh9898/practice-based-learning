@@ -1,4 +1,4 @@
-package com.demo.elasticsearch.dto;
+package excluded.elasticsearch.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

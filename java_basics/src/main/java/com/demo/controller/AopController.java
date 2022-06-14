@@ -18,10 +18,10 @@ import java.util.Map;
  *
  * @author Song gh on 2022/3/28.
  */
-@Tag(name = "Aop Controller", description = "切面功能")
 @Slf4j
 @RestController
 @RequestMapping("/aop")
+@Tag(name = "Aop Controller", description = "切面功能")
 public class AopController {
 
     @Operation(summary = "AOP 记录日志")

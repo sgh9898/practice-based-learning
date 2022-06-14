@@ -1,4 +1,4 @@
-package com.demo.excluded;
+package excluded;
 
 
 class Database {

@@ -15,9 +15,9 @@ import javax.persistence.*;
 @Entity
 @Getter
 @Setter
+@Schema(description = "演示类")
 @Table(name = "demo_entity")
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Schema(description = "演示类")
 public class DemoEntity {
 
     /** id */

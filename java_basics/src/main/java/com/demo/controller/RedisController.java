@@ -22,9 +22,9 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Song gh on 2022/4/18.
  */
-@Tag(name = "Redis Controller", description = "Redis 相关")
 @RestController
 @RequestMapping("/redis")
+@Tag(name = "Redis Controller", description = "Redis 相关")
 public class RedisController {
 
     @Resource

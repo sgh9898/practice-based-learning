@@ -1,4 +1,4 @@
-package com.demo.elasticsearch.document;
+package excluded.elasticsearch.document;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,9 +14,9 @@ import java.util.Date;
  * @author Song gh on 2022/4/15.
  */
 @Data
+@Schema(description = "ES 演示类")
 @Document(indexName = "sample_index")
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Schema(description = "ES 演示类")
 public class SampleIndex {
 
     @Id

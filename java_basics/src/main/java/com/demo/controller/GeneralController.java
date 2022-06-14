@@ -21,10 +21,10 @@ import java.util.concurrent.Future;
  *
  * @author Song gh on 2022/5/18.
  */
-@Tag(name = "General Controller", description = "基础或未分类功能")
 @Slf4j
 @RestController
 @RequestMapping("/general")
+@Tag(name = "General Controller", description = "基础或未分类功能")
 public class GeneralController {
 
     @Resource

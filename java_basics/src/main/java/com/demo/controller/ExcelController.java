@@ -26,10 +26,10 @@ import java.util.Map;
  *
  * @author Song gh on 2022/3/28.
  */
-@Tag(name = "Excel Controller", description = "Excel 相关")
 @Slf4j
 @RestController
 @RequestMapping("/excel")
+@Tag(name = "Excel Controller", description = "Excel 相关")
 public class ExcelController {
 
     // Services

@@ -1,8 +1,8 @@
-package com.demo.elasticsearch;
+package excluded.elasticsearch;
 
-import com.demo.elasticsearch.document.SampleIndex;
-import com.demo.elasticsearch.dto.SampleIndexQueryDto;
-import com.demo.elasticsearch.repository.SampleIndexRepository;
+import excluded.elasticsearch.document.SampleIndex;
+import excluded.elasticsearch.dto.SampleIndexQueryDto;
+import excluded.elasticsearch.repository.SampleIndexRepository;
 import com.demo.util.ResultUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,10 +23,10 @@ import java.util.Map;
  *
  * @author Song gh on 2022/3/28.
  */
-@Tag(name = "ElasticSearch Controller", description = "ElasticSearch 相关")
 @Slf4j
 @RestController
 @RequestMapping("/elastic")
+@Tag(name = "ElasticSearch Controller", description = "ElasticSearch 相关")
 public class ElasticController {
 
     private static final String apiResponse = "{\"code\":0,\"message\":\"成功\",\"data\":list}";

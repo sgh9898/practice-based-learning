@@ -43,7 +43,7 @@
 
 > 以下功能需要本地启动对应服务, 为方便程序运行, 调整为需要手动启用
 
-1. [Elasticsearch](src/main/java/com/demo/excluded/elasticsearch)
+1. [Elasticsearch](src/main/java/excluded/elasticsearch)
 2. [Kafka Listener](src/main/java/com/demo/listener/DemoKafkaListener.java)
 
 ---

@@ -1,4 +1,4 @@
-package com.demo.controller;
+package excluded.kafka;
 
 import com.demo.service.KafkaService;
 import com.demo.util.ResultUtil;
@@ -16,9 +16,9 @@ import java.util.Map;
  *
  * @author Song gh on 2022/4/27.
  */
-@Tag(name = "Kafka Controller", description = "Kafka 相关")
 @RestController
 @RequestMapping("/kafka")
+@Tag(name = "Kafka Controller", description = "Kafka 相关")
 public class KafkaController {
 
     @Resource

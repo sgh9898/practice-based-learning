@@ -1,7 +1,7 @@
-package com.demo.elasticsearch.repository;
+package excluded.elasticsearch.repository;
 
-import com.demo.elasticsearch.document.SampleIndex;
-import com.demo.elasticsearch.dto.SampleIndexQueryDto;
+import excluded.elasticsearch.document.SampleIndex;
+import excluded.elasticsearch.dto.SampleIndexQueryDto;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -39,7 +39,9 @@ public class SampleIndexRepositoryImpl implements SampleIndexRepositoryCustom {
     public Page<SampleIndex> pagination(SampleIndexQueryDto dto) {
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
 
-        // 精确查询 term(s) query
+        // 精确查询 term(s) query, 效率高于 match query
+        // term query 会对输入字段进行全词匹配, "测试" 可以匹配到 "测试结果"
+        // match query 会对输入字段进行分词匹配, "测试" 可以匹配到 "检测"
         if (dto.getCode() != null) {
             boolQueryBuilder.filter(new TermQueryBuilder("code", dto.getCode()));
         }
