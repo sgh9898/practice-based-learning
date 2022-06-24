@@ -2,9 +2,11 @@ package com.demo;
 
 import org.junit.jupiter.api.Test;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
 
 /**
  * 普通测试
@@ -17,8 +19,28 @@ class GeneralTest {
     private String publicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCQuATJA1DOXtgOR/es2wOLHyjKH842+/9yIrRTBhlTl12FIteWInok1AqYYC+7T2CVW8Hp8ACIK8xHIQku5clHY8HCdOsdCSHLCSAy3t3zKJfi0kx/L8e/E68H170ZvHULTp5lwGGlC09exyupVBRBhJnYm/r6SLe8wAzmg12CfQIDAQAB";
 
     @Test
-    void main1() {
-        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
-        System.out.println(df.format(new Date()));
+    void main() {
+        System.out.println(getRealIp());
+    }
+
+
+    /** 获取本机真实 ip */
+    private InetAddress getRealIp() {
+        try {
+            Enumeration<NetworkInterface> networkEnum = NetworkInterface.getNetworkInterfaces();
+            while (networkEnum.hasMoreElements()) {
+                NetworkInterface currNetwork = networkEnum.nextElement();
+                Enumeration<InetAddress> inetEnum = currNetwork.getInetAddresses();
+                while (inetEnum.hasMoreElements()) {
+                    InetAddress currInet = inetEnum.nextElement();
+                    if (!currInet.isLoopbackAddress() && currInet.isSiteLocalAddress()) {
+                        return currInet;
+                    }
+                }
+            }
+            return InetAddress.getLocalHost();
+        } catch (SocketException | UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

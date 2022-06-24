@@ -6,28 +6,33 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Date;
 
 /**
- * 演示类 Entity
+ * 演示类
  *
  * @author Song gh on 2022/04/14.
  */
 @Entity
 @Getter
 @Setter
-@Schema(description = "演示类")
 @Table(name = "demo_entity")
+@Schema(description = "演示类")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DemoEntity {
 
-    /** id */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(name = "id")
     private Long id;
 
-    /** 名称 */
-    @Schema(description = "名称")
+    @Schema(name = "名称")
     private String name;
 
+    @Schema(name = "创建时间")
+    private Date createTime;
+
+    @Schema(name = "更新时间")
+    private Date updateTime;
 }
 
