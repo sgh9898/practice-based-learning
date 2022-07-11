@@ -6,8 +6,6 @@ import lombok.EqualsAndHashCode;
 
 /**
  * 基础异常
- *
- * @author Song gh on 2022/4/2.
  */
 @Data
 @EqualsAndHashCode(callSuper = true)    // .equals() 对 parent 也进行比较

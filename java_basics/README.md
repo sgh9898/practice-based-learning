@@ -24,7 +24,7 @@
 7. Open Api [3.0]
     - [x] Swagger UI (Spring Doc)
 8. WebMvc
-    - [x] [跨域](src/main/java/com/demo/config/WebMvcConfig.java)
+    - [x] [跨域配置](src/main/java/com/demo/config/WebMvcConfig.java)
 9. WebSocket
     - [x] [配置](src/main/java/com/demo/config/WebSocketConfig.java)
     - [x] [向前端推送消息](src/main/java/com/demo/config/WebSocketConfig.java)
@@ -33,7 +33,7 @@
 
 ### 工具类
 
-1. [加密/解密]工具
+1. [加密/解密] 工具
 2. Json 相关工具
 3. Http(s) 相关工具
 

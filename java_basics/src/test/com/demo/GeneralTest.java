@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Date;
 import java.util.Enumeration;
 
 /**
@@ -20,7 +21,9 @@ class GeneralTest {
 
     @Test
     void main() {
-        System.out.println(getRealIp());
+        String str = "ceshi";
+        str = "%" + str + "%";
+        System.out.println(str);
     }
 
 

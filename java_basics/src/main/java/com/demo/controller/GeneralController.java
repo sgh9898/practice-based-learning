@@ -1,17 +1,18 @@
 package com.demo.controller;
 
+import com.demo.database.entity.DemoEntity;
 import com.demo.database.repository.DemoEntityRepository;
 import com.demo.service.AsyncService;
 import com.demo.util.ResultUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -67,8 +68,22 @@ public class GeneralController {
     }
 
     @Operation(summary = "分页查询测试")
-    @PostMapping("/pagination")
+    @GetMapping("/pagination")
     public Map<String, Object> pagination(String name, Pageable page) {
         return ResultUtil.success(demoEntityRepository.findAllByName(name, page));
+    }
+
+    @Operation(summary = "存储")
+    @PostMapping("/save")
+    public Map<String, Object> save(DemoEntity demoEntity) {
+        demoEntity.setIsDeleted(false);
+        demoEntityRepository.save(demoEntity);
+        return ResultUtil.success();
+    }
+
+    @Operation(summary = "测试")
+    @PostMapping("/test")
+    public Map<String, Object> test(@RequestBody List<Long> list) {
+        return ResultUtil.success(demoEntityRepository.queryByList(list));
     }
 }

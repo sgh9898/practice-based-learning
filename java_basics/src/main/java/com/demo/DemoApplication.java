@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.env.Environment;
+import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
@@ -22,6 +24,11 @@ import java.util.Enumeration;
 @EnableAsync
 @EnableScheduling
 @SpringBootApplication
+
+// 解决 JPA 与 ElasticSearch 冲突
+@EnableJpaRepositories("com.demo.database")
+//@EnableElasticsearchRepositories("com.demo.elasticsearch")
+
 public class DemoApplication {
 
     public static void main(String[] args) {

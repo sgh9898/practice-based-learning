@@ -16,6 +16,12 @@ spring:
     # 允许后覆盖相同名称的 bean, 防止项目集成后出现重复定义的冲突
     allow-bean-definition-overriding: true
 
+  data:
+    web:
+      pageable:
+        # 分页查询页码从 1 而不是 0 开始
+        one-indexed-parameters: true
+
   # 数据库
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
