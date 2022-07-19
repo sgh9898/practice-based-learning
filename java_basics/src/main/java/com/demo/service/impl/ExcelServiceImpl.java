@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.util.ListUtils;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.demo.easyexcel.EasyExcelUtil;
 import com.demo.listener.ExcelToSqlListener;
 import com.demo.pojo.ExcelToSql;
 import com.demo.service.ExcelService;
@@ -15,7 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Excel Service
@@ -31,14 +34,10 @@ public class ExcelServiceImpl implements ExcelService {
 
     /** 通过浏览器下载 Excel-to-Sql 模板 */
     @Override
-    public void downloadTemplate(HttpServletResponse response) throws IOException {
-        // 设置文件格式, 编码, 文件名
-        response.setContentType("application/vnd.ms-excel");
-        response.setCharacterEncoding("utf-8");
-        response.setHeader("Content-disposition", "attachment;filename=Excel-to-Sql Template.xlsx");
-
-        // output stream 会自动关闭
-        EasyExcel.write(response.getOutputStream(), ExcelToSql.class).sheet().doWrite(new ArrayList<>());
+    public void downloadTemplate(HttpServletResponse response) {
+        Map<String, String[]> dynamicMap = new HashMap<>();
+        dynamicMap.put("是否主键", new String[]{"主键", "非主键"});
+        EasyExcelUtil.downloadDynamicTemplate(response, "Excel-to-Sql 模板.xlsx", "模板", dynamicMap, ExcelToSql.class);
     }
 
     /** 解析 excel, 转为 sql */
@@ -86,7 +85,8 @@ public class ExcelServiceImpl implements ExcelService {
 //--------------------------------------------------
 
     /** 根据 json 填充 excel 列名及数据 (所有 json object 的 key 相同) */
-    private void setHeadAndData(List<List<String>> headList, List<List<Object>> dataList, JSONArray jsonArray) {
+    private void setHeadAndData(List<List<String>> headList, List<List<Object>> dataList, JSONArray
+            jsonArray) {
         // 列名, 取首个 json object 做参照
         for (String key : jsonArray.getJSONObject(0).keySet()) {
             List<String> head = ListUtils.newArrayList();
@@ -105,4 +105,5 @@ public class ExcelServiceImpl implements ExcelService {
             dataList.add(data);
         }
     }
+
 }

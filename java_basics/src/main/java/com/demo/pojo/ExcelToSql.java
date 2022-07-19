@@ -4,6 +4,7 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.alibaba.excel.annotation.write.style.HeadFontStyle;
 import com.alibaba.excel.annotation.write.style.HeadRowHeight;
+import com.demo.easyexcel.annotation.ExcelDropDown;
 import lombok.Data;
 
 /**
@@ -27,9 +28,11 @@ public class ExcelToSql {
     @ExcelProperty(value = "类型")
     private String type;
 
-    @ExcelProperty(value = "是否必填(填'是/否')")
+    @ExcelDropDown(options = {"是","否"})
+    @ExcelProperty(value = "是否必填")
     private String required = "";
 
-    @ExcelProperty(value = "是否主键(填'是/否')")
+    @ExcelDropDown(name = "是否主键", options = {"是","否"})
+    @ExcelProperty(value = "是否主键")
     private String primaryKey = "";
 }

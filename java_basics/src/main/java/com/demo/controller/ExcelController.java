@@ -10,10 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -43,11 +40,10 @@ public class ExcelController {
      * @return 失败时返回含部分数据的 excel
      */
     @Operation(summary = "下载 [Excel --> Sql] 模板")
-    @PostMapping("/sql/template")
-    public Map<String, Object> downloadSqlTemplate(HttpServletResponse response) throws IOException {
+    @GetMapping("/sql/template")
+    public Map<String, Object> downloadSqlTemplate(HttpServletResponse response) {
         log.debug("下载 [Excel --> Sql] 模板");
         excelService.downloadTemplate(response);
-
         // response 下载文件后已自动关闭, 必须 return null
         return null;
     }

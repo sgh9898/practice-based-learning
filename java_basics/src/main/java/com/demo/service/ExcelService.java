@@ -17,7 +17,7 @@ import java.io.IOException;
 public interface ExcelService {
 
     /** 通过浏览器下载 Excel-to-Sql 模板 */
-    void downloadTemplate(HttpServletResponse response) throws IOException;
+    void downloadTemplate(HttpServletResponse response);
 
     /** 解析 excel, 转为 sql */
     String excelToSql(MultipartFile file, String tableName, String alias) throws IOException;
