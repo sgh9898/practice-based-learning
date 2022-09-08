@@ -12,22 +12,23 @@
     - [x] [拦截器](src/main/java/com/demo/aop/DemoInterceptor.java)
 2. Async
     - [x] [异步执行任务](src/main/java/com/demo/service/AsyncService.java)
-3. Elasticsearch [8.x]
-4. Excel
+3. DataBase
+4. Elasticsearch [8.x]
+5. Excel
     - [x] [根据 Excel 生成数据库建表语句](src/main/java/com/demo/service/ExcelService.java)
-5. Exception
+6. Exception
     - [x] [异常类](src/main/java/com/demo/exception)
     - [x] [异常处理](src/main/java/com/demo/handler)
-6. Kafka
+7. Kafka
     - [x] [配置](src/main/java/com/demo/config/KafkaConfig.java)
     - [x] [消息推送/接收](src/main/java/com/demo/service/KafkaService.java)
-7. Open Api [3.0]
+8. Open Api [3.0]
     - [x] Swagger UI (Spring Doc)
-8. WebMvc
+9. WebMvc
     - [x] [跨域配置](src/main/java/com/demo/config/WebMvcConfig.java)
-9. WebSocket
-    - [x] [配置](src/main/java/com/demo/config/WebSocketConfig.java)
-    - [x] [向前端推送消息](src/main/java/com/demo/config/WebSocketConfig.java)
+10. WebSocket
+     - [x] [配置](src/main/java/com/demo/config/WebSocketConfig.java)
+     - [x] [向前端推送消息](src/main/java/com/demo/config/WebSocketConfig.java)
 
 ---
 

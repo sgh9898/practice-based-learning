@@ -1,11 +1,10 @@
 package com.demo.controller;
 
-import com.demo.database.entity.DemoEntity;
-import com.demo.database.repository.DemoEntityRepository;
+import com.demo.db.entity.DemoEntity;
+import com.demo.db.repository.DemoEntityRepository;
 import com.demo.service.AsyncService;
 import com.demo.util.ResultUtil;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -82,8 +81,14 @@ public class GeneralController {
     }
 
     @Operation(summary = "测试")
-    @PostMapping("/test")
-    public Map<String, Object> test(@RequestBody List<Long> list) {
+    @GetMapping("/test")
+    public Map<String, Object> test(@RequestParam List<Long> list) {
+        if (list == null) {
+            System.out.println("null");
+        }
+        else if (list.isEmpty()) {
+            System.out.println("empty");
+        }
         return ResultUtil.success(demoEntityRepository.queryByList(list));
     }
 }

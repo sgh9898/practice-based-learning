@@ -1,4 +1,4 @@
-package com.demo.database.entity;
+package com.demo.db.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -43,6 +43,14 @@ public class DemoEntity {
     @Schema(name = "更新时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date updateTime;
+
+    @Schema(name = "日期")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date dateOnly;
+
+    @Schema(name = "时间")
+    @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
+    private Date timeOnly;
 
     public void init() {
         this.name = "测试";

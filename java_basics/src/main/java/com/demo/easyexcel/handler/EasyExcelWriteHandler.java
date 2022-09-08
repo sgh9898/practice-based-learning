@@ -3,12 +3,12 @@ package com.demo.easyexcel.handler;
 import com.alibaba.excel.write.handler.SheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
-import org.apache.poi.ss.usermodel.DataValidation;
-import org.apache.poi.ss.usermodel.DataValidationConstraint;
-import org.apache.poi.ss.usermodel.DataValidationHelper;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,18 +18,43 @@ import java.util.Map;
  */
 public class EasyExcelWriteHandler implements SheetWriteHandler {
 
+    private final List<Integer> columnSizeList;
     private final Map<Integer, String[]> dropDownMap;
+    private final String note;
+    private final Integer lastColIndex;
 
-    public EasyExcelWriteHandler(Map<Integer, String[]> dropDownMap) {
+    /**
+     * constructor
+     *
+     * @param columnSizeList 列宽
+     * @param dropDownMap    动态下拉框
+     * @param note           说明
+     * @param lastColIndex   最后一列的 index
+     */
+    public EasyExcelWriteHandler(List<Integer> columnSizeList, Map<Integer, String[]> dropDownMap, String note, Integer lastColIndex) {
+        this.columnSizeList = columnSizeList;
         this.dropDownMap = dropDownMap;
+        this.note = StringUtils.isBlank(note) ? null : note;
+        this.lastColIndex = lastColIndex == null ? 0 : lastColIndex;
+    }
+
+    @Override
+    public void beforeSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
+
     }
 
     @Override
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
+        // 下拉框为空不进行操作
+        if (dropDownMap == null || dropDownMap.isEmpty()) {
+            return;
+        }
         // 这里可以对cell进行任何操作
         Sheet sheet = writeSheetHolder.getSheet();
+
+        // 添加格式约束
         DataValidationHelper helper = sheet.getDataValidationHelper();
-        // index 为存在下拉框的单元格序号, options 为下拉框内容
+        // 下拉框格式: index 为存在下拉框的单元格序号, options 为下拉框内容
         dropDownMap.forEach((index, options) -> {
             // 下拉列表约束数据
             DataValidationConstraint constraint = helper.createExplicitListConstraint(options);
@@ -44,18 +69,21 @@ public class EasyExcelWriteHandler implements SheetWriteHandler {
             validation.createErrorBox("提示", "请选择下拉框内的数据");
             sheet.addValidationData(validation);
         });
-        // 设置验证生效的范围(起始行, 结束行, 起始列, 结束列)
-        CellRangeAddressList addressList = new CellRangeAddressList(1, 65536, 0, 20);
-        // 设置验证方式(Date(1990, 1, 1)是excel的日期函数, 能成功解析, 写成"1990-01-01"解析失败)
-        // 需要其他日期格式, 修改第四个参数"yyyy-MM-dd", eg："yyyy-MM-dd HH:mm:ss"
-        DataValidationConstraint constraint = helper.createDateConstraint(DataValidationConstraint.OperatorType.BETWEEN, "Date(1900, 1, 1)", "Date(9999, 12, 31)", "yyyy-MM-dd");
-        // 创建验证对象
-        DataValidation dataValidation = helper.createValidation(constraint, addressList);
-        // 错误提示信息
-        dataValidation.createErrorBox("提示", "请输入[yyyy-MM-dd]格式日期, 范围:[1990-01-01,9999-12-31]");
-        dataValidation.setShowErrorBox(true);
-        // 验证和工作簿绑定
-        sheet.addValidationData(dataValidation);
+
+        // 添加首行说明
+        if ((note != null)) {
+            // 需要合并单元格
+            if (lastColIndex - 1 > 0) {
+                CellRangeAddress mergedRegion = new CellRangeAddress(1, 1, 0, lastColIndex - 1);
+                sheet.addMergedRegion(mergedRegion);
+            }
+            // 自适应列宽
+            for (int i = 0; i < columnSizeList.size(); i++) {
+                sheet.setColumnWidth(i, (int) (columnSizeList.get(i) * 3.5 * 256));
+            }
+            Row row = sheet.createRow(0);
+            row.setHeightInPoints(50);
+        }
     }
 }
 

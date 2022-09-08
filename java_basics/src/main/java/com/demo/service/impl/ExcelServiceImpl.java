@@ -1,7 +1,6 @@
 package com.demo.service.impl;
 
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.util.ListUtils;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.demo.easyexcel.EasyExcelUtil;
@@ -13,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,10 +34,9 @@ public class ExcelServiceImpl implements ExcelService {
 
     /** 通过浏览器下载 Excel-to-Sql 模板 */
     @Override
-    public void downloadTemplate(HttpServletResponse response) {
-        Map<String, String[]> dynamicMap = new HashMap<>();
-        dynamicMap.put("是否主键", new String[]{"主键", "非主键"});
-        EasyExcelUtil.downloadDynamicTemplate(response, "Excel-to-Sql 模板.xlsx", "模板", dynamicMap, ExcelToSql.class);
+    public void downloadTemplate(HttpServletRequest request, HttpServletResponse response) {
+        String note = "1. 黄色标注为必填项\r\n2.日期格式为 yyyy-MM-dd. [例]2022-08-01\n3.时间格式为 HH:mm. [例]18:05\n4.填写所属通学路时, 学校间使用逗号, 学校与通学路间使用冒号, 通学路间使用分号分隔. [例]学校1:通学路1,通学路2;学校2:通学路3";
+        EasyExcelUtil.downloadTemplate(request, response, "Excel-to-Sql-template.xlsx", ExcelToSql.class, note);
     }
 
     /** 解析 excel, 转为 sql */
@@ -75,8 +74,8 @@ public class ExcelServiceImpl implements ExcelService {
         response.setHeader("Content-disposition", "attachment;filename=" + checkedFileName);
 
         // 填充 excel 列名及数据
-        List<List<String>> headList = ListUtils.newArrayList();
-        List<List<Object>> dataList = ListUtils.newArrayList();
+        List<List<String>> headList = new ArrayList<>();
+        List<List<Object>> dataList = new ArrayList<>();
         setHeadAndData(headList, dataList, jsonArray);
 
         EasyExcel.write(response.getOutputStream()).head(headList).sheet().doWrite(dataList);
@@ -89,7 +88,7 @@ public class ExcelServiceImpl implements ExcelService {
             jsonArray) {
         // 列名, 取首个 json object 做参照
         for (String key : jsonArray.getJSONObject(0).keySet()) {
-            List<String> head = ListUtils.newArrayList();
+            List<String> head = new ArrayList<>();
             head.add(key);
             headList.add(head);
         }
@@ -97,7 +96,7 @@ public class ExcelServiceImpl implements ExcelService {
         // 逐行填充数据
         for (int i = 0; i < jsonArray.size(); i++) {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
-            List<Object> data = ListUtils.newArrayList();
+            List<Object> data = new ArrayList<>();
             // 单行数据按 head 顺序填充
             for (List<String> headName : headList) {
                 data.add(jsonObject.get(headName.get(0)));

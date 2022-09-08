@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
@@ -41,9 +42,9 @@ public class ExcelController {
      */
     @Operation(summary = "下载 [Excel --> Sql] 模板")
     @GetMapping("/sql/template")
-    public Map<String, Object> downloadSqlTemplate(HttpServletResponse response) {
+    public Map<String, Object> downloadSqlTemplate(HttpServletRequest request, HttpServletResponse response) {
         log.debug("下载 [Excel --> Sql] 模板");
-        excelService.downloadTemplate(response);
+        excelService.downloadTemplate(request, response);
         // response 下载文件后已自动关闭, 必须 return null
         return null;
     }
