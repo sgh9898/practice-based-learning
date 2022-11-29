@@ -4,9 +4,7 @@ import com.demo.util.ResultStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-/**
- * 基础异常
- */
+/** 基础异常 */
 @Data
 @EqualsAndHashCode(callSuper = true)    // .equals() 对 parent 也进行比较
 public class BaseException extends RuntimeException {

@@ -1,15 +1,14 @@
 package com.demo;
 
-import com.demo.db.entity.DemoEntity;
-import com.demo.db.repository.DemoEntityRepository;
-import com.demo.pojo.DemoEntityVo;
-import com.demo.util.JsonUtil;
+import com.demo.sample.entity.DemoEntity;
+import com.demo.sample.repository.DemoEntityRepository;
+import com.demo.easyexcel.service.ExcelService;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -18,14 +17,21 @@ import java.util.List;
  * @author Song gh on 2022/5/6.
  */
 @SpringBootTest
+@Slf4j
 class DemoApplicationTest {
 
     @Resource
     private DemoEntityRepository demoEntityRepository;
+    @Resource
+    private ExcelService excelService;
 
     @Test
-    void main1() {
-        DemoEntityVo vo = demoEntityRepository.getSingleVo("测试1");
-        System.out.println(JsonUtil.objOrListToJsonStr(vo));
+    void queryTest() {
+        List<Long> idList = new ArrayList<>();
+        idList.add(1L);
+        idList.add(2L);
+        List<DemoEntity> demoList = demoEntityRepository.sqlGetByList(idList);
+        demoList.forEach(demoEntity ->
+                System.out.println(demoEntity.getName()));
     }
 }

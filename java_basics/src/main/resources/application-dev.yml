@@ -35,7 +35,6 @@ spring:
       minimum-idle: 3
       maximum-pool-size: 3
 
-
   task:
     # 线程池
     execution:
@@ -94,15 +93,21 @@ spring:
         max-idle: 8
         min-idle: 0
 
+  # Swagger
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
   # Thymeleaf
   thymeleaf:
     check-template-location: false
 
 # Swagger
-springdoc:
-  swagger-ui:
-    # 测试环境启用, 生产环境需关闭
-    enabled: true
+springfox:
+  documentation:
+    swagger-ui:
+      # 测试环境启用, 生产环境需关闭
+      enabled: true
 
 # 日志
 logging:
@@ -121,7 +126,3 @@ logging:
       max-file-size: 100MB
   file:
     path: "logs"
-
-rsa:
-  public-key:
-  private-key:

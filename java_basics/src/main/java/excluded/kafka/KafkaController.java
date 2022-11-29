@@ -1,6 +1,5 @@
 package excluded.kafka;
 
-import com.demo.service.KafkaService;
 import com.demo.util.ResultUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

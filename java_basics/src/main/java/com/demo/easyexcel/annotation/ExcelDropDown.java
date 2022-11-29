@@ -3,7 +3,7 @@ package com.demo.easyexcel.annotation;
 import java.lang.annotation.*;
 
 /**
- * Excel 下拉框注解, 用于标注字段
+ * Excel 注解, 用于标注下拉框内容
  *
  * @author Song gh on 2022/7/12.
  */
@@ -13,7 +13,7 @@ import java.lang.annotation.*;
 public @interface ExcelDropDown {
 
     /** 静态下拉框内容 */
-    String[] options() default {};
+    String[] value() default {};
 
     /** 名称, 用于配置动态下拉框 */
     String name() default "";

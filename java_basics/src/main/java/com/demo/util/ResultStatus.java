@@ -1,12 +1,9 @@
 package com.demo.util;
 
-
-/**
- * 常用错误代码及信息
- */
+/** 错误代码及信息 */
 public enum ResultStatus {
 
-    // 基本配置
+    //通用状态
     SUCCESS(0, "成功"),
     ERROR(-1, "系统繁忙"),
     REQUEST_NOT_EXIST(-2, "请求地址不存在"),
@@ -17,10 +14,9 @@ public enum ResultStatus {
     REQUEST_TOO_MANY(5, "访问过于频繁"),
     NOT_LOGIN(6, "用户未登录");
 
-    int code;
-    String message;
+    private int code;
+    private String message;
 
-    // constructor
     ResultStatus(int code, String message) {
         this.code = code;
         this.message = message;

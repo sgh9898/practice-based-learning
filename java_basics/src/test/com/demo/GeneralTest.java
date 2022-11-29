@@ -1,12 +1,17 @@
 package com.demo;
 
+import com.demo.sample.entity.DemoEntity;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
 import org.junit.jupiter.api.Test;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.Enumeration;
+import java.util.*;
 
 /**
  * 普通测试
@@ -20,10 +25,40 @@ class GeneralTest {
 
     @Test
     void main() {
-        Integer num = 3;
-        Integer target = (int)((double)2/5*3);
-        Double result = ((double) num / (double) 5) + (double) 2/3;
-        System.out.println(target);
+        Set<Object> testSet = new HashSet<>();
+        testSet.add("12345");
+        testSet.add(1111);
+        System.out.println(testSet.contains("1234"));
+    }
+
+    @Test
+    void removeTrailing0() {
+        String str1 = "2022-10-10";
+        String str2 = "2022-11-10";
+        System.out.println(str1.compareTo(str2));
+    }
+
+    @Test
+    void colorTest() throws IOException {
+        Workbook wb = new HSSFWorkbook();
+        Sheet sheet = wb.createSheet("colorful");
+        int rowNum = 0;
+        for (IndexedColors color : IndexedColors.values()) {
+            Row row = sheet.createRow(rowNum++);
+            Cell cell = row.createCell(0);
+            cell.setCellValue(color.toString());
+            Cell cellColor = row.createCell(1);
+            CellStyle style = wb.createCellStyle();
+            style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            style.setFillForegroundColor(color.getIndex());
+            cellColor.setCellStyle(style);
+        }
+        sheet.setColumnWidth(0, 25 * 256);
+        sheet.setColumnWidth(1, 50 * 256);
+        FileOutputStream fout = new FileOutputStream("/Users/collin/Downloads/color.xls");
+        wb.write(fout);
+        wb.close();
+        fout.close();
     }
 
     /** 获取本机真实 ip */
