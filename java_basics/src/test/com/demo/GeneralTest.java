@@ -1,6 +1,9 @@
 package com.demo;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.demo.sample.entity.DemoEntity;
+import netscape.javascript.JSObject;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.junit.jupiter.api.Test;
@@ -11,7 +14,10 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.List;
 
 /**
  * 普通测试
@@ -25,17 +31,17 @@ class GeneralTest {
 
     @Test
     void main() {
-        Set<Object> testSet = new HashSet<>();
-        testSet.add("12345");
-        testSet.add(1111);
-        System.out.println(testSet.contains("1234"));
+        DemoEntity demo = new DemoEntity();
+        demo.init();
+        String jsonObject = JSONObject.toJSONString(demo);
+        System.out.println(jsonObject);
     }
 
     @Test
-    void removeTrailing0() {
-        String str1 = "2022-10-10";
-        String str2 = "2022-11-10";
-        System.out.println(str1.compareTo(str2));
+    void removeTrailing0(List<String> test) {
+        test.add("ceshi");
+        test.add("ceshi111");
+        test.add("ceshi222");
     }
 
     @Test
