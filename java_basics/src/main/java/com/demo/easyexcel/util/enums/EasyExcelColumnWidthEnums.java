@@ -1,4 +1,4 @@
-package com.demo.easyexcel.enums;
+package com.demo.easyexcel.util.enums;
 
 import lombok.Getter;
 

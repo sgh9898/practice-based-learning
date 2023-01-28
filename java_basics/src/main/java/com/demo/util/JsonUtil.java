@@ -84,4 +84,19 @@ public class JsonUtil {
         }
         return classList;
     }
+
+    /**
+     * 将sql查询结果转为map
+     *
+     * @param sqlMapList sql查询结果
+     * @param keyName    key 字段名
+     * @param valueName  value 字段名
+     */
+    public static Map<?, ?> sqlMapListToMap(List<Map<String, Object>> sqlMapList, String keyName, String valueName) {
+        Map<Object, Object> resultMap = new HashMap<>();
+        for (Map<String, Object> currMap : sqlMapList) {
+            resultMap.put(currMap.get(keyName), currMap.get(valueName));
+        }
+        return resultMap;
+    }
 }

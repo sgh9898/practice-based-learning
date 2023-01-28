@@ -2,8 +2,6 @@ package com.demo;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.demo.sample.entity.DemoEntity;
-import netscape.javascript.JSObject;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.junit.jupiter.api.Test;
@@ -14,8 +12,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -38,10 +36,12 @@ class GeneralTest {
     }
 
     @Test
-    void removeTrailing0(List<String> test) {
-        test.add("ceshi");
-        test.add("ceshi111");
-        test.add("ceshi222");
+    void removeTrailing0() {
+        try {
+            System.out.println(new SimpleDateFormat("yyyy-MM-dd").parse("2022-01-01"));
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test

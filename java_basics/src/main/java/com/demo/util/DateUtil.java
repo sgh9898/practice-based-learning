@@ -1,14 +1,16 @@
 package com.demo.util;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
- * 格式转换工具
+ * 日期工具
  *
- * @author Song gh on 2022/8/16.
+ * @author Song gh on 2023/1/12.
  */
-public class ConversionUtil {
+public class DateUtil {
 
     /** 判断是否同一天 */
     public static Boolean isTheSameDay(Date date1, Date date2) {
@@ -72,18 +74,30 @@ public class ConversionUtil {
         return dateFormat.format(srcDate);
     }
 
-    /**
-     * 将sql查询结果转为map
-     *
-     * @param sqlMapList sql查询结果
-     * @param keyName    key 字段名
-     * @param valueName  value 字段名
-     */
-    public static Map<?, ?> sqlMapListToMap(List<Map<String, Object>> sqlMapList, String keyName, String valueName) {
-        Map<Object, Object> resultMap = new HashMap<>();
-        for (Map<String, Object> currMap : sqlMapList) {
-            resultMap.put(currMap.get(keyName), currMap.get(valueName));
+    /** string 转 date, 取日期时间 */
+    public static Date strToDateTime(String dateStr) {
+        try {
+            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateStr);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
         }
-        return resultMap;
+    }
+
+    /** string 转 date, 只取日期 */
+    public static Date strToDateOnly(String dateStr) {
+        try {
+            return new SimpleDateFormat("yyyy-MM-dd").parse(dateStr);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /** string 转 date, 只取时间 */
+    public static Date strToTimeOnly(String dateStr) {
+        try {
+            return new SimpleDateFormat("HH:mm:ss").parse(dateStr);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

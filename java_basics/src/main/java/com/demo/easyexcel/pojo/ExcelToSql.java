@@ -1,12 +1,11 @@
 package com.demo.easyexcel.pojo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.alibaba.excel.annotation.format.DateTimeFormat;
 import com.alibaba.excel.annotation.write.style.ContentStyle;
 import com.alibaba.excel.annotation.write.style.HeadFontStyle;
 import com.alibaba.excel.annotation.write.style.HeadRowHeight;
 import com.alibaba.excel.enums.BooleanEnum;
-import com.demo.easyexcel.annotation.ExcelDropDown;
+import com.demo.easyexcel.util.annotation.ExcelDropDown;
 import lombok.Data;
 
 /**

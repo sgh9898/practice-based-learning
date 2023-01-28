@@ -1,4 +1,4 @@
-package com.demo.easyexcel.handler;
+package com.demo.easyexcel.util.handler;
 
 import com.alibaba.excel.enums.CellDataTypeEnum;
 import com.alibaba.excel.metadata.Head;
@@ -6,7 +6,7 @@ import com.alibaba.excel.metadata.data.WriteCellData;
 import com.alibaba.excel.util.MapUtils;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.style.column.AbstractColumnWidthStyleStrategy;
-import com.demo.easyexcel.enums.EasyExcelColumnWidthEnums;
+import com.demo.easyexcel.util.enums.EasyExcelColumnWidthEnums;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.poi.ss.usermodel.Cell;

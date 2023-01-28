@@ -4,7 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.demo.sample.entity.DemoEntity;
-import com.demo.easyexcel.EasyExcelUtil;
+import com.demo.easyexcel.util.EasyExcelUtil;
 import com.demo.easyexcel.listener.ExcelToSqlListener;
 import com.demo.easyexcel.pojo.ExcelToSql;
 import com.demo.easyexcel.service.ExcelService;

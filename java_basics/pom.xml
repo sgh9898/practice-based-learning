@@ -59,7 +59,7 @@
         <dependency>
             <groupId>com.aliyun</groupId>
             <artifactId>dingtalk</artifactId>
-            <version>1.4.73</version>
+            <version>1.5.23</version>
         </dependency>
 
         <!-- Elasticsearch -->
@@ -70,7 +70,7 @@
         <dependency>
             <groupId>co.elastic.clients</groupId>
             <artifactId>elasticsearch-java</artifactId>
-            <version>8.4.2</version>
+            <version>8.5.3</version>
         </dependency>
         <dependency>
             <groupId>jakarta.json</groupId>
@@ -82,7 +82,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>easyexcel</artifactId>
-            <version>3.1.1</version>
+            <version>3.1.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -99,8 +99,6 @@
             <artifactId>poi-ooxml-schemas</artifactId>
             <version>4.1.2</version>
         </dependency>
-
-        <!-- Validation -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
@@ -108,7 +106,6 @@
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>8.0.0.Final</version>
         </dependency>
 
         <!-- Http(s) -->
@@ -121,12 +118,12 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>2.0.15</version>
+            <version>2.0.22</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.14.0-rc1</version>
+            <version>2.14.0</version>
         </dependency>
 
         <!-- Kafka -->

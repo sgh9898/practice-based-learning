@@ -1,4 +1,4 @@
-package com.demo.easyexcel;
+package com.demo.easyexcel.util;
 
 
 import com.alibaba.excel.EasyExcel;
@@ -12,11 +12,11 @@ import com.alibaba.excel.write.metadata.WriteTable;
 import com.alibaba.excel.write.metadata.style.WriteCellStyle;
 import com.alibaba.excel.write.metadata.style.WriteFont;
 import com.alibaba.excel.write.style.HorizontalCellStyleStrategy;
-import com.demo.easyexcel.annotation.ExcelDropDown;
-import com.demo.easyexcel.enums.EasyExcelColumnWidthEnums;
-import com.demo.easyexcel.handler.EasyExcelColumnWidthHandler;
-import com.demo.easyexcel.handler.EasyExcelDropDownMenuHandler;
-import com.demo.easyexcel.handler.EasyExcelRowHeightHandler;
+import com.demo.easyexcel.util.annotation.ExcelDropDown;
+import com.demo.easyexcel.util.enums.EasyExcelColumnWidthEnums;
+import com.demo.easyexcel.util.handler.EasyExcelColumnWidthHandler;
+import com.demo.easyexcel.util.handler.EasyExcelDropDownMenuHandler;
+import com.demo.easyexcel.util.handler.EasyExcelRowHeightHandler;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -95,27 +95,27 @@ public class EasyExcelUtil {
         noteStrategy.setContentWriteCellStyleList(noteList);
     }
 
-    /** Constructor: 基础配置 */
+    /** Constructor */
     public EasyExcelUtil(String fileName, Class<?> targetClass, List<?> dataList) {
         this.fileName = fileName;
         this.targetClass = targetClass;
         this.dataList = dataList;
     }
 
-// ------------------------------ Static ------------------------------
+    /** Constructor */
+    public EasyExcelUtil(String fileName, Class<?> targetClass) {
+        this.fileName = fileName;
+        this.targetClass = targetClass;
+        this.dataList = null;
+    }
+
+    // ------------------------------ Static ------------------------------
 
     /** 浏览器下载 Excel: 基础, 仅指定文件名 */
     public static void downloadSimple(HttpServletRequest request, HttpServletResponse response, String fileName,
                                       Class<?> targetClass, List<?> dataList) {
         downloadExcel(request, response, fileName, null, targetClass, dataList,
                 null, null, null, null, null, null, null);
-    }
-
-    /** 浏览器下载 Excel: 排除指定列 */
-    public static void downloadExcluding(HttpServletRequest request, HttpServletResponse response, String fileName,
-                                         Class<?> targetClass, List<?> dataList, Set<String> excludedCols) {
-        downloadExcel(request, response, fileName, null, targetClass, dataList,
-                null, null, null, excludedCols, null, null, null);
     }
 
     /** 浏览器下载 Excel 模板: 数据为空, 添加说明, 排除指定列 */
@@ -154,7 +154,17 @@ public class EasyExcelUtil {
         return excludedCols;
     }
 
-// ------------------------------ Non-Static ------------------------------
+    // ------------------------------ Non-Static ------------------------------
+
+    /** 将指定列加入屏蔽 */
+    public void addExcludedCols(String columnName) {
+        if (StringUtils.isNotBlank(columnName)) {
+            if (this.excludedCols == null) {
+                this.excludedCols = new HashSet<>();
+            }
+            this.excludedCols.add(columnName);
+        }
+    }
 
     /** 浏览器下载 Excel: 使用当前自定义配置 */
     public void downloadCustomizedExcel(HttpServletRequest request, HttpServletResponse response) {
@@ -162,7 +172,7 @@ public class EasyExcelUtil {
                 useExcel07, title, note, excludedCols, headMap, dynamicDropDownMap, widthStrategy);
     }
 
-// ------------------------------ Private ------------------------------
+    // ------------------------------ Private ------------------------------
 
     /**
      * 浏览器下载 Excel, 完整参数
