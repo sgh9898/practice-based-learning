@@ -23,7 +23,7 @@ import java.util.Enumeration;
 @EnableAsync
 @EnableScheduling
 @SpringBootApplication
-@EnableJpaRepositories("com.demo.sample")   // 解决 JPA 与 ElasticSearch 冲突
+//@EnableJpaRepositories("com.demo.database")   // 解决 JPA 与 ElasticSearch 冲突
 public class DemoApplication {
 
     public static void main(String[] args) {

@@ -18,23 +18,23 @@ import java.util.Map;
  */
 public class EasyExcelDropDownMenuHandler implements SheetWriteHandler {
 
-    /** 配置下拉框时跳过前(包括表头在内) x 行 */
+    /** 配置下拉框时跳过前(包括 head 在内) x 行 */
     private final Integer skipRowNum;
 
     /** 动态下拉框, Map(columnIndex, options) */
     private final Map<Integer, String[]> dropDownMap;
 
-    /** Constructor */
+    /** 构造: 默认 */
     public EasyExcelDropDownMenuHandler(Map<Integer, String[]> dropDownMap) {
         this.dropDownMap = dropDownMap;
-        // 表头不配置下拉框
+        // head 不配置下拉框
         this.skipRowNum = 1;
     }
 
-    /** Constructor: 配置下拉框时, 除表头外额外跳过前 x 行 */
+    /** 构造: 配置下拉框时, 除 head 外额外跳过前 x 行 */
     public EasyExcelDropDownMenuHandler(Map<Integer, String[]> dropDownMap, Integer skipRowNum) {
         this.dropDownMap = dropDownMap;
-        // 表头不配置下拉框
+        // head 不配置下拉框
         this.skipRowNum = 1 + skipRowNum;
     }
 

@@ -6,7 +6,7 @@ import com.alibaba.excel.metadata.data.WriteCellData;
 import com.alibaba.excel.util.MapUtils;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.style.column.AbstractColumnWidthStyleStrategy;
-import com.demo.easyexcel.util.enums.EasyExcelColumnWidthEnums;
+import com.demo.easyexcel.util.enums.ExcelColWidthEnums;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.poi.ss.usermodel.Cell;
@@ -31,23 +31,23 @@ public class EasyExcelColumnWidthHandler extends AbstractColumnWidthStyleStrateg
 
     /**
      * 列宽选取方式
-     * 1. 表头为准 --> 仅使用表头宽度
+     * 1. head 为准 --> 仅使用 head 宽度
      * 2. 内容为准 --> 仅使用内容宽度
      */
-    private final EasyExcelColumnWidthEnums widthStrategy;
+    private final ExcelColWidthEnums widthStrategy;
 
     /** Constructor */
     public EasyExcelColumnWidthHandler() {
-        widthStrategy = EasyExcelColumnWidthEnums.COLUMN_WIDTH_DEFAULT;
+        widthStrategy = ExcelColWidthEnums.COL_WIDTH_DEFAULT;
     }
 
     /** Constructor: 指定列宽选取方式 */
-    public EasyExcelColumnWidthHandler(EasyExcelColumnWidthEnums widthStrategy) {
-        if (widthStrategy == EasyExcelColumnWidthEnums.COLUMN_WIDTH_USE_HEAD
-                || widthStrategy == EasyExcelColumnWidthEnums.COLUMN_WIDTH_USE_CONTENT) {
+    public EasyExcelColumnWidthHandler(ExcelColWidthEnums widthStrategy) {
+        if (widthStrategy == ExcelColWidthEnums.COL_WIDTH_HEAD
+                || widthStrategy == ExcelColWidthEnums.COL_WIDTH_CONTENT) {
             this.widthStrategy = widthStrategy;
         } else {
-            this.widthStrategy = EasyExcelColumnWidthEnums.COLUMN_WIDTH_DEFAULT;
+            this.widthStrategy = ExcelColWidthEnums.COL_WIDTH_DEFAULT;
         }
     }
 
@@ -75,16 +75,16 @@ public class EasyExcelColumnWidthHandler extends AbstractColumnWidthStyleStrateg
         Integer maxColumnWidth = sheetColumnWidthMap.get(cell.getColumnIndex());
 
         // 更新列宽
-        // 使用表头列宽
-        if (widthStrategy == EasyExcelColumnWidthEnums.COLUMN_WIDTH_USE_HEAD) {
+        // 使用 head 列宽
+        if (widthStrategy == ExcelColWidthEnums.COL_WIDTH_HEAD) {
             if (isHead) {
-                // 多行表头仅使用最后一行校准
+                // 多行 head 仅使用最后一行校准
                 sheetColumnWidthMap.put(cell.getColumnIndex(), columnWidth);
                 writeSheetHolder.getSheet().setColumnWidth(cell.getColumnIndex(), columnWidth * 256);
             }
         }
         // 使用内容列宽
-        else if (widthStrategy == EasyExcelColumnWidthEnums.COLUMN_WIDTH_USE_CONTENT) {
+        else if (widthStrategy == ExcelColWidthEnums.COL_WIDTH_CONTENT) {
             if (!isHead) {
                 if (maxColumnWidth == null || columnWidth > maxColumnWidth) {
                     sheetColumnWidthMap.put(cell.getColumnIndex(), columnWidth);
@@ -95,7 +95,7 @@ public class EasyExcelColumnWidthHandler extends AbstractColumnWidthStyleStrateg
         // 默认列宽
         else {
             if (isHead) {
-                // 多行表头仅使用最后一行校准
+                // 多行 head 仅使用最后一行校准
                 sheetColumnWidthMap.put(cell.getColumnIndex(), columnWidth);
                 writeSheetHolder.getSheet().setColumnWidth(cell.getColumnIndex(), columnWidth * 256);
             } else {

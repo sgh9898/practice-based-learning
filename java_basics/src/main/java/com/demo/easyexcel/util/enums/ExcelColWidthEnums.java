@@ -8,21 +8,21 @@ import lombok.Getter;
  * @author Song gh on 2022/10/17.
  */
 @Getter
-public enum EasyExcelColumnWidthEnums {
+public enum ExcelColWidthEnums {
 
     /** 默认 */
-    COLUMN_WIDTH_DEFAULT(0),
-    /** 列宽以表头为准 */
-    COLUMN_WIDTH_USE_HEAD(1),
+    COL_WIDTH_DEFAULT(0),
+    /** 列宽以 head 为准 */
+    COL_WIDTH_HEAD(1),
     /** 列宽以内容为准 */
-    COLUMN_WIDTH_USE_CONTENT(2);
+    COL_WIDTH_CONTENT(2);
 
     private int type;
 
-    EasyExcelColumnWidthEnums() {
+    ExcelColWidthEnums() {
     }
 
-    EasyExcelColumnWidthEnums(int type) {
+    ExcelColWidthEnums(int type) {
         this.type = type;
     }
 }

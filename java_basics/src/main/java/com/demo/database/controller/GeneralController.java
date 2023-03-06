@@ -1,9 +1,10 @@
-package com.demo.sample.controller;
+package com.demo.database.controller;
 
-import com.demo.sample.entity.DemoEntity;
-import com.demo.sample.repository.DemoEntityRepository;
+import com.demo.database.entity.DemoEntity;
+import com.demo.database.repository.DemoEntityRepository;
 import com.demo.async.AsyncService;
 import com.demo.util.ResultUtil;
+import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -23,8 +23,8 @@ import java.util.concurrent.Future;
  */
 @Slf4j
 @RestController
+@Api("基础或未分类功能")
 @RequestMapping("/general")
-@Tag(name = "General Controller", description = "基础或未分类功能")
 public class GeneralController {
 
     @Resource

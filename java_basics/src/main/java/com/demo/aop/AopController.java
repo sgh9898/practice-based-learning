@@ -3,6 +3,7 @@ package com.demo.aop;
 import com.alibaba.fastjson.JSONObject;
 import com.demo.exception.JsonException;
 import com.demo.util.ResultUtil;
+import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/aop")
-@Tag(name = "Aop Controller", description = "切面功能")
+@Api("切面功能")
 public class AopController {
 
     @Operation(summary = "AOP 记录日志")

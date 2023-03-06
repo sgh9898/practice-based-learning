@@ -1,7 +1,7 @@
 package com.demo.easyexcel.service;
 
 import com.alibaba.fastjson.JSONArray;
-import com.demo.sample.entity.DemoEntity;
+import com.demo.database.entity.DemoEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +19,7 @@ import java.io.IOException;
  */
 public interface ExcelService {
 
-    /** 通过浏览器下载 Excel-to-Sql 模板 */
+    /** 下载 Excel-to-Sql 模板 */
     void downloadTemplate(HttpServletRequest request, HttpServletResponse response);
 
     /** 解析 excel, 转为 sql */

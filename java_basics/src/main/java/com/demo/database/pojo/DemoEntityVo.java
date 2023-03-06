@@ -1,6 +1,6 @@
-package com.demo.sample.pojo;
+package com.demo.database.pojo;
 
-import com.demo.sample.entity.DemoEntity;
+import com.demo.database.entity.DemoEntity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

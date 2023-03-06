@@ -12,7 +12,7 @@
     - [x] Interceptor: 拦截器
 2. [Async](src/main/java/com/demo/async)
     - [x] 异步执行任务
-3. [DataBase](src/main/java/com/demo/sample)
+3. [DataBase](src/main/java/com/demo/database)
 4. [Elasticsearch](src/main/java/excluded/elasticsearch) [8.x]
 5. [EasyExcel](src/main/java/com/demo/easyexcel)
     - [x] Annotation + Handler + Util: 自定义注解与导出工具类

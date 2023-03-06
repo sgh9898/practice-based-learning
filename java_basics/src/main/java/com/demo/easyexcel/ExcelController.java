@@ -4,11 +4,11 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.demo.easyexcel.service.ExcelService;
 import com.demo.util.ResultUtil;
+import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,8 +26,8 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
+@Api(tags = "Excel 功能")
 @RequestMapping("/excel")
-@Tag(name = "Excel Controller", description = "Excel 相关")
 public class ExcelController {
 
     // Services
@@ -35,7 +35,7 @@ public class ExcelController {
     private ExcelService excelService;
 
     /**
-     * 通过浏览器下载 Excel-to-Sql 模板
+     * 下载 Excel-to-Sql 模板
      *
      * @param response 用于传输文件
      * @return 失败时返回含部分数据的 excel

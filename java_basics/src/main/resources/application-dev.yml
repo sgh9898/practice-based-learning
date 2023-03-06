@@ -28,7 +28,7 @@ spring:
     url: jdbc:mysql://localhost:3306/data?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
     # 用户信息
     username: root
-    password: "12345678"
+    password: "RVsdbgjs~4921"
     # 连接池
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
@@ -117,8 +117,8 @@ logging:
   # 输出格式
   pattern:
     # 参数: {时间} [线程名] 日志级别 日志所属类. 方法名-行号 - 错误信息及换行
-    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %yellow(%logger{50}).%M-%L - %msg %n'
-    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %yellow(%logger{50}).%M-%L - %msg %n'
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %green(%logger{50}).%M-%L - %msg %n'
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %green(%logger{50}).%M-%L - %msg %n'
   logback:
     rolling policy:
       # 最大保留时长(天)

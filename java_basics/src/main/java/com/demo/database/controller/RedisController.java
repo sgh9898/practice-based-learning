@@ -1,7 +1,8 @@
-package com.demo.sample.controller;
+package com.demo.database.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.demo.util.ResultUtil;
+import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -23,8 +24,8 @@ import java.util.concurrent.TimeUnit;
  * @author Song gh on 2022/4/18.
  */
 @RestController
+@Api(tags = "Redis 功能")
 @RequestMapping("/redis")
-@Tag(name = "Redis Controller", description = "Redis 相关")
 public class RedisController {
 
     @Resource
