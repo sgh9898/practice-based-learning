@@ -1,12 +1,10 @@
 package com.demo.easyexcel.service;
 
 import com.alibaba.fastjson.JSONArray;
-import com.demo.database.entity.DemoEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 import java.io.IOException;
 
 /**
@@ -19,7 +17,7 @@ import java.io.IOException;
  */
 public interface ExcelService {
 
-    /** 下载 Excel-to-Sql 模板 */
+    /** 导出 Excel-to-Sql 模板 */
     void downloadTemplate(HttpServletRequest request, HttpServletResponse response);
 
     /** 解析 excel, 转为 sql */
@@ -28,5 +26,9 @@ public interface ExcelService {
     /** 解析 json array, 转为 excel (所有 json object 的 key 相同) */
     void jsonToExcel(JSONArray jsonArray, String fileName, HttpServletResponse response) throws IOException;
 
-    void test(@Valid DemoEntity demoEntity);
+    /** 导出数据 */
+    void exportData(HttpServletRequest request, HttpServletResponse response);
+
+    /** 导出数据, 不指定 Excel 类 */
+    void exportDataNoModel(HttpServletRequest request, HttpServletResponse response);
 }

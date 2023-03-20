@@ -17,6 +17,8 @@ import com.demo.easyexcel.util.enums.ExcelColWidthEnums;
 import com.demo.easyexcel.util.handler.EasyExcelColumnWidthHandler;
 import com.demo.easyexcel.util.handler.EasyExcelDropDownMenuHandler;
 import com.demo.easyexcel.util.handler.EasyExcelRowHeightHandler;
+import com.demo.easyexcel.util.handler.EasyExcelVerticalStyleNoModelHandler;
+import com.demo.easyexcel.util.listner.EasyExcelTemplateListener;
 import com.demo.easyexcel.util.pojo.EasyExcelTemplateEntity;
 import com.demo.easyexcel.util.pojo.EasyExcelTemplateExcelVo;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +44,7 @@ import java.util.*;
  * @author Song gh on 2023/3/1.
  */
 @Slf4j
-class EasyExcelUtilsProtected {
+public class EasyExcelUtilsProtected {
 
     // ------------------------------ 常量 ------------------------------
     /** 标题样式 */
@@ -78,46 +80,22 @@ class EasyExcelUtilsProtected {
     // ------------------------------ Public ------------------------------
 
     /**
-     * 导入 Excel 文件, 返回 Excel 类
-     *
-     * @param file       文件
-     * @param request    HttpServletRequest
-     * @param response   HttpServletResponse
-     * @param excelClass Excel 类, 必须 extends {@link EasyExcelTemplateExcelVo}
-     */
-    public static <T extends EasyExcelTemplateExcelVo, U extends EasyExcelTemplateEntity> List<T> getImportedExcelList(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass) {
-        EasyExcelTemplateListener<T, U> listener = new EasyExcelTemplateListener<>();
-        importExcel(file, request, response, excelClass, listener);
-        return listener.getValidExcelList();
-    }
-
-    /**
-     * 导入 Excel 文件, 返回 Entity 类
-     *
-     * @param file        文件
-     * @param request     HttpServletRequest
-     * @param response    HttpServletResponse
-     * @param excelClass  Excel 类, 必须 extends {@link EasyExcelTemplateExcelVo}
-     * @param entityClass Excel 对应 Entity 类, 必须 extends {@link EasyExcelTemplateEntity}
-     */
-    public static <T extends EasyExcelTemplateExcelVo, U extends EasyExcelTemplateEntity> List<U> getImportedEntityList
-    (MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass, Class<U> entityClass) {
-        EasyExcelTemplateListener<T, U> listener = new EasyExcelTemplateListener<>(true, entityClass);
-        importExcel(file, request, response, excelClass, listener);
-        return listener.getValidEntityList();
-    }
-
-    /**
      * 导入 Excel 文件, 使用自定义的 ExcelListener 配置
+     * <br>1. 返回结果为 true, false, null; 返回 null 时下载含报错信息的 Excel 文件
      *
      * @param file       文件
      * @param request    HttpServletRequest
      * @param response   HttpServletResponse
      * @param excelClass Excel 类, 必须 extends {@link EasyExcelTemplateExcelVo}
      * @param listener   ExcelListener, 允许 extends {@link EasyExcelTemplateListener}
+     * @return true = 成功, false = 文件为空, null = 失败且下载含报错信息的 Excel 文件
      */
-    public static <T extends EasyExcelTemplateExcelVo, U extends EasyExcelTemplateListener<T, ? extends EasyExcelTemplateEntity>> void importExcel
+    public static <T extends EasyExcelTemplateExcelVo, U extends EasyExcelTemplateListener<T, ? extends EasyExcelTemplateEntity>> Boolean importExcel
     (MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass, U listener) {
+        if (file == null) {
+            log.error("上传 Excel 文件为空");
+            return false;
+        }
         try {
             EasyExcel.read(file.getInputStream(), excelClass, listener).sheet().doRead();
             // head 无效时跳过前 x 行
@@ -125,55 +103,85 @@ class EasyExcelUtilsProtected {
                 EasyExcel.read(file.getInputStream(), excelClass, listener).headRowNumber(listener.getHeadRowNum()).sheet().doRead();
             }
             // 报错处理
-            String errorFileName = file.getName().substring(0, file.getName().lastIndexOf('.')) + " Excel 导入报错" + new SimpleDateFormat("yyyyMMdd").format(new Date()) + ".xlsx";
+            String fileName = StringUtils.isBlank(file.getOriginalFilename()) ? "" : file.getOriginalFilename();
+            String fileNameNoPostfix = fileName.lastIndexOf('.') > 0 ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
+            String errorFileName = fileNameNoPostfix + " Excel 导入报错" + new SimpleDateFormat("yyyyMMdd").format(new Date()) + ".xlsx";
             if (!listener.getInvalidList().isEmpty()) {
                 // 返回报错信息
-                downloadExcel(request, response, errorFileName, null, excelClass, null,
+                exportExcel(request, response, errorFileName, null, excelClass, listener.getInvalidList(),
                         null, null, null, null, null, null, null);
+                return null;
             } else if (listener.getValidExcelList().isEmpty() && listener.getValidEntityList().isEmpty()) {
                 // 空白文件或 head 无效
                 T tempExcel = excelClass.newInstance();
                 tempExcel.setDefaultErrorMessage("无有效列名或导入数据为空");
                 List<T> tempExcelList = new LinkedList<>();
                 tempExcelList.add(tempExcel);
-                downloadExcel(request, response, errorFileName, null, excelClass, tempExcelList,
+                exportExcel(request, response, errorFileName, null, excelClass, tempExcelList,
                         null, null, null, null, null, null, null);
+                return null;
             }
         } catch (IOException | InstantiationException | IllegalAccessException e) {
-            log.error(file.getName() + " Excel 导入异常, 请检查导入文件或 Excel 类 " + excelClass.getName(), e);
+            log.error(file.getOriginalFilename() + " Excel 导入异常, 请检查导入文件或 Excel 类 " + excelClass.getName(), e);
         }
+        return true;
     }
 
     /**
-     * 下载 Excel, 完整参数
+     * 导出 Excel, 完整参数
      *
      * @param request            http servlet request
      * @param response           http servlet response
-     * @param fileName           文件名
+     * @param fileName           文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
      * @param sheetName          表名
      * @param excelClass         待转换的实体类
      * @param dataList           表内数据, 不填充传 null 即可
-     * @param useExcel07         是否使用 07 版 Excel
      * @param title              标题
      * @param note               首行说明
      * @param excludedCols       排除的列
      * @param headMap            需要替换的列名, Map({@link ExcelProperty#value}, newHeadName)
      * @param dynamicDropDownMap 动态下拉框内容, Map({@link ExcelDropDown#name}, options)
      * @param widthStrategy      列宽选取方式
+     * @param useExcel07         是否使用 07 版 Excel
      */
-    public static void downloadExcel(HttpServletRequest request, HttpServletResponse response,
-                                     String fileName, String sheetName, Class<?> excelClass, List<?> dataList,
-                                     Boolean useExcel07, String title, String note, Set<String> excludedCols,
-                                     Map<String, String> headMap, Map<String, String[]> dynamicDropDownMap,
-                                     ExcelColWidthEnums widthStrategy) {
+    public static void exportExcel(HttpServletRequest request, HttpServletResponse response, String fileName, String sheetName,
+                                   Class<?> excelClass, List<?> dataList, String title, String note, Set<String> excludedCols,
+                                   Map<String, String> headMap, Map<String, String[]> dynamicDropDownMap, ExcelColWidthEnums widthStrategy, Boolean useExcel07) {
         // 设置 header
         setHeader(request, response, fileName, useExcel07);
 
         // 根据下拉框注解, 填充相关内容, 需要考虑屏蔽的列
-        Map<Integer, String[]> columnMap = generateColumnMap(excelClass, dynamicDropDownMap, excludedCols);
+        Map<Integer, String[]> dropDownMap = generateColumnMap(excelClass, dynamicDropDownMap, excludedCols);
 
         // 导出
-        exportExcel(response, sheetName, excelClass, dataList, excludedCols, title, note, columnMap, headMap, widthStrategy);
+        downloadExcel(response, sheetName, excelClass, dataList, excludedCols, title, note, dropDownMap, headMap, widthStrategy);
+    }
+
+    /**
+     * 导出 Excel, 不指定 Excel 类
+     *
+     * @param request            http servlet request
+     * @param response           http servlet response
+     * @param fileName           文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
+     * @param sheetName          表名
+     * @param dataList           表内数据, 不填充传 null 即可
+     * @param useExcel07         是否使用 07 版 Excel
+     * @param title              标题
+     * @param note               首行说明
+     * @param dynamicDropDownMap 动态下拉框内容, Map({@link ExcelDropDown#name}, options)
+     * @param widthStrategy      列宽选取方式
+     */
+    public static void exportExcelNoModel(HttpServletRequest request, HttpServletResponse response, String fileName, String sheetName,
+                                          List<List<String>> headList, List<?> dataList, Boolean useExcel07, String title, String note, Map<String, String[]> dropDownMap,
+                                          ExcelColWidthEnums widthStrategy) {
+        // 设置 header
+        setHeader(request, response, fileName, useExcel07);
+
+        // 根据下拉框注解, 填充相关内容, 需要考虑屏蔽的列
+//        Map<Integer, String[]> columnMap = generateColumnMap(excelClass, dynamicDropDownMap, excludedCols);
+
+        // 导出
+        downloadExcelNoModel(response, sheetName, headList, dataList, title, note, null, widthStrategy);
     }
 
     // ------------------------------ Private ------------------------------
@@ -190,11 +198,11 @@ class EasyExcelUtilsProtected {
         }
         response.setCharacterEncoding("utf-8");
 
-        // 设置文件名
+        // 设置文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
         if (StringUtils.isBlank(fileName)) {
-            fileName = "untitled.xlsx";
+            fileName = "Excel 导出数据" + new SimpleDateFormat("yyyyMMdd").format(new Date()) + ".xlsx";
         } else if (!fileName.endsWith(".xlsx") && !fileName.endsWith(".xls")) {
-            fileName = fileName + ".xlsx";
+            fileName = fileName + new SimpleDateFormat("yyyyMMdd").format(new Date()) + ".xlsx";
         }
 
         // 处理中文乱码
@@ -212,7 +220,7 @@ class EasyExcelUtilsProtected {
     }
 
     /**
-     * 导出为 Excel
+     * 导出 Excel
      *
      * @param response      http servlet response
      * @param sheetName     表名
@@ -225,9 +233,9 @@ class EasyExcelUtilsProtected {
      * @param headMap       需要替换的列名, Map({@link ExcelProperty#value}, newHeadName)
      * @param widthStrategy 列宽选取方式
      */
-    private static void exportExcel(HttpServletResponse response, String sheetName, Class<?> targetClass, List<?> dataList,
-                                    Set<String> excludedCols, String title, String note, Map<Integer, String[]> dropDownMap, Map<String, String> headMap,
-                                    ExcelColWidthEnums widthStrategy) {
+    private static void downloadExcel(HttpServletResponse response, String sheetName, Class<?> targetClass, List<?> dataList,
+                                      Set<String> excludedCols, String title, String note, Map<Integer, String[]> dropDownMap,
+                                      Map<String, String> headMap, ExcelColWidthEnums widthStrategy) {
         // 防报错
         if (excludedCols == null) {
             excludedCols = new HashSet<>();
@@ -248,6 +256,8 @@ class EasyExcelUtilsProtected {
                     // 统计总数
                     validColumnNum++;
                 }
+            } else {
+                excludedCols.add(field.getName());
             }
         }
 
@@ -327,6 +337,89 @@ class EasyExcelUtilsProtected {
                 // 常规列名
                 mainTable = EasyExcel.writerTable(mainTableIndex).head(targetClass).needHead(true).build();
             }
+            excelWriter.write(dataList, writeSheet, mainTable);
+        } catch (IOException e) {
+            throw new RuntimeException("Excel 导出失败");
+        } finally {
+            // 关闭所有的流
+            if (excelWriter != null) {
+                excelWriter.finish();
+            }
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * 导出 Excel, 不指定 Excel 类
+     *
+     * @param response      http servlet response
+     * @param sheetName     表名
+     * @param dataList      表内数据, 不填充传 null 即可
+     * @param title         标题
+     * @param note          首行说明
+     * @param dropDownMap   动态下拉框, Map(index, options)
+     * @param widthStrategy 列宽选取方式
+     */
+    private static void downloadExcelNoModel(HttpServletResponse response, String sheetName, List<List<String>> headList, List<?> dataList,
+                                           String title, String note, Map<Integer, String[]> dropDownMap, ExcelColWidthEnums widthStrategy) {
+        // 计数, 未被排除的列
+        int validColumnNum = headList.size();
+
+        // 导出
+        ExcelWriter excelWriter = null;
+        ServletOutputStream outputStream = null;
+        try {
+            // 默认表格名
+            if (StringUtils.isBlank(sheetName)) {
+                sheetName = "Sheet1";
+            }
+
+            // 创建表格
+            WriteSheet writeSheet = EasyExcel.writerSheet(sheetName).build();
+            outputStream = response.getOutputStream();
+            ExcelWriterBuilder writerBuilder = EasyExcel.write(outputStream).excelType(ExcelTypeEnum.XLSX);
+            // 下拉框
+            int skipRowNum = 0;
+            if (StringUtils.isNotBlank(title)) {
+                skipRowNum++;
+            }
+            if (StringUtils.isNotBlank(note)) {
+                skipRowNum++;
+            }
+            writerBuilder.registerWriteHandler(new EasyExcelDropDownMenuHandler(dropDownMap, skipRowNum));
+            // 配置 head 样式
+            writerBuilder.registerWriteHandler(new EasyExcelVerticalStyleNoModelHandler());
+            // 自适应列宽
+            writerBuilder.registerWriteHandler(new EasyExcelColumnWidthHandler(widthStrategy));
+            // 自适应行高
+            writerBuilder.registerWriteHandler(new EasyExcelRowHeightHandler());
+            excelWriter = writerBuilder.build();
+
+            // 根据是否存在标题与自定义说明, 配置导出设置
+            int mainTableIndex = 0;
+            // 单表(不使用标题与自定义说明)且需要动态列名时, 需要在 writer 中应用 head 样式
+            // 标题
+            if (StringUtils.isNotBlank(title)) {
+                setUpTitle(excelWriter, writeSheet, EasyExcelTemplateExcelVo.class, title, validColumnNum, mainTableIndex);
+                // tableIndex 顺沿
+                mainTableIndex++;
+            }
+            // 自定义说明
+            if (StringUtils.isNotBlank(note)) {
+                setUpNote(excelWriter, writeSheet, EasyExcelTemplateExcelVo.class, note, validColumnNum, mainTableIndex);
+                // tableIndex 顺沿
+                mainTableIndex++;
+            }
+
+            // 导出
+            WriteTable mainTable;
+            mainTable = EasyExcel.writerTable(mainTableIndex).head(headList).needHead(true).build();
             excelWriter.write(dataList, writeSheet, mainTable);
         } catch (IOException e) {
             throw new RuntimeException("Excel 导出失败");
@@ -431,13 +524,15 @@ class EasyExcelUtilsProtected {
     /** 填充下拉框内容 */
     private static void buildDropDownMap(Map<Integer, String[]> dropDownMap, String[] dynamicOptions,
                                          ExcelDropDown excelDropDown, int index) {
-        // 注解为空, 无后续步骤
         if (!Optional.ofNullable(excelDropDown).isPresent()) {
+            // 注解为空, 无后续步骤
             return;
         }
         if (dynamicOptions != null && dynamicOptions.length > 0) {
+            // 动态下拉框
             dropDownMap.put(index, dynamicOptions);
         } else {
+            // 静态下拉框
             String[] source = excelDropDown.value();
             if (source != null && source.length > 0) {
                 dropDownMap.put(index, source);

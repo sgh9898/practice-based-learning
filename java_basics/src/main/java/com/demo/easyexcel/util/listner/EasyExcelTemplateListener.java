@@ -1,16 +1,18 @@
-package com.demo.easyexcel.util;
+package com.demo.easyexcel.util.listner;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.metadata.data.ReadCellData;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ConverterUtils;
+import com.demo.easyexcel.util.ValidationUtil;
 import com.demo.easyexcel.util.constants.EasyExcelConstants;
 import com.demo.easyexcel.util.pojo.EasyExcelTemplateEntity;
 import com.demo.easyexcel.util.pojo.EasyExcelTemplateExcelVo;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -55,14 +57,14 @@ public class EasyExcelTemplateListener<T extends EasyExcelTemplateExcelVo, U ext
      */
     protected Boolean autoConvert;
     /** Entity 类, 仅在 autoConvert = true 时使用 */
-    Class<? extends EasyExcelTemplateEntity> entityClass;
+    Class<U> entityClass;
     /** Excel 类 */
-    Class<? extends EasyExcelTemplateEntity> excelClass;
+    Class<T> excelClass;
 
     // ------------------------------ 构造 ------------------------------
 
     /** 构造: 默认 */
-    public EasyExcelTemplateListener() {
+    public EasyExcelTemplateListener(Class<T> excelClass) {
         // 常量
         this.maxInvalidHeadRowNum = 0;
         this.currentInvalidHeadRowNum = 0;
@@ -74,12 +76,13 @@ public class EasyExcelTemplateListener<T extends EasyExcelTemplateExcelVo, U ext
         this.validExcelList = new LinkedList<>();
         this.invalidList = new LinkedList<>();
         this.autoConvert = false;
+        this.excelClass = excelClass;
 
-        log.info("导入 Excel 开始");
+        log.info("导入 Excel 开始: " + excelClass.getName());
     }
 
     /** 构造: Excel 转换为 Entity */
-    public EasyExcelTemplateListener(Boolean autoConvert, Class<? extends EasyExcelTemplateEntity> entityClass) {
+    public EasyExcelTemplateListener(Class<T> excelClass, Class<U> entityClass) {
         // 常量
         this.maxInvalidHeadRowNum = 0;
         this.currentInvalidHeadRowNum = 0;
@@ -90,10 +93,11 @@ public class EasyExcelTemplateListener<T extends EasyExcelTemplateExcelVo, U ext
         this.validEntityList = new LinkedList<>();
         this.validExcelList = new LinkedList<>();
         this.invalidList = new LinkedList<>();
-        this.autoConvert = autoConvert;
+        this.autoConvert = true;
+        this.excelClass = excelClass;
         this.entityClass = entityClass;
 
-        log.info("导入 Excel 开始");
+        log.info("导入 Excel 并自动转换开始: " + excelClass.getName());
     }
 
     // ------------------------------ 可 Override ------------------------------
@@ -109,16 +113,21 @@ public class EasyExcelTemplateListener<T extends EasyExcelTemplateExcelVo, U ext
             invalidList.add(excelLine);
             return;
         }
-        // 正常数据
+
+        // 处理通过基础校验的数据
         if (autoConvert) {
-            // 自动转换为 Entity
+            // Excel 转换为 Entity
             try {
-                validEntityList.add(entityClass.newInstance().convertExcel(excelLine));
+                U currEntity = entityClass.newInstance();
+                BeanUtils.copyProperties(excelLine, currEntity);
+                // override 此方法可进行自定义参数设置
+                currEntity.setParamsAfterCopy(excelLine);
+                validEntityList.add(currEntity);
             } catch (InstantiationException | IllegalAccessException e) {
-                log.error("转换 Excel 失败, 未在 " + entityClass.getName() + " 中找到转换方法", e);
+                log.error("转换 Excel 失败, 请检查 " + excelClass.getName() + " 与 " + entityClass.getName(), e);
             }
         } else {
-            // 保持为 Excel
+            // 保持 Excel, 不需要转换为 Entity
             validExcelList.add(excelLine);
         }
     }
@@ -128,10 +137,10 @@ public class EasyExcelTemplateListener<T extends EasyExcelTemplateExcelVo, U ext
     public void doAfterAllAnalysed(AnalysisContext context) {
         // 校验, 有报错则整批不存入
         if (!invalidList.isEmpty()) {
-            log.info("导入 Excel 失败");
+            log.info("导入 Excel 失败: " + excelClass.getName());
             return;
         }
-        log.info(" 导入 Excel 数据校验完成");
+        log.info(" 导入 Excel 数据校验完成: " + excelClass.getName());
     }
 
     // ------------------------------ 不建议 Override ------------------------------
@@ -139,7 +148,7 @@ public class EasyExcelTemplateListener<T extends EasyExcelTemplateExcelVo, U ext
     /**
      * 设置 head 校验规则
      *
-     * @see com.demo.easyexcel.util.constants.EasyExcelConstants
+     * @see EasyExcelConstants
      */
     public void setHeadRules(Integer headRules) {
         this.headRules = headRules;
@@ -207,7 +216,6 @@ public class EasyExcelTemplateListener<T extends EasyExcelTemplateExcelVo, U ext
         } else {
             validHead = true;
         }
-
     }
 
     /** 获取指定 Class 全部列名({@link ExcelProperty}) */

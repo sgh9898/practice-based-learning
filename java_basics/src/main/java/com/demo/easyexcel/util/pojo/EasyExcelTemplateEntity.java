@@ -13,10 +13,10 @@ import lombok.Data;
 public abstract class EasyExcelTemplateEntity {
 
     /**
-     * 将 Excel 类转换为 Entity 类
+     * [使用默认配置时无须 override] 在默认的 BeanUtils.copyProperties 之后, 手动定义 Entity 中部分参数
      *
      * @param excel 需要转换的 Excel 类, 必须 extends {@link EasyExcelTemplateExcelVo}
-     * @return 转换后的 Entity 类, 必须 extends 本类
      */
-    public abstract <T extends EasyExcelTemplateEntity, U extends EasyExcelTemplateExcelVo> T convertExcel(U excel);
+    public <T extends EasyExcelTemplateExcelVo> void setParamsAfterCopy(T excel) {
+    }
 }

@@ -32,8 +32,8 @@ public class JsonUtil {
         MAPPER.enable(SerializationFeature.INDENT_OUTPUT);
     }
 
-    /** Class 或 List<Class> 转为 Json String */
-    public static String objOrListToJsonStr(Object obj) {
+    /** Class 或 List(Class) 转为 Json String */
+    public static String beanOrListToJsonStr(Object obj) {
         try {
             return MAPPER.writeValueAsString(obj);
         } catch (JsonProcessingException e) {

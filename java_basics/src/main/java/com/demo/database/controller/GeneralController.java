@@ -23,7 +23,7 @@ import java.util.concurrent.Future;
  */
 @Slf4j
 @RestController
-@Api("基础或未分类功能")
+@Api(tags = "基础或未分类功能")
 @RequestMapping("/general")
 public class GeneralController {
 

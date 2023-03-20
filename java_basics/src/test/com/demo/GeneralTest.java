@@ -1,23 +1,22 @@
 package com.demo;
 
-import org.apache.commons.lang3.StringUtils;
+import com.demo.database.entity.DemoEntity;
+import com.demo.database.pojo.DemoEntityDto;
+import com.demo.util.JsonUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.BeanUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
 
 /**
  * 普通测试
@@ -31,14 +30,7 @@ class GeneralTest {
 
     @Test
     void main() {
-//        List<String> titleList = new ArrayList<>();
-//        titleList.add("[\"ceshi1\"]");
-//        titleList.add("[\"ceshi2\"]");
-//        titleList.add("[\"ceshi3\"]");
-//        String out = StringUtils.join(titleList, ',').replace("\"],[\"", "\",\"");
-//        double test = (double) 6 / (double) 5;
-//        System.out.println(BigDecimal.valueOf(test).setScale(0, RoundingMode.UP).intValue());
-        System.out.println("00444".substring(1));
+        System.out.println("标签".getBytes().length);
     }
 
     @Test

@@ -22,7 +22,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/aop")
-@Api("切面功能")
+@Api(tags = "切面功能")
 public class AopController {
 
     @Operation(summary = "AOP 记录日志")

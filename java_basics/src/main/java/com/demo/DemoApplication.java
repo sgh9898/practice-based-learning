@@ -3,6 +3,7 @@ package com.demo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -22,6 +23,7 @@ import java.util.Enumeration;
 @Slf4j
 @EnableAsync
 @EnableScheduling
+@EnableFeignClients
 @SpringBootApplication
 //@EnableJpaRepositories("com.demo.database")   // 解决 JPA 与 ElasticSearch 冲突
 public class DemoApplication {

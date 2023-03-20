@@ -1,10 +1,15 @@
-package com.demo.easyexcel;
+package com.demo.easyexcel.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.demo.database.entity.DemoEntity;
+import com.demo.database.repository.DemoExcelEntityRepository;
+import com.demo.easyexcel.pojo.DemoExcelVo;
 import com.demo.easyexcel.service.ExcelService;
+import com.demo.easyexcel.util.EasyExcelUtils;
 import com.demo.util.ResultUtil;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,6 +22,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,16 +40,19 @@ public class ExcelController {
     @Resource
     private ExcelService excelService;
 
+    @Resource
+    private DemoExcelEntityRepository demoExcelEntityRepository;
+
     /**
-     * 下载 Excel-to-Sql 模板
+     * 导出 Excel-to-Sql 模板
      *
      * @param response 用于传输文件
      * @return 失败时返回含部分数据的 excel
      */
-    @Operation(summary = "下载 [Excel --> Sql] 模板")
+    @Operation(summary = "导出 [Excel --> Sql] 模板")
     @GetMapping("/sql/template")
     public Map<String, Object> downloadSqlTemplate(HttpServletRequest request, HttpServletResponse response) {
-        log.debug("下载 [Excel --> Sql] 模板");
+        log.debug("导出 [Excel --> Sql] 模板");
         excelService.downloadTemplate(request, response);
         // response 下载文件后已自动关闭, 必须 return null
         return null;
@@ -84,5 +93,49 @@ public class ExcelController {
         log.debug("[Json Array --> Excel], {}", jsonObject);
         excelService.jsonToExcel(array, jsonObject.getString("fileName"), response);
         return null;
+    }
+
+    @PostMapping("/import/excel")
+    @ApiOperation("导入数据, Excel 格式")
+    public Map<String, Object> importAsExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response) {
+        List<DemoExcelEntity> excelVoList = EasyExcelUtils.importAsExcel(file, request, response, DemoExcelEntity.class);
+        if (excelVoList == null) {
+            return null;
+        }
+        return ResultUtil.success("data", excelVoList);
+    }
+
+    @PostMapping("/import/entity")
+    @ApiOperation("导入数据, Entity 格式")
+    public Map<String, Object> importAsEntity(MultipartFile file, HttpServletRequest request, HttpServletResponse response) {
+        List<DemoEntity> entityList = EasyExcelUtils.importAsEntity(file, request, response, DemoExcelVo.class, DemoEntity.class);
+        if (entityList == null) {
+            return null;
+        }
+        return ResultUtil.success("data", entityList);
+    }
+
+    @GetMapping("/exportTemplate")
+    @ApiOperation("导出模板")
+    public void exportTemplate(HttpServletRequest request, HttpServletResponse response) {
+        EasyExcelUtils.exportTemplate(request, response, "测试excel.xlsx", DemoExcelVo.class, "测试表格说明");
+    }
+
+    @GetMapping("/exportData")
+    @ApiOperation("导出数据")
+    public void exportData(HttpServletRequest request, HttpServletResponse response) {
+        excelService.exportData(request, response);
+    }
+
+    @GetMapping("/listData")
+    @ApiOperation("导出数据")
+    public List<DemoExcelEntity> listData(HttpServletRequest request, HttpServletResponse response) {
+        return demoExcelEntityRepository.findAllByIsDeletedIsFalse();
+    }
+
+    @GetMapping("/exportData/noModel")
+    @ApiOperation("导出数据, 不指定 Excel 类")
+    public void exportDataNoModel(HttpServletRequest request, HttpServletResponse response) {
+        excelService.exportDataNoModel(request, response);
     }
 }

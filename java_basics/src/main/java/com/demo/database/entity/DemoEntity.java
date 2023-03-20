@@ -1,11 +1,13 @@
 package com.demo.database.entity;
 
+import com.alibaba.excel.annotation.ExcelProperty;
 import com.demo.database.pojo.DemoEntityDto;
 import com.demo.easyexcel.util.pojo.EasyExcelTemplateEntity;
 import com.demo.easyexcel.util.pojo.EasyExcelTemplateExcelVo;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.demo.database.pojo.ExcelDemoExcelVo;
+import com.demo.easyexcel.pojo.DemoExcelVo;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -35,10 +37,15 @@ public class DemoEntity extends EasyExcelTemplateEntity {
     private Long id;
 
     @ApiModelProperty("名称")
+    @ExcelProperty("测试")
     private String name;
 
     @ApiModelProperty("标签")
     private String tags;
+
+    @ApiModelProperty("时间")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date dateTime;
 
     @JsonIgnore
     @ApiModelProperty(value = "删除", hidden = true)
@@ -54,6 +61,10 @@ public class DemoEntity extends EasyExcelTemplateEntity {
 
     /** 默认构建 */
     public DemoEntity() {
+        // 默认配置
+        this.isDeleted = Boolean.FALSE;
+        this.createTime = new Date();
+        this.updateTime = this.createTime;
     }
 
     /** 根据 Dto 构建 */
@@ -73,25 +84,15 @@ public class DemoEntity extends EasyExcelTemplateEntity {
         this.updateTime = new Date();
     }
 
-    /** 根据 Excel 构建 */
-    public DemoEntity(ExcelDemoExcelVo excel) {
-        this.name = excel.getName();
-        this.tags = excel.getTags();
-        // 默认配置
-        this.isDeleted = Boolean.FALSE;
-        this.createTime = new Date();
-        this.updateTime = this.createTime;
-    }
-
     /**
-     * 将 Excel 类转换为 Entity 类
+     * [使用默认配置时无须 override] 在默认的 BeanUtils.copyProperties 之后, 手动定义 Entity 中部分参数
      *
      * @param excel 需要转换的 Excel 类, 必须 extends {@link EasyExcelTemplateExcelVo}
-     * @return 转换后的 Entity 类, 必须 extends 本类
      */
     @Override
-    public <T extends EasyExcelTemplateEntity, U extends EasyExcelTemplateExcelVo> T convertExcel(U excel) {
-        return null;
+    public <T extends EasyExcelTemplateExcelVo> void setParamsAfterCopy(T excel) {
+        this.name = "测试修改后的名字";
+        System.out.println("修改后的" + ((DemoExcelVo) excel).getTags());
     }
 }
 
