@@ -45,7 +45,7 @@ import java.util.*;
  * @author Song gh on 2023/3/1.
  */
 @Slf4j
-class EasyExcelUtilsProtected {
+class ProtectedEasyExcelUtils {
 
 // ------------------------------ 常量 ------------------------------
     /** 标题样式 */
@@ -87,7 +87,7 @@ class EasyExcelUtilsProtected {
      * @param file       文件
      * @param request    HttpServletRequest
      * @param response   HttpServletResponse
-     * @param excelClass Excel 类, 推荐 extends {@link TemplateExcel}
+     * @param excelClass Excel 类, 推荐 extends {@link ExcelClassTemplate}
      * @param listener   ExcelListener, 允许 extends {@link Listener}
      * @return true = 成功, false = 文件为空, null = 失败且下载含报错信息的 Excel 文件
      */
@@ -115,11 +115,11 @@ class EasyExcelUtilsProtected {
             } else if (listener.getValidList().isEmpty()) {
                 // 空白文件或 head 无效
                 T tempExcel = excelClass.newInstance();
-                if (tempExcel instanceof TemplateExcel) {
-                    ((TemplateExcel) tempExcel).setDefaultExcelErrorMessage("文件内容为空或列名不匹配");
+                if (tempExcel instanceof ExcelClassTemplate) {
+                    ((ExcelClassTemplate) tempExcel).setDefaultExcelErrorMessage("文件内容为空或列名不匹配");
                 } else {
                     for (Field currField : tempExcel.getClass().getDeclaredFields()) {
-                        if (currField.getName().equals(Constants.DEFAULT_ERROR_PARAM)) {
+                        if (currField.getName().equals(ProtectedConstants.DEFAULT_ERROR_PARAM)) {
                             try {
                                 currField.set(tempExcel, "文件内容为空或列名不匹配");
                             } catch (IllegalAccessException e) {
@@ -211,7 +211,7 @@ class EasyExcelUtilsProtected {
      */
     public static void baseExportExcel(HttpServletRequest request, HttpServletResponse response, Class<?> excelClass, String fileName, String sheetName,
                                        List<?> dataList, String title, String note, Set<String> excludedCols, Map<String, String> headMap,
-                                       Map<String, String[]> dynamicDropDownMap, EnumsColWidth widthStrategy, Boolean useExcel07) {
+                                       Map<String, String[]> dynamicDropDownMap, ProtectedEnumsColWidth widthStrategy, Boolean useExcel07) {
         ExcelWriter excelWriter = createExcelWriter(request, response, fileName, useExcel07);
         baseWriteSheet(excelWriter, excelClass, 0, sheetName, dataList, excludedCols, title, note, dynamicDropDownMap, headMap, widthStrategy);
         closeExcelWriter(response, excelWriter);
@@ -234,7 +234,7 @@ class EasyExcelUtilsProtected {
      */
     public static void noModelBaseExportExcel(HttpServletRequest request, HttpServletResponse response, String fileName, String sheetName,
                                               List<List<String>> cnHeadList, List<List<Object>> dataList, String title, String note,
-                                              Map<Integer, String[]> dropDownMap, EnumsColWidth widthStrategy, Boolean useExcel07) {
+                                              Map<Integer, String[]> dropDownMap, ProtectedEnumsColWidth widthStrategy, Boolean useExcel07) {
         ExcelWriter excelWriter = createExcelWriter(request, response, fileName, useExcel07);
         noModelBaseWriteSheet(excelWriter, 0, sheetName, cnHeadList, dataList, title, note, dropDownMap, widthStrategy);
         closeExcelWriter(response, excelWriter);
@@ -257,7 +257,7 @@ class EasyExcelUtilsProtected {
      */
     public static void baseWriteSheet(ExcelWriter excelWriter, Class<?> excelClass, Integer sheetIndex, String sheetName, List<?> dataList,
                                       Set<String> excludedCols, String title, String note, Map<String, String[]> dynamicDropDownMap,
-                                      Map<String, String> replaceHeadMap, EnumsColWidth widthStrategy) {
+                                      Map<String, String> replaceHeadMap, ProtectedEnumsColWidth widthStrategy) {
         // 防报错
         if (excludedCols == null) {
             excludedCols = new HashSet<>();
@@ -313,11 +313,11 @@ class EasyExcelUtilsProtected {
         if (StringUtils.isNotBlank(note)) {
             skipRowNum++;
         }
-        sheetBuilder.registerWriteHandler(new HandlerDropDownMenu(dropDownMap, skipRowNum));
+        sheetBuilder.registerWriteHandler(new ProtectedHandlerDropDownMenu(dropDownMap, skipRowNum));
         // 自适应列宽
-        sheetBuilder.registerWriteHandler(new HandlerColumnWidth(widthStrategy));
+        sheetBuilder.registerWriteHandler(new ProtectedHandlerColumnWidth(widthStrategy));
         // 自适应行高
-        sheetBuilder.registerWriteHandler(new HandlerRowHeight());
+        sheetBuilder.registerWriteHandler(new ProtectedHandlerRowHeight());
 
         // 根据是否存在标题与自定义说明, 配置导出设置
         int mainTableIndex = 0;
@@ -366,7 +366,7 @@ class EasyExcelUtilsProtected {
      * @param widthStrategy [允许空/null] 列宽选取方式
      */
     public static void noModelBaseWriteSheet(ExcelWriter excelWriter, Integer sheetIndex, String sheetName, List<List<String>> cnHeadList, List<List<Object>> dataList,
-                                             String title, String note, Map<Integer, String[]> dropDownMap, EnumsColWidth widthStrategy) {
+                                             String title, String note, Map<Integer, String[]> dropDownMap, ProtectedEnumsColWidth widthStrategy) {
         // 计数, 未被排除的列
         int validColumnNum = cnHeadList.size();
 
@@ -381,26 +381,26 @@ class EasyExcelUtilsProtected {
         if (StringUtils.isNotBlank(note)) {
             skipRowNum++;
         }
-        sheetBuilder.registerWriteHandler(new HandlerDropDownMenu(dropDownMap, skipRowNum));
+        sheetBuilder.registerWriteHandler(new ProtectedHandlerDropDownMenu(dropDownMap, skipRowNum));
         // 配置 head 样式
-        sheetBuilder.registerWriteHandler(new HandlerVerticalStyleNoModel());
+        sheetBuilder.registerWriteHandler(new ProtectedHandlerVerticalStyleNoModel());
         // 自适应列宽
-        sheetBuilder.registerWriteHandler(new HandlerColumnWidth(widthStrategy));
+        sheetBuilder.registerWriteHandler(new ProtectedHandlerColumnWidth(widthStrategy));
         // 自适应行高
-        sheetBuilder.registerWriteHandler(new HandlerRowHeight());
+        sheetBuilder.registerWriteHandler(new ProtectedHandlerRowHeight());
 
         // 根据是否存在标题与自定义说明, 配置导出设置
         int mainTableIndex = 0;
         // 单表(不使用标题与自定义说明)且需要动态列名时, 需要在 writer 中应用 head 样式
         // 标题
         if (StringUtils.isNotBlank(title)) {
-            writeTitle(excelWriter, sheetBuilder.build(), TemplateExcel.class, title, validColumnNum, mainTableIndex);
+            writeTitle(excelWriter, sheetBuilder.build(), ExcelClassTemplate.class, title, validColumnNum, mainTableIndex);
             // tableIndex 顺沿
             mainTableIndex++;
         }
         // 自定义说明
         if (StringUtils.isNotBlank(note)) {
-            writeNote(excelWriter, sheetBuilder.build(), TemplateExcel.class, note, validColumnNum, mainTableIndex);
+            writeNote(excelWriter, sheetBuilder.build(), ExcelClassTemplate.class, note, validColumnNum, mainTableIndex);
             // tableIndex 顺沿
             mainTableIndex++;
         }

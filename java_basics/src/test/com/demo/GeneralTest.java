@@ -29,9 +29,8 @@ class GeneralTest {
 
     @Test
     void main() {
-        String currIdentityStr = "[\"other\"]";
-        currIdentityStr = currIdentityStr.replace("[", "").replace("]", "").replace("\"", "");
-        System.out.println(currIdentityStr);
+        System.out.println("135******67".getBytes().length);
+        System.out.println("aaaaaaaaaaa".getBytes().length);
     }
 
     void test(List<?> headList) {

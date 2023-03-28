@@ -4,11 +4,9 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.metadata.data.ReadCellData;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ConverterUtils;
-import com.demo.util.ValidationUtil;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -31,9 +29,9 @@ public class ListenerNoModel implements ReadListener<Map<Integer, String>> {
     protected Integer currentInvalidHeadRowNum = 0;
     /** 标准 head 行数 */
     protected Integer headRowNum = null;
-    /** head 校验规则, {@link Constants} */
+    /** head 校验规则, {@link ProtectedConstants} */
     @Setter
-    protected Integer headRules = Constants.HEAD_RULES_STRICTLY_CONTAINS;
+    protected Integer headRules = ProtectedConstants.HEAD_RULES_STRICTLY_CONTAINS;
     /** 校准后 head 是否有效 */
     protected Boolean validHead = false;
 
@@ -137,7 +135,7 @@ public class ListenerNoModel implements ReadListener<Map<Integer, String>> {
         List<String> readHeadList = new ArrayList<>(readHeadMap.values());
         Set<String> validHeadNameSet = new HashSet<>(cnToEnHeadNameMap.keySet());
         // 根据设定规则进行校验
-        if (Objects.equals(headRules, Constants.HEAD_RULES_CONTAINS)) {
+        if (Objects.equals(headRules, ProtectedConstants.HEAD_RULES_CONTAINS)) {
             // 存在有效字段即可
             for (String head : readHeadList) {
                 // head 有效
@@ -147,7 +145,7 @@ public class ListenerNoModel implements ReadListener<Map<Integer, String>> {
                     return;
                 }
             }
-        } else if (Objects.equals(headRules, Constants.HEAD_RULES_STRICTLY_CONTAINS)) {
+        } else if (Objects.equals(headRules, ProtectedConstants.HEAD_RULES_STRICTLY_CONTAINS)) {
             // 存在有效字段, 且没有无效字段
             boolean tempValid = false;
             for (String head : readHeadList) {

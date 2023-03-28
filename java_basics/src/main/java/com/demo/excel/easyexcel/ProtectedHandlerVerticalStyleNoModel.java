@@ -14,7 +14,7 @@ import org.apache.poi.ss.usermodel.IndexedColors;
  * @author Song gh on 2022/9/27.
  */
 @Getter
-class HandlerVerticalStyleNoModel extends AbstractVerticalCellStyleStrategy {
+class ProtectedHandlerVerticalStyleNoModel extends AbstractVerticalCellStyleStrategy {
 
     /** head 样式 */
     @Override
@@ -40,7 +40,7 @@ class HandlerVerticalStyleNoModel extends AbstractVerticalCellStyleStrategy {
         writeCellStyle.setHorizontalAlignment(HorizontalAlignment.CENTER);
         // 字体
         WriteFont font = new WriteFont();
-        font.setFontHeightInPoints((short) 13);
+        font.setFontHeightInPoints((short) 12);
         writeCellStyle.setWriteFont(font);
 
         return writeCellStyle;

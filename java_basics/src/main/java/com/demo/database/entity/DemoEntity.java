@@ -3,7 +3,7 @@ package com.demo.database.entity;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.DateTimeFormat;
 import com.demo.database.pojo.DemoEntityDto;
-import com.demo.excel.easyexcel.TemplateExcel;
+import com.demo.excel.easyexcel.ExcelClassTemplate;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -28,7 +28,7 @@ import java.util.Date;
 @Table(name = "demo_entity")
 @Schema(description = "演示类")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DemoEntity extends TemplateExcel {
+public class DemoEntity extends ExcelClassTemplate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

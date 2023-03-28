@@ -18,7 +18,7 @@ import java.util.*;
 /**
  * EasyExcel 工具类
  * <br> 0. 前置需求:
- * <br>     1) 指定 ExcelClass 时: extends {@link TemplateExcel}(内有详细配置说明), 或将类注解与 defaultExcelErrorMessage 字段直接配置于实体类中
+ * <br>     1) 指定 ExcelClass 时: extends {@link ExcelClassTemplate}(内有详细配置说明), 或将类注解与 defaultExcelErrorMessage 字段直接配置于实体类中
  * <br>     2) 不指定 ExcelClass 时不需要前置操作
  * <br> 1. 导入:
  * <br>     1) 返回 List(ExcelClass): {@link #importData}
@@ -71,7 +71,7 @@ public class EasyExcelUtils {
     /** 自定义说明行(列名之上) */
     private String note;
     /** 列宽选取方式 */
-    private EnumsColWidth widthStrategy;
+    private ProtectedEnumsColWidth widthStrategy;
     /** 启用 07 版 Excel: 默认 false, 出现兼容问题时可尝试 true */
     private Boolean useExcel07;
 
@@ -113,14 +113,14 @@ public class EasyExcelUtils {
      * @param request    http servlet request
      * @param response   http servlet response
      * @param fileName   文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
-     * @param excelClass Excel 实体类: extends {@link TemplateExcel}, 或将类注解与 defaultExcelErrorMessage 字段直接配置于实体类中
+     * @param excelClass Excel 实体类: extends {@link ExcelClassTemplate}, 或将类注解与 defaultExcelErrorMessage 字段直接配置于实体类中
      */
     public EasyExcelUtils(HttpServletRequest request, HttpServletResponse response, String fileName, Class<?> excelClass) {
         this.request = request;
         this.response = response;
         this.fileName = fileName;
         this.excelClass = excelClass;
-        this.excelWriter = EasyExcelUtilsProtected.createExcelWriter(request, response, fileName, false);
+        this.excelWriter = ProtectedEasyExcelUtils.createExcelWriter(request, response, fileName, false);
     }
 
     /**
@@ -134,7 +134,7 @@ public class EasyExcelUtils {
         this.request = request;
         this.response = response;
         this.fileName = fileName;
-        this.excelWriter = EasyExcelUtilsProtected.createExcelWriter(request, response, fileName, false);
+        this.excelWriter = ProtectedEasyExcelUtils.createExcelWriter(request, response, fileName, false);
     }
 
 // ------------------------------ Static, 导入 ------------------------------
@@ -147,12 +147,12 @@ public class EasyExcelUtils {
      * @param file       文件
      * @param request    HttpServletRequest
      * @param response   HttpServletResponse
-     * @param excelClass Excel 类, 推荐 extends {@link TemplateExcel}
+     * @param excelClass Excel 类, 推荐 extends {@link ExcelClassTemplate}
      * @return List(ExcelClass) = 成功, false = 文件为空, null = 失败且下载含报错信息的 Excel 文件
      */
     public static <T> List<T> importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass) {
         Listener<T> listener = new Listener<>(excelClass);
-        if (Boolean.TRUE.equals(EasyExcelUtilsProtected.baseImportExcel(file, request, response, excelClass, listener))) {
+        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.baseImportExcel(file, request, response, excelClass, listener))) {
             return listener.getValidList();
         }
         return null;
@@ -171,7 +171,7 @@ public class EasyExcelUtils {
      */
     public static Object noModelImportExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Map<String, String> cnToEnHeadNameMap) {
         ListenerNoModel listenerNoModel = new ListenerNoModel(cnToEnHeadNameMap);
-        if (Boolean.TRUE.equals(EasyExcelUtilsProtected.noModelBaseImportExcel(file, request, response, listenerNoModel))) {
+        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.noModelBaseImportExcel(file, request, response, listenerNoModel))) {
             return listenerNoModel.getValidList();
         }
         return null;
@@ -185,15 +185,15 @@ public class EasyExcelUtils {
      * @param request       HttpServletRequest
      * @param response      HttpServletResponse
      * @param fileName      文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
-     * @param excelClass    Excel 类, 推荐 extends {@link TemplateExcel}
+     * @param excelClass    Excel 类, 推荐 extends {@link ExcelClassTemplate}
      * @param excelDataList [允许空/null] 数据, 格式需与 excelClass 保持一致
      */
     public static <T> void exportData(HttpServletRequest request, HttpServletResponse response, String fileName, Class<T> excelClass, List<T> excelDataList) {
         // 默认排除"错误信息"列
         Set<String> defaultExcludedCols = new HashSet<>();
-        defaultExcludedCols.add(Constants.DEFAULT_ERROR_PARAM);
+        defaultExcludedCols.add(ProtectedConstants.DEFAULT_ERROR_PARAM);
         // 导出
-        EasyExcelUtilsProtected.baseExportExcel(request, response, excelClass, fileName, "Sheet1", excelDataList,
+        ProtectedEasyExcelUtils.baseExportExcel(request, response, excelClass, fileName, "Sheet1", excelDataList,
                 null, null, defaultExcludedCols, null, null, null, null);
     }
 
@@ -203,16 +203,16 @@ public class EasyExcelUtils {
      * @param request    HttpServletRequest
      * @param response   HttpServletResponse
      * @param fileName   文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
-     * @param excelClass Excel 类, 推荐 extends {@link TemplateExcel}
+     * @param excelClass Excel 类, 推荐 extends {@link ExcelClassTemplate}
      * @param note       [允许空/null] 需要添加的填表说明, 位于列名之上
      */
     public static void exportTemplate(HttpServletRequest request, HttpServletResponse response, String fileName, Class<?> excelClass, String note) {
         // 默认排除"错误信息"列
         Set<String> defaultExcludedCols = new HashSet<>();
-        defaultExcludedCols.add(Constants.DEFAULT_ERROR_PARAM);
+        defaultExcludedCols.add(ProtectedConstants.DEFAULT_ERROR_PARAM);
         // 导出
-        EasyExcelUtilsProtected.baseExportExcel(request, response, excelClass, fileName, "Sheet1", null, null, note,
-                defaultExcludedCols, null, null, EnumsColWidth.COL_WIDTH_HEAD, null);
+        ProtectedEasyExcelUtils.baseExportExcel(request, response, excelClass, fileName, "Sheet1", null, null, note,
+                defaultExcludedCols, null, null, ProtectedEnumsColWidth.COL_WIDTH_HEAD, null);
     }
 
     /**
@@ -231,7 +231,7 @@ public class EasyExcelUtils {
         List<List<String>> newHeadList = new LinkedList<>();
         List<List<Object>> newDataList = new LinkedList<>();
         if (setHeadAndDataNoModel(headList, dataList, noModelHeadMap, newHeadList, newDataList)) {
-            EasyExcelUtilsProtected.noModelBaseExportExcel(request, response, fileName, "Sheet1", newHeadList, newDataList,
+            ProtectedEasyExcelUtils.noModelBaseExportExcel(request, response, fileName, "Sheet1", newHeadList, newDataList,
                     null, null, null, null, null);
         }
     }
@@ -249,7 +249,7 @@ public class EasyExcelUtils {
         // 整理列名与数据格式
         List<List<String>> newHeadList = new LinkedList<>();
         if (setHeadAndDataNoModel(headList, null, null, newHeadList, null)) {
-            EasyExcelUtilsProtected.noModelBaseExportExcel(request, response, fileName, "Sheet1", newHeadList, null,
+            ProtectedEasyExcelUtils.noModelBaseExportExcel(request, response, fileName, "Sheet1", newHeadList, null,
                     null, note, null, null, null);
         }
     }
@@ -270,8 +270,8 @@ public class EasyExcelUtils {
             throw new RuntimeException("未指定 ExcelClass");
         }
         // 默认排除"错误信息"列
-        excludedCols.add(Constants.DEFAULT_ERROR_PARAM);
-        EasyExcelUtilsProtected.baseWriteSheet(excelWriter, excelClass, sheetIndex, sheetName, dataList, excludedCols, title, note, dynamicDropDownMap, dynamicHeadMap, widthStrategy);
+        excludedCols.add(ProtectedConstants.DEFAULT_ERROR_PARAM);
+        ProtectedEasyExcelUtils.baseWriteSheet(excelWriter, excelClass, sheetIndex, sheetName, dataList, excludedCols, title, note, dynamicDropDownMap, dynamicHeadMap, widthStrategy);
         sheetIndex++;
     }
 
@@ -296,7 +296,7 @@ public class EasyExcelUtils {
                 }
                 index++;
             }
-            EasyExcelUtilsProtected.noModelBaseWriteSheet(excelWriter, sheetIndex, sheetName, newHeadList, newDataList,
+            ProtectedEasyExcelUtils.noModelBaseWriteSheet(excelWriter, sheetIndex, sheetName, newHeadList, newDataList,
                     title, note, indexedDropDownMap, widthStrategy);
         }
         sheetIndex++;
@@ -305,7 +305,7 @@ public class EasyExcelUtils {
     /** 配置 Excel 兼容格式, 并重新生成 Excel Writer */
     public void setUseExcel07(Boolean useExcel07) {
         this.useExcel07 = useExcel07;
-        this.excelWriter = EasyExcelUtilsProtected.createExcelWriter(request, response, fileName, useExcel07);
+        this.excelWriter = ProtectedEasyExcelUtils.createExcelWriter(request, response, fileName, useExcel07);
     }
 
     /** 将指定列加入屏蔽 */

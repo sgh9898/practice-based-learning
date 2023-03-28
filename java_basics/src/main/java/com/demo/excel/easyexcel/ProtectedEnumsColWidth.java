@@ -8,7 +8,7 @@ import lombok.Getter;
  * @author Song gh on 2022/10/17.
  */
 @Getter
-public enum EnumsColWidth {
+public enum ProtectedEnumsColWidth {
 
     /** 默认 */
     COL_WIDTH_DEFAULT(0),
@@ -19,10 +19,10 @@ public enum EnumsColWidth {
 
     private int type;
 
-    EnumsColWidth() {
+    ProtectedEnumsColWidth() {
     }
 
-    EnumsColWidth(int type) {
+    ProtectedEnumsColWidth(int type) {
         this.type = type;
     }
 }

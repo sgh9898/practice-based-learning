@@ -12,7 +12,7 @@ import java.util.Iterator;
  *
  * @author Song gh on 2022/10/18.
  */
-class HandlerRowHeight extends AbstractRowHeightStyleStrategy {
+class ProtectedHandlerRowHeight extends AbstractRowHeightStyleStrategy {
 
     /** string 单行高度 */
     private static final Integer LINE_HEIGHT = 370;
@@ -32,6 +32,8 @@ class HandlerRowHeight extends AbstractRowHeightStyleStrategy {
         int maxHeight = 1;
         while (cellIterator.hasNext()) {
             Cell cell = cellIterator.next();
+            // 根据 maven 依赖版本可能需要更换
+            // if (cell.getCellTypeEnum() == CellType.STRING) {
             if (cell.getCellType() == CellType.STRING) {
                 // 获取内容本身的换行
                 String cellStr = cell.getStringCellValue();

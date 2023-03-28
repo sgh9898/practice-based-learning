@@ -57,7 +57,7 @@ public class Listener<T> implements ReadListener<T> {
         this.maxInvalidHeadRowNum = 0;
         this.currentInvalidHeadRowNum = 0;
         this.validHead = false;
-        this.headRules = Constants.HEAD_RULES_CONTAINS;
+        this.headRules = ProtectedConstants.HEAD_RULES_CONTAINS;
         this.headRowNum = null;
         // 变量
         this.validList = new LinkedList<>();
@@ -76,11 +76,11 @@ public class Listener<T> implements ReadListener<T> {
         String errorMessage = validate(excelLine);
         // 记录报错数据
         if (StringUtils.isNotBlank(errorMessage)) {
-            if (excelLine instanceof TemplateExcel) {
-                ((TemplateExcel) excelLine).setDefaultExcelErrorMessage(errorMessage);
+            if (excelLine instanceof ExcelClassTemplate) {
+                ((ExcelClassTemplate) excelLine).setDefaultExcelErrorMessage(errorMessage);
             } else {
                 for (Field currField : excelLine.getClass().getDeclaredFields()) {
-                    if (currField.getName().equals(Constants.DEFAULT_ERROR_PARAM)) {
+                    if (currField.getName().equals(ProtectedConstants.DEFAULT_ERROR_PARAM)) {
                         try {
                             currField.set(excelLine, errorMessage);
                         } catch (IllegalAccessException e) {
@@ -112,7 +112,7 @@ public class Listener<T> implements ReadListener<T> {
     /**
      * 设置 head 校验规则
      *
-     * @see Constants
+     * @see ProtectedConstants
      */
     public void setHeadRules(Integer headRules) {
         this.headRules = headRules;
@@ -144,7 +144,7 @@ public class Listener<T> implements ReadListener<T> {
         List<String> readHeadList = new ArrayList<>(readHeadMap.values());
         Set<String> validHeadNameSet = getHeadNameSet(excelClass);
         // 根据设定规则进行校验
-        if (Objects.equals(headRules, Constants.HEAD_RULES_CONTAINS)) {
+        if (Objects.equals(headRules, ProtectedConstants.HEAD_RULES_CONTAINS)) {
             // 存在有效字段即可
             for (String currHead : readHeadList) {
                 // head 有效
@@ -153,7 +153,7 @@ public class Listener<T> implements ReadListener<T> {
                     return;
                 }
             }
-        } else if (Objects.equals(headRules, Constants.HEAD_RULES_STRICTLY_CONTAINS)) {
+        } else if (Objects.equals(headRules, ProtectedConstants.HEAD_RULES_STRICTLY_CONTAINS)) {
             // 存在有效字段, 且没有无效字段
             boolean tempValid = false;
             for (String currHead : readHeadList) {

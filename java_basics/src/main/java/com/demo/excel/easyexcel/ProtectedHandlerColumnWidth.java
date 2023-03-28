@@ -20,7 +20,7 @@ import java.util.Map;
  * @author Song gh on 2022/9/27.
  */
 @Getter
-class HandlerColumnWidth extends AbstractColumnWidthStyleStrategy {
+class ProtectedHandlerColumnWidth extends AbstractColumnWidthStyleStrategy {
 
     /** 最小列宽 */
     private static final int MIN_COLUMN_WIDTH = 5;
@@ -35,19 +35,19 @@ class HandlerColumnWidth extends AbstractColumnWidthStyleStrategy {
      * 1. head 为准 --> 仅使用 head 宽度
      * 2. 内容为准 --> 仅使用内容宽度
      */
-    private final EnumsColWidth widthStrategy;
+    private final ProtectedEnumsColWidth widthStrategy;
 
     /** Constructor */
-    public HandlerColumnWidth() {
-        widthStrategy = EnumsColWidth.COL_WIDTH_DEFAULT;
+    public ProtectedHandlerColumnWidth() {
+        widthStrategy = ProtectedEnumsColWidth.COL_WIDTH_DEFAULT;
     }
 
     /** Constructor: 指定列宽选取方式 */
-    public HandlerColumnWidth(EnumsColWidth widthStrategy) {
-        if (widthStrategy == EnumsColWidth.COL_WIDTH_HEAD || widthStrategy == EnumsColWidth.COL_WIDTH_CONTENT) {
+    public ProtectedHandlerColumnWidth(ProtectedEnumsColWidth widthStrategy) {
+        if (widthStrategy == ProtectedEnumsColWidth.COL_WIDTH_HEAD || widthStrategy == ProtectedEnumsColWidth.COL_WIDTH_CONTENT) {
             this.widthStrategy = widthStrategy;
         } else {
-            this.widthStrategy = EnumsColWidth.COL_WIDTH_DEFAULT;
+            this.widthStrategy = ProtectedEnumsColWidth.COL_WIDTH_DEFAULT;
         }
     }
 
@@ -79,7 +79,7 @@ class HandlerColumnWidth extends AbstractColumnWidthStyleStrategy {
 
         // 更新列宽
         // 使用 head 列宽
-        if (widthStrategy == EnumsColWidth.COL_WIDTH_HEAD) {
+        if (widthStrategy == ProtectedEnumsColWidth.COL_WIDTH_HEAD) {
             if (isHead) {
                 // 多行 head 仅使用最后一行校准
                 sheetColumnWidthMap.put(cell.getColumnIndex(), columnWidth);
@@ -87,7 +87,7 @@ class HandlerColumnWidth extends AbstractColumnWidthStyleStrategy {
             }
         }
         // 使用内容列宽
-        else if (widthStrategy == EnumsColWidth.COL_WIDTH_CONTENT) {
+        else if (widthStrategy == ProtectedEnumsColWidth.COL_WIDTH_CONTENT) {
             if (!isHead) {
                 if (maxColumnWidth == null || columnWidth > maxColumnWidth) {
                     sheetColumnWidthMap.put(cell.getColumnIndex(), columnWidth);

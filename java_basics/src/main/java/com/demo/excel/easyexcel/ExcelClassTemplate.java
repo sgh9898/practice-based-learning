@@ -42,7 +42,7 @@ import javax.validation.constraints.PositiveOrZero;
         horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ContentFontStyle(fontHeightInPoints = 12)
 // ============================== 格式 End ==============================
-public abstract class TemplateExcel {
+public abstract class ExcelClassTemplate {
 
 //    示例:
 //    @NotBlank(message = "名称未填写")  // 初步校验, 未通过时报错信息会出现在报错返回的 Excel 中
