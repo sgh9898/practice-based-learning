@@ -13,7 +13,7 @@
 2. [Async](src/main/java/com/demo/async)
 3. [DataBase](src/main/java/com/demo/database)
 4. [Elasticsearch](src/main/java/excluded/elasticsearch) [8.x]
-5. [EasyExcel](src/main/java/com/demo/easyexcel)
+5. [EasyExcel](src/main/java/com/demo/excel)
     - [x] Annotation + Handler + Util: 自定义注解与导出工具类
     - [x] Listener: 导入工具
 6. [Exception](src/main/java/com/demo/exception)
@@ -48,7 +48,7 @@
 > 以下功能需要本地启动对应服务, 为方便程序运行, 调整为需要手动启用
 
 1. [Elasticsearch](src/main/java/excluded/elasticsearch)
-2. [Kafka Listener](src/main/java/com/demo/easyexcel/listener/DemoKafkaListener.java)
+2. [Kafka Listener](src/main/java/com/demo/excel/listener/DemoKafkaListener.java)
 
 ---
 

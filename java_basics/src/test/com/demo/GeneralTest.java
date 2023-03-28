@@ -1,12 +1,8 @@
 package com.demo;
 
-import com.demo.database.entity.DemoEntity;
-import com.demo.database.pojo.DemoEntityDto;
-import com.demo.util.JsonUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.BeanUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -16,7 +12,10 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * 普通测试
@@ -30,15 +29,18 @@ class GeneralTest {
 
     @Test
     void main() {
-        System.out.println("标签".getBytes().length);
+        String currIdentityStr = "[\"other\"]";
+        currIdentityStr = currIdentityStr.replace("[", "").replace("]", "").replace("\"", "");
+        System.out.println(currIdentityStr);
     }
 
-    @Test
-    void removeTrailing0() {
-        try {
-            System.out.println(new SimpleDateFormat("yyyy-MM-dd").parse("2022-01-01"));
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
+    void test(List<?> headList) {
+        if (headList.get(0) instanceof String) {
+//            List<Object> strList = (List<Object>) headList.get(0);
+//            System.out.println((String) headList.get(0));
+        } else {
+            List<List<String>> newHest = (List<List<String>>) headList;
+            System.out.println(newHest.get(0).get(0));
         }
     }
 

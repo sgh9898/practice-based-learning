@@ -4,9 +4,8 @@ import com.demo.database.entity.DemoEntity;
 import com.demo.database.pojo.DemoEntityDto;
 import com.demo.database.repository.DemoEntityRepository;
 import com.demo.database.service.DemoEntityService;
-import com.demo.easyexcel.pojo.DemoExcelVo;
-import com.demo.easyexcel.util.EasyExcelUtils;
-import com.demo.easyexcel.util.ValidationUtil;
+import com.demo.excel.easyexcel.EasyExcelUtils;
+import com.demo.util.ValidationUtil;
 import com.demo.exception.BaseException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -18,10 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.HashSet;
+import javax.validation.Validation;
+import javax.validation.Validator;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 演示类
@@ -59,48 +57,6 @@ public class DemoEntityServiceImpl implements DemoEntityService {
         demoEntityRepository.save(new DemoEntity(dto));
     }
 
-    /**
-     * [Excel 新增/更新] 演示类
-     *
-     * @param excelList 经过基础校验的 excel 导入数据
-     * @return 导入失败的信息
-     */
-    @Override
-    public List<DemoExcelVo> checkThenSaveAll(List<DemoExcelVo> excelList) {
-//        // 校验
-//
-//        // 查重
-//        Map<> repeatedMap = new HashMap<>();
-//        List<DemoEntity> repeatedList = demoEntityRepository.getRepeatedList();
-//        // 整理格式
-//        for (DemoEntity curr : repeatedList) {
-//
-//        }
-//
-        // 构建标准数据
-        List<DemoEntity> validList = new ArrayList<>();
-        List<DemoExcelVo> inValidList = new ArrayList<>();
-        for (DemoExcelVo excel : excelList) {
-
-//            DemoEntity newEntity = new DemoEntity().setParamsAfterCopy(excel);
-
-//            // 覆盖旧数据 (如果有)
-//            DemoEntity previous = ;
-//            if (previous != null) {
-//                newEntity.setId(previous.getId());
-//                newEntity.setCreateTime(previous.getCreateTime());
-//            }
-//            validList.add(newEntity);
-        }
-
-        // 整批数据没有报错, 存入数据库
-        if (inValidList.isEmpty()) {
-            demoEntityRepository.saveAll(validList);
-        }
-        // 返回无效数据
-        return inValidList;
-    }
-
     /** [逻辑删除] 演示类 */
     @Override
     @Transactional
@@ -129,25 +85,25 @@ public class DemoEntityServiceImpl implements DemoEntityService {
     /** [导入数据] 演示类 */
     @Override
     public void importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response) {
-        List<DemoEntity> demoEntityList = EasyExcelUtils.importAsEntity(file, request, response, DemoExcelVo.class, DemoEntity.class);
+        List<DemoEntity> importList = EasyExcelUtils.importData(file, request, response, DemoEntity.class);
+        if (importList != null && !importList.isEmpty()) {
+            demoEntityRepository.saveAll(importList);
+        }
     }
 
     /** [导出模板] 演示类 */
     @Override
     public void exportExcelTemplate(HttpServletRequest request, HttpServletResponse response) {
-        // 排除的列
-        Set<String> excludedCols = new HashSet<>();
-        excludedCols.add("errorMessage");
         // 首行说明
         String note = "说明: 1. 黄色字段为必填项.\n" +
                 "         2.";
-        EasyExcelUtils.exportTemplate(request, response, "演示类.xlsx", DemoExcelVo.class, note);
+        EasyExcelUtils.exportTemplate(request, response, "演示类.xlsx", DemoEntity.class, note);
     }
 
     /** [导出数据] 演示类 */
     @Override
     public void exportData(HttpServletRequest request, HttpServletResponse response) {
         List<DemoEntity> entityList = demoEntityRepository.findAllByIsDeletedIsFalse();
-        EasyExcelUtils.exportData(request, response, "导出数据", DemoExcelVo.class, DemoEntity.class, entityList);
+        EasyExcelUtils.exportData(request, response, "导出数据", DemoEntity.class, entityList);
     }
 }

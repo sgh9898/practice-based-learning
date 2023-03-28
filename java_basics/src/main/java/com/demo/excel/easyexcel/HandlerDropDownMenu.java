@@ -1,4 +1,4 @@
-package com.demo.easyexcel.util.handler;
+package com.demo.excel.easyexcel;
 
 import com.alibaba.excel.write.handler.SheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
@@ -16,7 +16,7 @@ import java.util.Map;
  *
  * @author Song gh on 2022/7/12.
  */
-public class EasyExcelDropDownMenuHandler implements SheetWriteHandler {
+class HandlerDropDownMenu implements SheetWriteHandler {
 
     /** 配置下拉框时跳过前(包括 head 在内) x 行 */
     private final Integer skipRowNum;
@@ -25,14 +25,14 @@ public class EasyExcelDropDownMenuHandler implements SheetWriteHandler {
     private final Map<Integer, String[]> dropDownMap;
 
     /** 构造: 默认 */
-    public EasyExcelDropDownMenuHandler(Map<Integer, String[]> dropDownMap) {
+    public HandlerDropDownMenu(Map<Integer, String[]> dropDownMap) {
         this.dropDownMap = dropDownMap;
         // head 不配置下拉框
         this.skipRowNum = 1;
     }
 
     /** 构造: 配置下拉框时, 除 head 外额外跳过前 x 行 */
-    public EasyExcelDropDownMenuHandler(Map<Integer, String[]> dropDownMap, Integer skipRowNum) {
+    public HandlerDropDownMenu(Map<Integer, String[]> dropDownMap, Integer skipRowNum) {
         this.dropDownMap = dropDownMap;
         // head 不配置下拉框
         this.skipRowNum = 1 + skipRowNum;

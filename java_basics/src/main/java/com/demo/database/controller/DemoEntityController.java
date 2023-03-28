@@ -97,7 +97,6 @@ public class DemoEntityController {
     /** [导出数据] 演示类 */
     @GetMapping("/excel/exportData")
     @ApiOperation("[导出数据] 演示类")
-    @ApiImplicitParams({})
     public void exportData(HttpServletRequest request, HttpServletResponse response) {
         demoEntityService.exportData(request, response);
     }

@@ -1,4 +1,4 @@
-package com.demo.easyexcel.util;
+package com.demo.util;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;

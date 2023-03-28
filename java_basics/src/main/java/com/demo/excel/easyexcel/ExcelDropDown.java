@@ -1,4 +1,4 @@
-package com.demo.easyexcel.util.annotation;
+package com.demo.excel.easyexcel;
 
 import java.lang.annotation.*;
 

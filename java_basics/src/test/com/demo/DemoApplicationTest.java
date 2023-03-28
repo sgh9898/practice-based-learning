@@ -1,7 +1,6 @@
 package com.demo;
 
 import com.demo.database.repository.DemoEntityRepository;
-import com.demo.easyexcel.service.ExcelService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -18,8 +17,6 @@ class DemoApplicationTest {
 
     @Resource
     private DemoEntityRepository demoEntityRepository;
-    @Resource
-    private ExcelService excelService;
 
     @Test
     void main() {

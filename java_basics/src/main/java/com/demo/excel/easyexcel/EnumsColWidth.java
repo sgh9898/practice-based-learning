@@ -1,4 +1,4 @@
-package com.demo.easyexcel.util.enums;
+package com.demo.excel.easyexcel;
 
 import lombok.Getter;
 
@@ -8,7 +8,7 @@ import lombok.Getter;
  * @author Song gh on 2022/10/17.
  */
 @Getter
-public enum ExcelColWidthEnums {
+public enum EnumsColWidth {
 
     /** 默认 */
     COL_WIDTH_DEFAULT(0),
@@ -19,10 +19,10 @@ public enum ExcelColWidthEnums {
 
     private int type;
 
-    ExcelColWidthEnums() {
+    EnumsColWidth() {
     }
 
-    ExcelColWidthEnums(int type) {
+    EnumsColWidth(int type) {
         this.type = type;
     }
 }

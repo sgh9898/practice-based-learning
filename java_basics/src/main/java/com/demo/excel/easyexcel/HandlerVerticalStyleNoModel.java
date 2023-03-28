@@ -1,4 +1,4 @@
-package com.demo.easyexcel.util.handler;
+package com.demo.excel.easyexcel;
 
 import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.metadata.style.WriteCellStyle;
@@ -14,12 +14,9 @@ import org.apache.poi.ss.usermodel.IndexedColors;
  * @author Song gh on 2022/9/27.
  */
 @Getter
-public class EasyExcelVerticalStyleNoModelHandler extends AbstractVerticalCellStyleStrategy {
-    /**
-     * Returns the column width corresponding to each column head
-     *
-     * @param head Nullable
-     */
+class HandlerVerticalStyleNoModel extends AbstractVerticalCellStyleStrategy {
+
+    /** head 样式 */
     @Override
     protected WriteCellStyle headCellStyle(Head head) {
         WriteCellStyle headStyle = new WriteCellStyle();
@@ -31,14 +28,21 @@ public class EasyExcelVerticalStyleNoModelHandler extends AbstractVerticalCellSt
         WriteFont font = new WriteFont();
         font.setFontHeightInPoints((short) 13);
         headStyle.setWriteFont(font);
+
         return headStyle;
     }
 
-    /** 内容 */
+    /** 内容样式 */
     @Override
     protected WriteCellStyle contentCellStyle(Head head) {
         WriteCellStyle writeCellStyle = new WriteCellStyle();
+        // 位置
         writeCellStyle.setHorizontalAlignment(HorizontalAlignment.CENTER);
+        // 字体
+        WriteFont font = new WriteFont();
+        font.setFontHeightInPoints((short) 13);
+        writeCellStyle.setWriteFont(font);
+
         return writeCellStyle;
     }
 }

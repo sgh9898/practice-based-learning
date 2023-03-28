@@ -1,13 +1,12 @@
 package com.demo.database.entity;
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.format.DateTimeFormat;
 import com.demo.database.pojo.DemoEntityDto;
-import com.demo.easyexcel.util.pojo.EasyExcelTemplateEntity;
-import com.demo.easyexcel.util.pojo.EasyExcelTemplateExcelVo;
+import com.demo.excel.easyexcel.TemplateExcel;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.demo.easyexcel.pojo.DemoExcelVo;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -29,7 +28,7 @@ import java.util.Date;
 @Table(name = "demo_entity")
 @Schema(description = "演示类")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DemoEntity extends EasyExcelTemplateEntity {
+public class DemoEntity extends TemplateExcel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,12 +36,14 @@ public class DemoEntity extends EasyExcelTemplateEntity {
     private Long id;
 
     @ApiModelProperty("名称")
-    @ExcelProperty("测试")
+    @ExcelProperty("测试名称")
     private String name;
 
     @ApiModelProperty("标签")
     private String tags;
 
+    @ExcelProperty("时间")
+    @DateTimeFormat("yyyy-MM-dd")
     @ApiModelProperty("时间")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date dateTime;
@@ -82,17 +83,6 @@ public class DemoEntity extends EasyExcelTemplateEntity {
         this.tags = dto.getTags();
         // 默认配置
         this.updateTime = new Date();
-    }
-
-    /**
-     * [使用默认配置时无须 override] 在默认的 BeanUtils.copyProperties 之后, 手动定义 Entity 中部分参数
-     *
-     * @param excel 需要转换的 Excel 类, 必须 extends {@link EasyExcelTemplateExcelVo}
-     */
-    @Override
-    public <T extends EasyExcelTemplateExcelVo> void setParamsAfterCopy(T excel) {
-        this.name = "测试修改后的名字";
-        System.out.println("修改后的" + ((DemoExcelVo) excel).getTags());
     }
 }
 

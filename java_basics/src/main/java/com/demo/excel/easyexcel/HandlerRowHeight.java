@@ -1,4 +1,4 @@
-package com.demo.easyexcel.util.handler;
+package com.demo.excel.easyexcel;
 
 import com.alibaba.excel.write.style.row.AbstractRowHeightStyleStrategy;
 import org.apache.poi.ss.usermodel.Cell;
@@ -12,7 +12,7 @@ import java.util.Iterator;
  *
  * @author Song gh on 2022/10/18.
  */
-public class EasyExcelRowHeightHandler extends AbstractRowHeightStyleStrategy {
+class HandlerRowHeight extends AbstractRowHeightStyleStrategy {
 
     /** string 单行高度 */
     private static final Integer LINE_HEIGHT = 370;

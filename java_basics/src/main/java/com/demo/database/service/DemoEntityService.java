@@ -2,7 +2,6 @@ package com.demo.database.service;
 
 import com.demo.database.entity.DemoEntity;
 import com.demo.database.pojo.DemoEntityDto;
-import com.demo.easyexcel.pojo.DemoExcelVo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,14 +19,6 @@ public interface DemoEntityService {
 
     /** [新增/更新] 演示类 */
     void upsert(DemoEntityDto dto);
-
-    /**
-     * [Excel 新增/更新] 演示类
-     *
-     * @param excelList 经过基础校验的 excel 导入数据
-     * @return 导入失败的信息
-     */
-    List<DemoExcelVo> checkThenSaveAll(List<DemoExcelVo> excelList);
 
     /** [逻辑删除] 演示类 */
     void delete(List<Long> idList);
