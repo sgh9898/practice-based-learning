@@ -2,7 +2,7 @@ package excluded.elasticsearch.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.data.elasticsearch.annotations.Document;
 
@@ -22,23 +22,23 @@ public class SampleIndexQueryDto {
     @Id
     private String id;
 
-    @Schema(description = "名称")
+    @ApiModelProperty("名称")
     private String name;
 
-    @Schema(description = "代码")
+    @ApiModelProperty("代码")
     private Long code;
 
-    @Schema(description = "开始时间")
+    @ApiModelProperty("开始时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
     private Date startTime;
 
-    @Schema(description = "结束时间")
+    @ApiModelProperty("结束时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
     private Date endTime;
 
-    @Schema(description = "页码")
+    @ApiModelProperty("页码")
     private int pageNum = 1;
 
-    @Schema(description = "每页行数")
+    @ApiModelProperty("每页行数")
     private int pageSize = 20;
 }

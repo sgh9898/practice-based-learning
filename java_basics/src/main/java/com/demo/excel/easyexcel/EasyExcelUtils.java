@@ -18,10 +18,10 @@ import java.util.*;
 /**
  * EasyExcel 工具类
  * <br> 0. 前置需求:
- * <br>     1) 指定 ExcelClass 时: extends {@link ExcelClassTemplate}(内有详细配置说明), 或将类注解与 defaultExcelErrorMessage 字段直接配置于实体类中
+ * <br>     1) 指定 ExcelClass 时: extends {@link EasyExcelClassTemplate}(内有详细配置说明), 或将类注解与 defaultExcelErrorMessage 字段直接配置于实体类中
  * <br>     2) 不指定 ExcelClass 时不需要前置操作
  * <br> 1. 导入:
- * <br>     1) 返回 List(ExcelClass): {@link #importData}
+ * <br>     1) 返回 List(ExcelClass): {@link #importDataExportError}
  * <br> 2. 导出, Static:
  * <br>     1) 导出 Excel 空白模板: {@link #exportTemplate}
  * <br>     2) 导出 Excel 数据: {@link #exportData}
@@ -113,7 +113,7 @@ public class EasyExcelUtils {
      * @param request    http servlet request
      * @param response   http servlet response
      * @param fileName   文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
-     * @param excelClass Excel 实体类: extends {@link ExcelClassTemplate}, 或将类注解与 defaultExcelErrorMessage 字段直接配置于实体类中
+     * @param excelClass Excel 实体类: extends {@link EasyExcelClassTemplate}, 或将类注解与 defaultExcelErrorMessage 字段直接配置于实体类中
      */
     public EasyExcelUtils(HttpServletRequest request, HttpServletResponse response, String fileName, Class<?> excelClass) {
         this.request = request;
@@ -140,19 +140,45 @@ public class EasyExcelUtils {
 // ------------------------------ Static, 导入 ------------------------------
 
     /**
-     * 导入 Excel 文件
+     * 导入 Excel 文件, 存储报错信息
      * <br> 1. 自动跳过无效的 head
      * <br> 2. 失败时返回 null 并下载含报错信息的 Excel 文件
      *
      * @param file       文件
      * @param request    HttpServletRequest
      * @param response   HttpServletResponse
-     * @param excelClass Excel 类, 推荐 extends {@link ExcelClassTemplate}
+     * @param excelClass Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param errorList  存储报错信息
      * @return List(ExcelClass) = 成功, false = 文件为空, null = 失败且下载含报错信息的 Excel 文件
      */
-    public static <T> List<T> importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass) {
+    public static <T> List<T> importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass, List<T> errorList) {
         Listener<T> listener = new Listener<>(excelClass);
-        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.baseImportExcel(file, request, response, excelClass, listener))) {
+        // 导入成功
+        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.baseImportExcel(file, request, response, excelClass, listener, false))) {
+            // 记录报错
+            if (errorList != null) {
+                errorList.addAll(listener.getInvalidList());
+            }
+            return listener.getValidList();
+        }
+        return null;
+    }
+
+    /**
+     * 导入 Excel 文件, 自动下载报错信息
+     * <br> 1. 自动跳过无效的 head
+     * <br> 2. 失败时返回 null 并下载含报错信息的 Excel 文件
+     *
+     * @param file       文件
+     * @param request    HttpServletRequest
+     * @param response   HttpServletResponse
+     * @param excelClass Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @return List(ExcelClass) = 成功, false = 文件为空, null = 失败且下载含报错信息的 Excel 文件
+     */
+    public static <T> List<T> importDataExportError(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass) {
+        Listener<T> listener = new Listener<>(excelClass);
+        // 导入成功, 且不存在报错
+        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.baseImportExcel(file, request, response, excelClass, listener, true))) {
             return listener.getValidList();
         }
         return null;
@@ -167,11 +193,37 @@ public class EasyExcelUtils {
      * @param request           HttpServletRequest
      * @param response          HttpServletResponse
      * @param cnToEnHeadNameMap [允许空/null] 中英列名对照, Map(中文, 英文)
+     * @param errorList         存储报错信息
      * @return List(Map) = 成功, false = 文件为空, null = 失败且下载含报错信息的 Excel 文件
      */
-    public static Object noModelImportExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Map<String, String> cnToEnHeadNameMap) {
+    public static Object noModelImportExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Map<String, String> cnToEnHeadNameMap, List<List<Object>> errorList) {
         ListenerNoModel listenerNoModel = new ListenerNoModel(cnToEnHeadNameMap);
-        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.noModelBaseImportExcel(file, request, response, listenerNoModel))) {
+        // 导入成功
+        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.noModelBaseImportExcel(file, request, response, listenerNoModel, false))) {
+            // 记录报错
+            if (errorList != null) {
+                errorList.addAll(listenerNoModel.getInvalidList());
+            }
+            return listenerNoModel.getValidList();
+        }
+        return null;
+    }
+
+    /**
+     * [不指定 ExcelClass] 导入 Excel 文件, 自动下载报错信息
+     * <br> 1. 自动跳过无效的 head
+     * <br> 2. 失败时返回 null 并下载含报错信息的 Excel 文件
+     *
+     * @param file              文件
+     * @param request           HttpServletRequest
+     * @param response          HttpServletResponse
+     * @param cnToEnHeadNameMap [允许空/null] 中英列名对照, Map(中文, 英文)
+     * @return List(Map) = 成功, false = 文件为空, null = 失败且下载含报错信息的 Excel 文件
+     */
+    public static Object noModelImportExcelExportError(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Map<String, String> cnToEnHeadNameMap) {
+        // 导入成功, 且不存在报错
+        ListenerNoModel listenerNoModel = new ListenerNoModel(cnToEnHeadNameMap);
+        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.noModelBaseImportExcel(file, request, response, listenerNoModel, true))) {
             return listenerNoModel.getValidList();
         }
         return null;
@@ -185,7 +237,7 @@ public class EasyExcelUtils {
      * @param request       HttpServletRequest
      * @param response      HttpServletResponse
      * @param fileName      文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
-     * @param excelClass    Excel 类, 推荐 extends {@link ExcelClassTemplate}
+     * @param excelClass    Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
      * @param excelDataList [允许空/null] 数据, 格式需与 excelClass 保持一致
      */
     public static <T> void exportData(HttpServletRequest request, HttpServletResponse response, String fileName, Class<T> excelClass, List<T> excelDataList) {
@@ -203,7 +255,7 @@ public class EasyExcelUtils {
      * @param request    HttpServletRequest
      * @param response   HttpServletResponse
      * @param fileName   文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
-     * @param excelClass Excel 类, 推荐 extends {@link ExcelClassTemplate}
+     * @param excelClass Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
      * @param note       [允许空/null] 需要添加的填表说明, 位于列名之上
      */
     public static void exportTemplate(HttpServletRequest request, HttpServletResponse response, String fileName, Class<?> excelClass, String note) {

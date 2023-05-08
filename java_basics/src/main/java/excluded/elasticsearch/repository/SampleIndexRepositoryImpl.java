@@ -76,7 +76,7 @@ public class SampleIndexRepositoryImpl implements SampleIndexRepositoryCustom {
         int pageSize = dto.getPageSize();
         pageNum = Math.max(pageNum, 1);
         pageSize = pageSize < 1 ? 20 : pageSize;
-        Pageable pageable = PageRequest.of(pageNum - 1, pageSize);
+        Pageable pageable = PageRequest.of(pageNum, pageSize);
 
         // 查询
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(boolQueryBuilder)

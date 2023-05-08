@@ -1,8 +1,8 @@
 package excluded.kafka;
 
 import com.demo.util.ResultUtil;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,13 +17,13 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/kafka")
-@Tag(name = "Kafka Controller", description = "Kafka 相关")
+@ApiModel(value = "Kafka Controller", description = "Kafka 相关")
 public class KafkaController {
 
     @Resource
     private KafkaService kafkaService;
 
-    @Operation(summary = "发送消息(默认异步)")
+    @ApiOperation("发送消息(默认异步)")
     @PostMapping("/send")
     public Map<String, Object> sendMsg(String msg, Boolean async) {
         if (Boolean.FALSE == async) {

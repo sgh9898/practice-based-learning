@@ -76,8 +76,8 @@ public class Listener<T> implements ReadListener<T> {
         String errorMessage = validate(excelLine);
         // 记录报错数据
         if (StringUtils.isNotBlank(errorMessage)) {
-            if (excelLine instanceof ExcelClassTemplate) {
-                ((ExcelClassTemplate) excelLine).setDefaultExcelErrorMessage(errorMessage);
+            if (excelLine instanceof EasyExcelClassTemplate) {
+                ((EasyExcelClassTemplate) excelLine).setDefaultExcelErrorMessage(errorMessage);
             } else {
                 for (Field currField : excelLine.getClass().getDeclaredFields()) {
                     if (currField.getName().equals(ProtectedConstants.DEFAULT_ERROR_PARAM)) {
@@ -101,12 +101,30 @@ public class Listener<T> implements ReadListener<T> {
     /** 处理完成后收尾步骤 */
     @Override
     public void doAfterAllAnalysed(AnalysisContext context) {
-        // 校验, 有报错则整批不存入
+        // 校验
         if (!invalidList.isEmpty()) {
-            log.info("导入 Excel 失败: " + excelClass.getName());
+            log.info("读取 Excel 完成, 存在错误信息, 所属类别: {}", excelClass.getName());
+            return;
+        } else if (validList.isEmpty()) {
+            try {
+                T tempExcel = excelClass.newInstance();
+                if (tempExcel instanceof EasyExcelClassTemplate) {
+                    ((EasyExcelClassTemplate) tempExcel).setDefaultExcelErrorMessage("文件内容为空或列名不匹配");
+                } else {
+                    for (Field currField : tempExcel.getClass().getDeclaredFields()) {
+                        if (currField.getName().equals(ProtectedConstants.DEFAULT_ERROR_PARAM)) {
+                            currField.set(tempExcel, "文件内容为空或列名不匹配");
+                        }
+                    }
+                }
+                invalidList.add(tempExcel);
+            } catch (InstantiationException | IllegalAccessException e) {
+                log.error("设置 Excel 导入错误信息失败", e);
+            }
+            log.info("读取 Excel 完成, 文件内容为空或列名不匹配, 所属类别: {}", excelClass.getName());
             return;
         }
-        log.info("导入 Excel 完成: " + excelClass.getName());
+        log.info("读取 Excel 完成, 均通过初步校验, 所属类别: {} ", excelClass.getName());
     }
 
     /**
@@ -125,13 +143,13 @@ public class Listener<T> implements ReadListener<T> {
         checkHeadCurrentLine(ConverterUtils.convertToStringMap(headMap, context), context);
     }
 
-// ------------------------------ Private ------------------------------
-
     /** head 无效时提前终止 */
     @Override
     public boolean hasNext(AnalysisContext context) {
         return validHead;
     }
+
+// ------------------------------ Private ------------------------------
 
     /** head 校验: 当前行是否有效(用于跳过 head 前多余行数) */
     private void checkHeadCurrentLine(Map<Integer, String> readHeadMap, AnalysisContext context) {

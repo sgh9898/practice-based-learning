@@ -55,7 +55,7 @@ public class ListenerNoModel implements ReadListener<Map<Integer, String>> {
      */
     public ListenerNoModel(Map<String, String> cnToEnHeadNameMap) {
         this.cnToEnHeadNameMap = cnToEnHeadNameMap == null ? new HashMap<>() : cnToEnHeadNameMap;
-        log.info("不指定 ExcelClass 导入 Excel 开始");
+        log.info("不指定 ExcelClass 读取 Excel 开始");
     }
 
 // ------------------------------ 可 Override ------------------------------
@@ -63,17 +63,6 @@ public class ListenerNoModel implements ReadListener<Map<Integer, String>> {
     /** 循环处理单行数据 */
     @Override
     public void invoke(Map<Integer, String> excelLine, AnalysisContext context) {
-//        // 记录报错数据
-//        if (StringUtils.isNotBlank(errorMessage)) {
-//            List<Object> errorData = new LinkedList<>();
-//            for (int i = 0; i < excelLine.size(); i++) {
-//                errorData.add(excelLine.get(i));
-//            }
-//            errorData.add(errorMessage);
-//            invalidList.add(errorData);
-//            return;
-//        }
-
         // 格式转换
         Map<String, Object> currDataMap = new HashMap<>();
         if (cnToEnHeadNameMap.isEmpty()) {
@@ -93,12 +82,21 @@ public class ListenerNoModel implements ReadListener<Map<Integer, String>> {
     /** 处理完成后收尾步骤 */
     @Override
     public void doAfterAllAnalysed(AnalysisContext context) {
-        // 校验, 有报错则整批不存入
+        // 校验
         if (!invalidList.isEmpty()) {
-            log.info("不指定 ExcelClass 导入 Excel 失败");
+            log.info("不指定 ExcelClass 读取 Excel 完成, 存在错误信息");
+            return;
+        } else if (validList.isEmpty()) {
+            List<Object> tempInnerList = new LinkedList<>();
+            for (int i = 0; i <indexedCnHeadMap.size(); i++) {
+                tempInnerList.add(null);
+            }
+            tempInnerList.add("文件内容为空");
+            invalidList.add(tempInnerList);
+            log.info("不指定 ExcelClass 读取 Excel 完成, 文件为空");
             return;
         }
-        log.info("不指定 ExcelClass 导入 Excel 完成");
+        log.info("不指定 ExcelClass 读取 Excel 完成, 均通过初步校验");
     }
 
 // ------------------------------ 不建议 Override ------------------------------

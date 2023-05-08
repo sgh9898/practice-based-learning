@@ -1,6 +1,6 @@
 package com.demo.openfeign;
 
-import com.demo.database.entity.DemoEntity;
+import com.demo.db.entity.DemoEntity;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 

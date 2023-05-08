@@ -1,7 +1,8 @@
 package com.demo.excel.controller;
 
-import com.demo.database.entity.DemoEntity;
+import com.demo.db.entity.DemoEntity;
 import com.demo.excel.easyexcel.EasyExcelUtils;
+import com.demo.excel.pojo.ExcelToDdl;
 import com.demo.excel.service.ExcelService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -34,7 +35,7 @@ public class EasyExcelController {
     @PostMapping("/importData")
     @ApiOperation("导入数据")
     public Object importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response) {
-        return EasyExcelUtils.importData(file, request, response, DemoEntity.class);
+        return EasyExcelUtils.importDataExportError(file, request, response, DemoEntity.class);
     }
 
     @GetMapping("/exportTemplate")
@@ -81,6 +82,20 @@ public class EasyExcelController {
         headMap.put("二级标题1", "title1");
         headMap.put("二级标题2", "title2");
         headMap.put("二级标题3", "title3");
-        return EasyExcelUtils.noModelImportExcel(file, request, response, headMap);
+        return EasyExcelUtils.noModelImportExcelExportError(file, request, response, headMap);
     }
+
+    @PostMapping("/excelToDdl")
+    @ApiOperation("Excel 转 DDL ")
+    public String excelToDdl(MultipartFile file, HttpServletRequest request, HttpServletResponse response, String tableName) {
+        return excelService.generateDdl(file, request, response, tableName);
+    }
+
+    @GetMapping("/excelToDdl/template")
+    @ApiOperation("Excel 转 DDL 模板")
+    public void excelToDdlTemplate(HttpServletRequest request, HttpServletResponse response) {
+        EasyExcelUtils.exportTemplate(request, response, "Excel转DDL模板", ExcelToDdl.class, null);
+    }
+
+
 }

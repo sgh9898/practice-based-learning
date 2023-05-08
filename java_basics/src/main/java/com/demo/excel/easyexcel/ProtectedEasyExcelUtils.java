@@ -84,58 +84,42 @@ class ProtectedEasyExcelUtils {
     /**
      * 导入 Excel 文件, 使用自定义的 ExcelListener 配置
      *
-     * @param file       文件
-     * @param request    HttpServletRequest
-     * @param response   HttpServletResponse
-     * @param excelClass Excel 类, 推荐 extends {@link ExcelClassTemplate}
-     * @param listener   ExcelListener, 允许 extends {@link Listener}
+     * @param file        文件
+     * @param request     HttpServletRequest
+     * @param response    HttpServletResponse
+     * @param excelClass  Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param listener    ExcelListener, 允许 extends {@link Listener}
+     * @param exportError 自动导出报错
      * @return true = 成功, false = 文件为空, null = 失败且下载含报错信息的 Excel 文件
      */
-    public static <T, U extends Listener<T>> Boolean baseImportExcel(MultipartFile file, HttpServletRequest request,
-                                                                     HttpServletResponse response, Class<T> excelClass, U listener) {
+    public static <T, U extends Listener<T>> Boolean baseImportExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response,
+                                                                     Class<T> excelClass, U listener, Boolean exportError) {
         if (file == null) {
             log.error("上传 Excel 文件为空");
             return false;
         }
         try {
+            // 读取数据
             EasyExcel.read(file.getInputStream(), excelClass, listener).sheet().doRead();
             // head 无效时跳过前 x 行
             while (!listener.getValidHead()) {
                 EasyExcel.read(file.getInputStream(), excelClass, listener).headRowNumber(listener.getHeadRowNum()).sheet().doRead();
             }
+
             // 报错处理
             String fileName = StringUtils.isBlank(file.getOriginalFilename()) ? "" : file.getOriginalFilename();
             String fileNameNoPostfix = fileName.lastIndexOf('.') > 0 ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
             String errorFileName = fileNameNoPostfix + " Excel 导入报错" + new SimpleDateFormat("yyyyMMdd").format(new Date()) + ".xlsx";
+            // 存在错误信息
             if (!listener.getInvalidList().isEmpty()) {
-                // 导出包含报错的 Excel
-                baseExportExcel(request, response, excelClass, errorFileName, null, listener.getInvalidList(),
-                        null, null, null, null, null, null, null);
-                return null;
-            } else if (listener.getValidList().isEmpty()) {
-                // 空白文件或 head 无效
-                T tempExcel = excelClass.newInstance();
-                if (tempExcel instanceof ExcelClassTemplate) {
-                    ((ExcelClassTemplate) tempExcel).setDefaultExcelErrorMessage("文件内容为空或列名不匹配");
-                } else {
-                    for (Field currField : tempExcel.getClass().getDeclaredFields()) {
-                        if (currField.getName().equals(ProtectedConstants.DEFAULT_ERROR_PARAM)) {
-                            try {
-                                currField.set(tempExcel, "文件内容为空或列名不匹配");
-                            } catch (IllegalAccessException e) {
-                                log.error("设置 Excel 导入错误信息失败", e);
-                                throw new RuntimeException("设置 Excel 导入错误信息失败");
-                            }
-                        }
-                    }
+                if (exportError) {
+                    // 导出包含报错的 Excel
+                    baseExportExcel(request, response, excelClass, errorFileName, null, listener.getInvalidList(),
+                            null, null, null, null, null, null, null);
+                    return null;
                 }
-                List<T> tempExcelList = new LinkedList<>();
-                tempExcelList.add(tempExcel);
-                baseExportExcel(request, response, excelClass, errorFileName, null, tempExcelList,
-                        null, null, null, null, null, null, null);
-                return null;
             }
-        } catch (IOException | InstantiationException | IllegalAccessException e) {
+        } catch (IOException e) {
             log.error(file.getOriginalFilename() + " Excel 导入异常, 请检查导入文件或 Excel 类 " + excelClass.getName(), e);
             return null;
         }
@@ -146,42 +130,48 @@ class ProtectedEasyExcelUtils {
      * 不指定 ExcelClass 导入 Excel 文件, 使用自定义的 ExcelListener 配置
      * <br>1. 返回结果为 true, false, null; 返回 null 时下载含报错信息的 Excel 文件
      *
-     * @param file     文件
-     * @param request  HttpServletRequest
-     * @param response HttpServletResponse
+     * @param file        文件
+     * @param request     HttpServletRequest
+     * @param response    HttpServletResponse
+     * @param exportError 自动导出报错
      * @return true = 成功, false = 文件为空, null = 失败且下载含报错信息的 Excel 文件
      */
-    public static <T extends ListenerNoModel> Boolean noModelBaseImportExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response, T listener) {
+    public static <T extends ListenerNoModel> Boolean noModelBaseImportExcel(MultipartFile file, HttpServletRequest request,
+                                                                             HttpServletResponse response, T listener, Boolean exportError) {
         if (file == null) {
             log.error("上传 Excel 文件为空");
             return false;
         }
         try {
+            // 读取数据
             EasyExcel.read(file.getInputStream(), listener).sheet().doRead();
             // head 无效时跳过前 x 行
             while (!listener.getValidHead()) {
                 EasyExcel.read(file.getInputStream(), listener).headRowNumber(listener.getHeadRowNum()).sheet().doRead();
             }
-//            // 报错处理
-//            String fileName = StringUtils.isBlank(file.getOriginalFilename()) ? "" : file.getOriginalFilename();
-//            String fileNameNoPostfix = fileName.lastIndexOf('.') > 0 ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
-//            String errorFileName = fileNameNoPostfix + " Excel 导入报错" + new SimpleDateFormat("yyyyMMdd").format(new Date()) + ".xlsx";
-//            if (!listener.getInvalidList().isEmpty()) {
-//                List<List<String>> outerHeadList = new LinkedList<>();
-//                for (int i = 0; i < listener.getIndexedCnHeadMap().size(); i++) {
-//                    List<String> innerHeadList = new LinkedList<>();
-//                    innerHeadList.add(listener.getIndexedCnHeadMap().get(i));
-//                    outerHeadList.add(innerHeadList);
-//                }
-//                List<String> innerHeadList = new LinkedList<>();
-//                innerHeadList.add("错误信息");
-//                outerHeadList.add(innerHeadList);
-//
-//                // 导出包含报错的 Excel
-//                noModelBaseExportExcel(request, response, errorFileName, "Sheet1", outerHeadList, listener.getInvalidList(),
-//                        null, null, null, null, null);
-//                return null;
-//            }
+
+            // 报错处理
+            String fileName = StringUtils.isBlank(file.getOriginalFilename()) ? "" : file.getOriginalFilename();
+            String fileNameNoPostfix = fileName.lastIndexOf('.') > 0 ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
+            String errorFileName = fileNameNoPostfix + " Excel 导入报错" + new SimpleDateFormat("yyyyMMdd").format(new Date()) + ".xlsx";
+            List<List<String>> outerHeadList = new LinkedList<>();
+            for (int i = 0; i < listener.getIndexedCnHeadMap().size(); i++) {
+                List<String> innerHeadList = new LinkedList<>();
+                innerHeadList.add(listener.getIndexedCnHeadMap().get(i));
+                outerHeadList.add(innerHeadList);
+            }
+            List<String> innerHeadList = new LinkedList<>();
+            innerHeadList.add("错误信息");
+            outerHeadList.add(innerHeadList);
+            // 存在错误信息
+            if (!listener.getInvalidList().isEmpty()) {
+                if (exportError) {
+                    // 导出包含报错的 Excel
+                    noModelBaseExportExcel(request, response, errorFileName, "Sheet1", outerHeadList, listener.getInvalidList(),
+                            null, null, null, null, null);
+                    return null;
+                }
+            }
         } catch (IOException e) {
             log.error(file.getOriginalFilename() + " Excel 导入异常, 请检查导入文件 ", e);
             return null;
@@ -394,13 +384,13 @@ class ProtectedEasyExcelUtils {
         // 单表(不使用标题与自定义说明)且需要动态列名时, 需要在 writer 中应用 head 样式
         // 标题
         if (StringUtils.isNotBlank(title)) {
-            writeTitle(excelWriter, sheetBuilder.build(), ExcelClassTemplate.class, title, validColumnNum, mainTableIndex);
+            writeTitle(excelWriter, sheetBuilder.build(), EasyExcelClassTemplate.class, title, validColumnNum, mainTableIndex);
             // tableIndex 顺沿
             mainTableIndex++;
         }
         // 自定义说明
         if (StringUtils.isNotBlank(note)) {
-            writeNote(excelWriter, sheetBuilder.build(), ExcelClassTemplate.class, note, validColumnNum, mainTableIndex);
+            writeNote(excelWriter, sheetBuilder.build(), EasyExcelClassTemplate.class, note, validColumnNum, mainTableIndex);
             // tableIndex 顺沿
             mainTableIndex++;
         }
