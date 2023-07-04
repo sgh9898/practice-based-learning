@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
+import java.util.*;
 
 /**
  * EasyExcel 功能测试
@@ -23,6 +23,35 @@ public class ExcelService {
         EasyExcelUtils excelUtils = new EasyExcelUtils(request, response, "Excel导出测试", DemoEntity.class);
         excelUtils.setTitle("这是一条标题");
         excelUtils.exportExcelCustomized();
+    }
+
+    /** 无模板导出 */
+    public void noModelExport(HttpServletRequest request, HttpServletResponse response) {
+        // 标题
+        List<List<String>> outerHeadList = new LinkedList<>();
+        List<String> headList1 = new ArrayList<>();
+        headList1.add("testHead1");
+        headList1.add("testHead2");
+        List<String> headList2 = new ArrayList<>();
+        headList2.add("testHead1");
+        headList2.add("testHead3");
+        List<String> headList3 = new ArrayList<>();
+        headList3.add("testHead4");
+        outerHeadList.add(headList1);
+        outerHeadList.add(headList2);
+        outerHeadList.add(headList3);
+
+        Set<String> importantSet = new HashSet<>();
+        importantSet.add("testHead3");
+
+        Map<String, String> enToCnMap = new HashMap<>();
+        enToCnMap.put("testHead1", "测试标题1");
+        EasyExcelUtils easyExcelUtils = new EasyExcelUtils(request, response, "测试文件noModel");
+        easyExcelUtils.setNoModelEnToCnHeadNameMap(enToCnMap);
+        easyExcelUtils.setNoModelEnHeadList(outerHeadList);
+        easyExcelUtils.setSheetName("11111");
+        easyExcelUtils.setNoModelEnSpecialHeadSet(importantSet);
+        easyExcelUtils.noModelExportExcelCustomized();
     }
 
     /** 生成建表语句 */

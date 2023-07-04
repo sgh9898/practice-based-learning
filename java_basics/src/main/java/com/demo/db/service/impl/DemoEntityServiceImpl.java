@@ -83,7 +83,7 @@ public class DemoEntityServiceImpl implements DemoEntityService {
     /** [导入数据] 演示类 */
     @Override
     public void importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response) {
-        List<DemoEntity> importList = EasyExcelUtils.importDataExportError(file, request, response, DemoEntity.class);
+        List<DemoEntity> importList = EasyExcelUtils.importData(file, request, response, DemoEntity.class);
         if (importList != null && !importList.isEmpty()) {
             demoEntityRepository.saveAll(importList);
         }

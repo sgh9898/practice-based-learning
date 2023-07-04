@@ -35,7 +35,7 @@ public class EasyExcelController {
     @PostMapping("/importData")
     @ApiOperation("导入数据")
     public Object importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response) {
-        return EasyExcelUtils.importDataExportError(file, request, response, DemoEntity.class);
+        return EasyExcelUtils.importData(file, request, response, DemoEntity.class);
     }
 
     @GetMapping("/exportTemplate")
@@ -47,32 +47,13 @@ public class EasyExcelController {
     @GetMapping("/exportExcel")
     @ApiOperation("导出 Excel")
     public void exportExcel(HttpServletRequest request, HttpServletResponse response) {
-        excelService.exportExcel(request, response);
+        excelService.noModelExport(request, response);
     }
 
     @GetMapping("/noModel/exportTemplate")
     @ApiOperation("不指定 ExcelClass 导出模板, 复合 head")
     public void noModelExportData(HttpServletRequest request, HttpServletResponse response) {
-        List<List<String>> outerHeadList = new LinkedList<>();
-        List<String> headList1 = new ArrayList<>();
-        headList1.add("一级标题1");
-        headList1.add("二级标题1");
-        List<String> headList2 = new ArrayList<>();
-        headList2.add("一级标题1");
-        headList2.add("二级标题2");
-        List<String> headList3 = new ArrayList<>();
-        headList3.add("二级标题3");
-        outerHeadList.add(headList1);
-        outerHeadList.add(headList2);
-        outerHeadList.add(headList3);
-
-        EasyExcelUtils easyExcelUtils = new EasyExcelUtils(request, response, "测试文件324");
-        easyExcelUtils.setNoModelHeadList(outerHeadList);
-        easyExcelUtils.setSheetName("11111");
-        easyExcelUtils.noModelWriteSheet();
-        easyExcelUtils.setSheetName("22222");
-        easyExcelUtils.noModelWriteSheet();
-        easyExcelUtils.closeExcel();
+        excelService.noModelExport(request, response);
     }
 
     @PostMapping("/noModel/importData")
@@ -82,7 +63,7 @@ public class EasyExcelController {
         headMap.put("二级标题1", "title1");
         headMap.put("二级标题2", "title2");
         headMap.put("二级标题3", "title3");
-        return EasyExcelUtils.noModelImportExcelExportError(file, request, response, headMap);
+        return EasyExcelUtils.noModelImportExcel(file, request, response, headMap);
     }
 
     @PostMapping("/excelToDdl")

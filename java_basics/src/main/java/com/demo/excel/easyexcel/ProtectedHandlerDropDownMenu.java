@@ -39,10 +39,6 @@ class ProtectedHandlerDropDownMenu implements SheetWriteHandler {
     }
 
     @Override
-    public void beforeSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
-    }
-
-    @Override
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
         // 无需配置下拉框
         if (dropDownMap == null || dropDownMap.isEmpty()) {

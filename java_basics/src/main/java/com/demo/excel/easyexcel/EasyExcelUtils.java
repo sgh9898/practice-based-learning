@@ -4,6 +4,7 @@ package com.demo.excel.easyexcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -21,7 +22,7 @@ import java.util.*;
  * <br>     1) 指定 ExcelClass 时: extends {@link EasyExcelClassTemplate}(内有详细配置说明), 或将类注解与 defaultExcelErrorMessage 字段直接配置于实体类中
  * <br>     2) 不指定 ExcelClass 时不需要前置操作
  * <br> 1. 导入:
- * <br>     1) 返回 List(ExcelClass): {@link #importDataExportError}
+ * <br>     1) 返回 List(ExcelClass): {@link #importData}
  * <br> 2. 导出, Static:
  * <br>     1) 导出 Excel 空白模板: {@link #exportTemplate}
  * <br>     2) 导出 Excel 数据: {@link #exportData}
@@ -89,20 +90,29 @@ public class EasyExcelUtils {
 
 // ------------------------------ NoModel 相关配置(不指定 ExcelClass) ------------------------------
     /**
-     * [不指定 ExcelClass] 中文列名
+     * [不指定 ExcelClass] 英文列名, 需要与 {@link #noModelEnToCnHeadNameMap} 配合转为中文列名
      * <br> 1. 单行列名: List(string)
      * <br> 2. 多行复合列名(相同标题自动合并): List(List(string)); 如 List(List(第一行, 第二行1), List(第一行, 第二行2)), 其中"第一行"会自动合并
      */
-    private List<?> noModelHeadList = new LinkedList<>();
+    @Getter
+    private List<?> noModelEnHeadList = new LinkedList<>();
+
+    /** [不指定 ExcelClass] 需要标红的列名(英文) */
+    @Getter
+    private Set<String> noModelEnSpecialHeadSet = new HashSet<>();
+
     /**
-     * [不指定 ExcelClass] 中英列名对照, Map(中文, 英文)
-     * <br> 中文列名, 需要出现在 {@link #noModelHeadList} 中
-     * <br> 英文字段, 需要出现在 {@link #noModelDataList} 中
+     * [不指定 ExcelClass] 中英列名对照, Map(英文, 中文)
+     * <br> 英文列名, 需要出现在 {@link #noModelEnHeadList} 中, 用于控制 {@link #noModelDataList} 参数展示
      */
-    private Map<String, String> noModelCnToEnHeadNameMap = new HashMap<>();
+    @Getter
+    private Map<String, String> noModelEnToCnHeadNameMap = new HashMap<>();
+
     /** [不指定 ExcelClass] 导出数据 */
     private List<Map<String, Object>> noModelDataList = new LinkedList<>();
-    /** [不指定 ExcelClass] 下拉框, 格式: Map(列名, 选项), 列名需要出现在 {@link #noModelHeadList} 中) */
+
+    /** [不指定 ExcelClass] 下拉框, 格式: Map(列名, 选项), 列名需要出现在 {@link #noModelEnHeadList} 中) */
+    @Getter
     private Map<String, String[]> noModelDropDownMap = new HashMap<>();
 
 // ------------------------------ 构造 ------------------------------
@@ -140,16 +150,16 @@ public class EasyExcelUtils {
 // ------------------------------ Static, 导入 ------------------------------
 
     /**
-     * 导入 Excel 文件, 存储报错信息
+     * 导入 Excel 文件, 保存报错信息至 errorList
      * <br> 1. 自动跳过无效的 head
-     * <br> 2. 失败时返回 null 并下载含报错信息的 Excel 文件
+     * <br> 2. 导入完成后保存报错信息至 errorList
      *
      * @param file       文件
      * @param request    HttpServletRequest
      * @param response   HttpServletResponse
      * @param excelClass Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
      * @param errorList  存储报错信息
-     * @return List(ExcelClass) = 成功, false = 文件为空, null = 失败且下载含报错信息的 Excel 文件
+     * @return List(ExcelClass) = 成功, null = 失败且下载含报错信息的 Excel 文件
      */
     public static <T> List<T> importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass, List<T> errorList) {
         Listener<T> listener = new Listener<>(excelClass);
@@ -167,17 +177,17 @@ public class EasyExcelUtils {
     /**
      * 导入 Excel 文件, 自动下载报错信息
      * <br> 1. 自动跳过无效的 head
-     * <br> 2. 失败时返回 null 并下载含报错信息的 Excel 文件
+     * <br> 2. 导入失败/未通过初步校验时返回 null 并下载含报错信息的 Excel 文件
      *
      * @param file       文件
      * @param request    HttpServletRequest
      * @param response   HttpServletResponse
      * @param excelClass Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
-     * @return List(ExcelClass) = 成功, false = 文件为空, null = 失败且下载含报错信息的 Excel 文件
+     * @return List(ExcelClass) = 成功, null = 失败且下载含报错信息的 Excel 文件
      */
-    public static <T> List<T> importDataExportError(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass) {
+    public static <T> List<T> importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass) {
         Listener<T> listener = new Listener<>(excelClass);
-        // 导入成功, 且不存在报错
+        // 导入并进行初步校验: 成功 --> 返回数据; 失败 --> 自动下载报错信息
         if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.baseImportExcel(file, request, response, excelClass, listener, true))) {
             return listener.getValidList();
         }
@@ -185,44 +195,39 @@ public class EasyExcelUtils {
     }
 
     /**
-     * [不指定 ExcelClass] 导入 Excel 文件
-     * <br> 1. 自动跳过无效的 head
-     * <br> 2. 失败时返回 null 并下载含报错信息的 Excel 文件
+     * [不指定 ExcelClass] 导入 Excel 文件, 较宽松的 head 校验
+     * <br> 1. 自动跳过无效的 head, 忽略未在 cnToEnHeadNameMap 中定义的 head
+     * <br> 2. 导入失败或文件为空时返回 null, 并自动下载报错文件
      *
      * @param file              文件
      * @param request           HttpServletRequest
      * @param response          HttpServletResponse
      * @param cnToEnHeadNameMap [允许空/null] 中英列名对照, Map(中文, 英文)
-     * @param errorList         存储报错信息
-     * @return List(Map) = 成功, false = 文件为空, null = 失败且下载含报错信息的 Excel 文件
+     * @return List(Map) = 成功, null = 失败且下载含报错信息的 Excel 文件
      */
-    public static Object noModelImportExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Map<String, String> cnToEnHeadNameMap, List<List<Object>> errorList) {
-        ListenerNoModel listenerNoModel = new ListenerNoModel(cnToEnHeadNameMap);
+    public static List<Map<String, Object>> noModelImportExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Map<String, String> cnToEnHeadNameMap) {
+        ListenerNoModel listenerNoModel = new ListenerNoModel(cnToEnHeadNameMap, null);
         // 导入成功
-        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.noModelBaseImportExcel(file, request, response, listenerNoModel, false))) {
-            // 记录报错
-            if (errorList != null) {
-                errorList.addAll(listenerNoModel.getInvalidList());
-            }
+        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.noModelBaseImportExcel(file, request, response, listenerNoModel, true))) {
             return listenerNoModel.getValidList();
         }
         return null;
     }
 
     /**
-     * [不指定 ExcelClass] 导入 Excel 文件, 自动下载报错信息
-     * <br> 1. 自动跳过无效的 head
-     * <br> 2. 失败时返回 null 并下载含报错信息的 Excel 文件
+     * [不指定 ExcelClass] 导入 Excel 文件, 严格的 head 校验
+     * <br> 1. 自动跳过无效的 head, 未被 cnToEnHeadNameMap 定义的 head 视为报错
+     * <br> 2. 导入失败或文件为空时返回 null, 并自动下载报错文件
      *
      * @param file              文件
      * @param request           HttpServletRequest
      * @param response          HttpServletResponse
      * @param cnToEnHeadNameMap [允许空/null] 中英列名对照, Map(中文, 英文)
-     * @return List(Map) = 成功, false = 文件为空, null = 失败且下载含报错信息的 Excel 文件
+     * @return List(Map) = 成功, null = 失败且下载含报错信息的 Excel 文件
      */
-    public static Object noModelImportExcelExportError(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Map<String, String> cnToEnHeadNameMap) {
-        // 导入成功, 且不存在报错
-        ListenerNoModel listenerNoModel = new ListenerNoModel(cnToEnHeadNameMap);
+    public static List<Map<String, Object>> noModelImportExcelStrictly(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Map<String, String> cnToEnHeadNameMap) {
+        ListenerNoModel listenerNoModel = new ListenerNoModel(cnToEnHeadNameMap, ProtectedConstants.HEAD_RULES_STRICTLY_CONTAINS);
+        // 导入成功
         if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.noModelBaseImportExcel(file, request, response, listenerNoModel, true))) {
             return listenerNoModel.getValidList();
         }
@@ -282,7 +287,7 @@ public class EasyExcelUtils {
         // 整理列名与数据格式
         List<List<String>> newHeadList = new LinkedList<>();
         List<List<Object>> newDataList = new LinkedList<>();
-        if (setHeadAndDataNoModel(headList, dataList, noModelHeadMap, newHeadList, newDataList)) {
+        if (setHeadAndDataNoModel(headList, dataList, noModelHeadMap, newHeadList, newDataList, null)) {
             ProtectedEasyExcelUtils.noModelBaseExportExcel(request, response, fileName, "Sheet1", newHeadList, newDataList,
                     null, null, null, null, null);
         }
@@ -300,7 +305,7 @@ public class EasyExcelUtils {
     public static void noModelExportTemplate(HttpServletRequest request, HttpServletResponse response, String fileName, List<?> headList, String note) {
         // 整理列名与数据格式
         List<List<String>> newHeadList = new LinkedList<>();
-        if (setHeadAndDataNoModel(headList, null, null, newHeadList, null)) {
+        if (setHeadAndDataNoModel(headList, null, null, newHeadList, null, null)) {
             ProtectedEasyExcelUtils.noModelBaseExportExcel(request, response, fileName, "Sheet1", newHeadList, null,
                     null, note, null, null, null);
         }
@@ -308,6 +313,76 @@ public class EasyExcelUtils {
 // ============================== Static, 导出 End ==============================
 
 // ------------------------------ Non-static ------------------------------
+
+    /**
+     * 整理列名与数据格式(不指定 ExcelClass 时)
+     *
+     * @param srcEnglishHeadList   单行列名 List(string); 多行复合列名 List(List(string))
+     * @param srcDataList          [允许空/null] 表内数据
+     * @param noModelEnToCnHeadMap 列名英文与中文对照
+     * @param chineseHeadList      整理后的列名
+     * @param destDataList         整理后的数据
+     * @param orderedEnglishHead   整理后的最底层英文列名
+     */
+    @SuppressWarnings("unchecked")
+    private static boolean setHeadAndDataNoModel(List<?> srcEnglishHeadList, List<Map<String, Object>> srcDataList, Map<String, String> noModelEnToCnHeadMap,
+                                                 List<List<String>> chineseHeadList, List<List<Object>> destDataList, List<String> orderedEnglishHead) {
+        // 不允许列名为空
+        if (srcEnglishHeadList == null || srcEnglishHeadList.isEmpty()) {
+            log.info("Excel 列名为空时无法导出");
+            return false;
+        }
+        // 整理列名
+        if (orderedEnglishHead == null) {
+            orderedEnglishHead = new LinkedList<>();
+        }
+        if (srcEnglishHeadList.get(0) instanceof String) {
+            // 列名顺序
+            orderedEnglishHead = (List<String>) srcEnglishHeadList;
+            // 单行列名
+            for (String currHead : orderedEnglishHead) {
+                List<String> columnHeadList = new LinkedList<>();
+                // 有中文转中文, 无中文保持英文
+                if (noModelEnToCnHeadMap.get(currHead) != null) {
+                    columnHeadList.add(noModelEnToCnHeadMap.get(currHead));
+                } else {
+                    columnHeadList.add(currHead);
+                }
+                chineseHeadList.add(columnHeadList);
+            }
+        } else if (srcEnglishHeadList.get(0) instanceof List) {
+            // 多行列名, 逐列处理
+            for (Object columnHeadList : srcEnglishHeadList) {
+                List<String> newColumnHeadList = new LinkedList<>();
+                String bottomEnglishHead = "";
+                for (String currHead : (List<String>) columnHeadList) {
+                    // 有中文转中文, 无中文保持英文
+                    if (noModelEnToCnHeadMap.get(currHead) != null) {
+                        newColumnHeadList.add(noModelEnToCnHeadMap.get(currHead));
+                    } else {
+                        newColumnHeadList.add(currHead);
+                    }
+                    bottomEnglishHead = currHead;
+                }
+                // 记录中文列名
+                chineseHeadList.add(newColumnHeadList);
+                // 记录最底层列名, 作为数据顺序依据
+                orderedEnglishHead.add(bottomEnglishHead);
+            }
+        }
+
+        // 根据列名顺序整理数据
+        if (srcDataList != null && !srcDataList.isEmpty()) {
+            for (Map<String, Object> currDataMap : srcDataList) {
+                List<Object> innerDataList = new LinkedList<>();
+                for (String englishHeadName : orderedEnglishHead) {
+                    innerDataList.add(currDataMap.get(englishHeadName));
+                }
+                destDataList.add(innerDataList);
+            }
+        }
+        return true;
+    }
 
     /** 导出 Excel: (NoModel 系列参数不生效) */
     public void exportExcelCustomized() {
@@ -327,7 +402,7 @@ public class EasyExcelUtils {
         sheetIndex++;
     }
 
-    /** 导出 Excel: (NoModel 系列参数不生效) */
+    /** [不指定 ExcelClass] 导出 Excel */
     public void noModelExportExcelCustomized() {
         noModelWriteSheet();
         closeExcel();
@@ -336,19 +411,30 @@ public class EasyExcelUtils {
     /** [不指定 ExcelClass] 导出 Excel: 写入单张 sheet(使用通用及 NoModel 系列参数) */
     public void noModelWriteSheet() {
         // 整理列名与数据格式
-        List<List<String>> newHeadList = new LinkedList<>();
+        List<List<String>> newChineseHeadList = new LinkedList<>();
         List<List<Object>> newDataList = new LinkedList<>();
-        if (setHeadAndDataNoModel(noModelHeadList, noModelDataList, noModelCnToEnHeadNameMap, newHeadList, newDataList)) {
+        List<String> orderedEnglishHead = new LinkedList<>();
+        if (setHeadAndDataNoModel(noModelEnHeadList, noModelDataList, noModelEnToCnHeadNameMap, newChineseHeadList, newDataList, orderedEnglishHead)) {
             // 配置下拉框
             Map<Integer, String[]> indexedDropDownMap = new HashMap<>();
             int index = 1;
-            for (List<String> head : newHeadList) {
-                if (noModelDropDownMap.containsKey(head.get(head.size() - 1))) {
-                    indexedDropDownMap.put(index, noModelDropDownMap.get(head.get(head.size() - 1)));
+            for (String head : orderedEnglishHead) {
+                if (noModelDropDownMap.containsKey(head)) {
+                    indexedDropDownMap.put(index, noModelDropDownMap.get(head));
                 }
                 index++;
             }
-            ProtectedEasyExcelUtils.noModelBaseWriteSheet(excelWriter, sheetIndex, sheetName, newHeadList, newDataList,
+            // 特殊标注的列名英文转中文, 无对应中文的保持英文
+            Set<String> cnSpecialHeadSet = new HashSet<>();
+            for (String enSpecialHead : noModelEnSpecialHeadSet) {
+                if (noModelEnToCnHeadNameMap.get(enSpecialHead) != null) {
+                    cnSpecialHeadSet.add(noModelEnToCnHeadNameMap.get(enSpecialHead));
+                } else {
+                    cnSpecialHeadSet.add(enSpecialHead);
+                }
+            }
+            // 写数据
+            ProtectedEasyExcelUtils.noModelBaseWriteSheet(excelWriter, sheetIndex, sheetName, newChineseHeadList, cnSpecialHeadSet, newDataList,
                     title, note, indexedDropDownMap, widthStrategy);
         }
         sheetIndex++;
@@ -386,6 +472,8 @@ public class EasyExcelUtils {
         this.excludedCols.addAll(excluded);
     }
 
+// ------------------------------ Private ------------------------------
+
     /** 关闭所有的流 */
     public void closeExcel() {
         if (excelWriter != null) {
@@ -399,57 +487,5 @@ public class EasyExcelUtils {
             log.error("Excel 关闭输出流失败", e);
             throw new RuntimeException("Excel 关闭输出流失败");
         }
-    }
-
-// ------------------------------ Private ------------------------------
-
-    /**
-     * 整理列名与数据格式(不指定 ExcelClass 时)
-     *
-     * @param srcHeadList  单行列名 List(string); 多行复合列名 List(List(string))
-     * @param srcDataList  [允许空/null] 表内数据
-     * @param destHeadList 整理后的列名
-     * @param destDataList 整理后的数据
-     */
-    @SuppressWarnings("unchecked")
-    private static boolean setHeadAndDataNoModel(List<?> srcHeadList, List<Map<String, Object>> srcDataList, Map<String, String> noModelHeadMap,
-                                                 List<List<String>> destHeadList, List<List<Object>> destDataList) {
-        // 不允许列名为空
-        if (srcHeadList == null || srcHeadList.isEmpty()) {
-            log.info("Excel 列名为空时无法导出");
-            return false;
-        }
-
-        // 整理列名
-        List<String> orderedChineseHead = new LinkedList<>();
-        if (srcHeadList.get(0) instanceof String) {
-            // 列名顺序
-            orderedChineseHead = (List<String>) srcHeadList;
-            // 单行列名
-            for (String currHead : orderedChineseHead) {
-                List<String> innerHeadList = new LinkedList<>();
-                innerHeadList.add(currHead);
-                destHeadList.add(innerHeadList);
-            }
-        } else if (srcHeadList.get(0) instanceof List) {
-            // 多行列名
-            destHeadList.addAll((List<List<String>>) srcHeadList);
-            // 列名顺序
-            for (List<String> currHead : destHeadList) {
-                orderedChineseHead.add(currHead.get(currHead.size() - 1));
-            }
-        }
-
-        // 根据列名顺序整理数据
-        if (srcDataList != null && !srcDataList.isEmpty()) {
-            for (Map<String, Object> currDataMap : srcDataList) {
-                List<Object> innerDataList = new LinkedList<>();
-                for (String chineseHeadName : orderedChineseHead) {
-                    innerDataList.add(currDataMap.get(noModelHeadMap.get(chineseHeadName)));
-                }
-                destDataList.add(innerDataList);
-            }
-        }
-        return true;
     }
 }

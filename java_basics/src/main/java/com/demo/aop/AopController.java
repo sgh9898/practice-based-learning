@@ -1,6 +1,6 @@
 package com.demo.aop;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.demo.exception.JsonException;
 import com.demo.util.ResultUtil;
 import io.swagger.annotations.Api;

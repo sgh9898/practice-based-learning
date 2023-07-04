@@ -4,6 +4,7 @@ package com.demo.excel.easyexcel;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.enums.CellExtraTypeEnum;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.alibaba.excel.write.builder.ExcelWriterSheetBuilder;
 import com.alibaba.excel.write.builder.ExcelWriterTableBuilder;
@@ -19,7 +20,6 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -100,10 +100,10 @@ class ProtectedEasyExcelUtils {
         }
         try {
             // 读取数据
-            EasyExcel.read(file.getInputStream(), excelClass, listener).sheet().doRead();
+            EasyExcel.read(file.getInputStream(), excelClass, listener).extraRead(CellExtraTypeEnum.MERGE).sheet().doRead();
             // head 无效时跳过前 x 行
             while (!listener.getValidHead()) {
-                EasyExcel.read(file.getInputStream(), excelClass, listener).headRowNumber(listener.getHeadRowNum()).sheet().doRead();
+                EasyExcel.read(file.getInputStream(), excelClass, listener).extraRead(CellExtraTypeEnum.MERGE).headRowNumber(listener.getHeadRowNum()).sheet().doRead();
             }
 
             // 报错处理
@@ -144,10 +144,10 @@ class ProtectedEasyExcelUtils {
         }
         try {
             // 读取数据
-            EasyExcel.read(file.getInputStream(), listener).sheet().doRead();
+            EasyExcel.read(file.getInputStream(), listener).extraRead(CellExtraTypeEnum.MERGE).sheet().doRead();
             // head 无效时跳过前 x 行
             while (!listener.getValidHead()) {
-                EasyExcel.read(file.getInputStream(), listener).headRowNumber(listener.getHeadRowNum()).sheet().doRead();
+                EasyExcel.read(file.getInputStream(), listener).extraRead(CellExtraTypeEnum.MERGE).headRowNumber(listener.getHeadRowNum()).sheet().doRead();
             }
 
             // 报错处理
@@ -226,7 +226,7 @@ class ProtectedEasyExcelUtils {
                                               List<List<String>> cnHeadList, List<List<Object>> dataList, String title, String note,
                                               Map<Integer, String[]> dropDownMap, ProtectedEnumsColWidth widthStrategy, Boolean useExcel07) {
         ExcelWriter excelWriter = createExcelWriter(request, response, fileName, useExcel07);
-        noModelBaseWriteSheet(excelWriter, 0, sheetName, cnHeadList, dataList, title, note, dropDownMap, widthStrategy);
+        noModelBaseWriteSheet(excelWriter, 0, sheetName, cnHeadList, null, dataList, title, note, dropDownMap, widthStrategy);
         closeExcelWriter(response, excelWriter);
     }
 
@@ -345,17 +345,18 @@ class ProtectedEasyExcelUtils {
     /**
      * [不指定 ExcelClass] Excel 导出: 写入单张 Sheet(导出完成后需手动调用 {@link #closeExcelWriter} 关闭流)
      *
-     * @param excelWriter   Excel 导出主体
-     * @param sheetIndex    [允许 null] 表序号
-     * @param sheetName     [允许空/null] 表名
-     * @param cnHeadList    中文列名
-     * @param dataList      [允许空/null] 表内数据, 不填充传 null 即可
-     * @param title         [允许空/null] 标题, 在自定义说明之上
-     * @param note          [允许空/null] 自定义说明, 在列名之上
-     * @param dropDownMap   [允许空/null] 下拉框内容, Map(列序号, 选项)
-     * @param widthStrategy [允许空/null] 列宽选取方式
+     * @param excelWriter    Excel 导出主体
+     * @param sheetIndex     [允许 null] 表序号
+     * @param sheetName      [允许空/null] 表名
+     * @param cnHeadList     中文列名
+     * @param specialHeadSet [允许空/null] 需要标红的列名(中文)
+     * @param dataList       [允许空/null] 表内数据, 不填充传 null 即可
+     * @param title          [允许空/null] 标题, 在自定义说明之上
+     * @param note           [允许空/null] 自定义说明, 在列名之上
+     * @param dropDownMap    [允许空/null] 下拉框内容, Map(列序号, 选项)
+     * @param widthStrategy  [允许空/null] 列宽选取方式
      */
-    public static void noModelBaseWriteSheet(ExcelWriter excelWriter, Integer sheetIndex, String sheetName, List<List<String>> cnHeadList, List<List<Object>> dataList,
+    public static void noModelBaseWriteSheet(ExcelWriter excelWriter, Integer sheetIndex, String sheetName, List<List<String>> cnHeadList, Set<String> specialHeadSet, List<List<Object>> dataList,
                                              String title, String note, Map<Integer, String[]> dropDownMap, ProtectedEnumsColWidth widthStrategy) {
         // 计数, 未被排除的列
         int validColumnNum = cnHeadList.size();
@@ -371,9 +372,14 @@ class ProtectedEasyExcelUtils {
         if (StringUtils.isNotBlank(note)) {
             skipRowNum++;
         }
+        int headRows = 0;
+        for (List<String> headColumn : cnHeadList) {
+            headRows = Math.max(headRows, headColumn.size());
+        }
+        skipRowNum = skipRowNum + headRows - 1;
         sheetBuilder.registerWriteHandler(new ProtectedHandlerDropDownMenu(dropDownMap, skipRowNum));
         // 配置 head 样式
-        sheetBuilder.registerWriteHandler(new ProtectedHandlerVerticalStyleNoModel());
+        sheetBuilder.registerWriteHandler(new ProtectedHandlerVerticalStyleNoModel(specialHeadSet));
         // 自适应列宽
         sheetBuilder.registerWriteHandler(new ProtectedHandlerColumnWidth(widthStrategy));
         // 自适应行高
@@ -437,11 +443,9 @@ class ProtectedEasyExcelUtils {
         response.setHeader("Content-disposition", "attachment; filename=" + fileName);
 
         // 生成 excel writer
-        ServletOutputStream outputStream;
         ExcelWriter excelWriter = null;
         try {
-            outputStream = response.getOutputStream();
-            excelWriter = EasyExcel.write(outputStream).excelType(ExcelTypeEnum.XLSX).build();
+            excelWriter = EasyExcel.write(response.getOutputStream()).excelType(ExcelTypeEnum.XLSX).build();
         } catch (IOException e) {
             log.error("Excel Writer 创建失败", e);
             closeExcelWriter(response, null);

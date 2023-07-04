@@ -51,11 +51,11 @@ public interface DemoEntityRepository extends JpaRepository<DemoEntity, Long>, D
     /**
      * Sql 使用 list 查询
      *
-     * @param idList 不允许做 is null 判断
+     * @param idList 不允许做 is null 判断, 但是可以用另一个参数辅助
      */
     @Query(nativeQuery = true, value = "select * from demo_entity " +
-            "where id in :idList")
-    List<DemoEntity> sqlGetByList(@Param("idList") List<Long> idList);
+            "where ((:needList is false) or (:needList is true and id in :idList)) ")
+    List<DemoEntity> sqlGetByList(@Param("needList") Boolean needList, @Param("idList") List<Long> idList);
 
     /**
      * Hql 使用 list 查询

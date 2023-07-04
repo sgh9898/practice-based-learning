@@ -1,7 +1,7 @@
 package com.demo.session;
 
 import com.demo.db.entity.DemoEntity;
-import com.demo.util.JsonUtils;
+import com.demo.util.JacksonUtils;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +35,6 @@ public class SessionServiceImpl implements SessionService {
     public Object readSession(HttpServletRequest request) {
         HttpSession session = request.getSession();
         DemoEntity entity = (DemoEntity) session.getAttribute("demo");
-        return JsonUtils.beanOrListToJsonStr(entity);
+        return JacksonUtils.beanToJson(entity);
     }
 }

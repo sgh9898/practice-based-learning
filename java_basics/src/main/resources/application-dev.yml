@@ -8,6 +8,30 @@ server:
       # 使用当前配置文件进行编码, 可配合 charset: utf-8 使用
       force: true
 
+
+# Canal 参数
+canal:
+  # canal deployer 使用的数据库用户名
+  username: canal
+  # canal deployer 使用的数据库密码
+  password: canal
+
+  # canal 监听的表, 未配置时以 canal deployer 为准
+  # 监听全表             .*\..*
+  # 监听指定 schema      test\..*
+  # 监听指定表            test.table1
+  # 综合监听(逗号分隔)     test1\..*,test2.table1,test2.table2
+  subscribe: ds0\..*
+
+  # 扩展功能
+  extension:
+    # 从表相关
+    slave:
+      # 从表所属 schema
+      schema: backup
+      # 从表表名前缀
+#      table-name-prefix: backup_
+
 # Spring Auto-Configuration
 spring:
   application:
@@ -33,7 +57,7 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       minimum-idle: 3
-      maximum-pool-size: 3
+      maximum-pool-size: 10
 
   task:
     # 线程池
@@ -101,13 +125,6 @@ spring:
   # Thymeleaf
   thymeleaf:
     check-template-location: false
-
-# Swagger
-springfox:
-  documentation:
-    swagger-ui:
-      # 测试环境启用, 生产环境需关闭
-      enabled: true
 
 # 日志
 logging:

@@ -1,6 +1,6 @@
 package com.demo.util;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONObject;
 import com.dingtalk.api.DefaultDingTalkClient;
 import com.dingtalk.api.DingTalkClient;
 import com.dingtalk.api.request.OapiGettokenRequest;
@@ -94,9 +94,9 @@ public class DingDingUtil {
         request.setMsg(msg);
 
         try {
-            log.debug("钉钉文本消息推送: {}", JSONObject.toJSON(request));
+            log.debug("钉钉文本消息推送: {}", JSONObject.toJSONString(request));
             OapiMessageCorpconversationAsyncsendV2Response response = client.execute(request, accessToken);
-            log.info("钉钉文本消息推送结果: {}", JSONObject.toJSON(response));
+            log.info("钉钉文本消息推送结果: {}", JSONObject.toJSONString(response));
             if (response.isSuccess()) {
                 // 当前推送任务对应的 taskId
                 return response.getTaskId();

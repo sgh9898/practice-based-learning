@@ -1,29 +1,26 @@
 package com.demo;
 
+import com.alibaba.fastjson2.JSONObject;
+import com.demo.db.entity.DemoEntity;
 import com.demo.util.AESUtils;
+import com.demo.util.JacksonUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 普通测试
@@ -35,19 +32,30 @@ class GeneralTest {
     private String privateKey = "MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBAJC4BMkDUM5e2A5H96zbA4sfKMofzjb7/3IitFMGGVOXXYUi15YieiTUCphgL7tPYJVbwenwAIgrzEchCS7lyUdjwcJ06x0JIcsJIDLe3fMol+LSTH8vx78TrwfXvRm8dQtOnmXAYaULT17HK6lUFEGEmdib+vpIt7zADOaDXYJ9AgMBAAECgYAA7Wz6bM8Dw4/W55cqwGyRY627PeDwcUT90kMdlRhsdLfgtoxzJd1qhwFaYKNtq+COlHv1p9gZB07T1d5dMpPLotuO283SLCoPxybT3SomlW6z2iUrz0ykZL89kizV85PmwuiDqTylKippEIgqgQwqFH0T/SnJM2jwJ3YpUPz08QJBAMsGnfvp/WTXWlp1A3lVwRjKir0jtZ1Mzw577GeBVv3F3Y5gSMdisPxywgvC1loznEATIs+a70UIxoVDNd6wu4sCQQC2erS1iuPq2lKvhMaQMJPW8SHthq53Yr5pYnTI+drfsDDqIbphpbfUm0C6qM1cNoK8gYr8DiUawrt4xFbzvxsXAkBPPzT5eLsk2n51IomJmfR2ZdDDxSWF0c5ce/ip6i13fv1dLq4ZzacB0xV1G8cpjE2oIRAMcxCEJMnAiJyFYPzDAkAaFjapUV6931I8x1V/nYI1EynPhBaC+LnR5QJfDOEOY2jKv+GePgumuD8rsCATk7Ni8X4GBJunVLlqTV9E30gnAkBMdL0DNRnyPRmdEba0W5wP05cfnqf4ajxf2xFObpwu88+F2g41Ax3xgdYj/2ZXrAqo9vg2kJM/oKiBlFh/CqAK";
     private String publicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCQuATJA1DOXtgOR/es2wOLHyjKH842+/9yIrRTBhlTl12FIteWInok1AqYYC+7T2CVW8Hp8ACIK8xHIQku5clHY8HCdOsdCSHLCSAy3t3zKJfi0kx/L8e/E68H170ZvHULTp5lwGGlC09exyupVBRBhJnYm/r6SLe8wAzmg12CfQIDAQAB";
 
-    @Test
-    void main() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidKeySpecException {
-        System.out.println(new Date(1681196475000L));
+    /** 获取本机真实 ip */
+    private InetAddress getRealIp() {
+        try {
+            Enumeration<NetworkInterface> networkEnum = NetworkInterface.getNetworkInterfaces();
+            while (networkEnum.hasMoreElements()) {
+                NetworkInterface currNetwork = networkEnum.nextElement();
+                Enumeration<InetAddress> inetEnum = currNetwork.getInetAddresses();
+                while (inetEnum.hasMoreElements()) {
+                    InetAddress currInet = inetEnum.nextElement();
+                    if (!currInet.isLoopbackAddress() && currInet.isSiteLocalAddress()) {
+                        return currInet;
+                    }
+                }
+            }
+            return InetAddress.getLocalHost();
+        } catch (SocketException | UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    void test(List<?> headList) {
-        if (headList.get(0) instanceof String) {
-//            List<Object> strList = (List<Object>) headList.get(0);
-//            System.out.println((String) headList.get(0));
-        } else {
-            List<List<String>> newHest = (List<List<String>>) headList;
-            System.out.println(newHest.get(0).get(0));
-        }
+    @Test
+    void test() throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+        String testStr = "1,2,3,ceshi45";
+        System.out.println(testStr.replaceAll("\\d+$", ""));
     }
 
     @Test
@@ -71,25 +79,5 @@ class GeneralTest {
         wb.write(fout);
         wb.close();
         fout.close();
-    }
-
-    /** 获取本机真实 ip */
-    private InetAddress getRealIp() {
-        try {
-            Enumeration<NetworkInterface> networkEnum = NetworkInterface.getNetworkInterfaces();
-            while (networkEnum.hasMoreElements()) {
-                NetworkInterface currNetwork = networkEnum.nextElement();
-                Enumeration<InetAddress> inetEnum = currNetwork.getInetAddresses();
-                while (inetEnum.hasMoreElements()) {
-                    InetAddress currInet = inetEnum.nextElement();
-                    if (!currInet.isLoopbackAddress() && currInet.isSiteLocalAddress()) {
-                        return currInet;
-                    }
-                }
-            }
-            return InetAddress.getLocalHost();
-        } catch (SocketException | UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

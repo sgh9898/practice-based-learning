@@ -7,6 +7,7 @@ import com.alibaba.excel.util.ConverterUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -31,7 +32,7 @@ public class ListenerNoModel implements ReadListener<Map<Integer, String>> {
     protected Integer headRowNum = null;
     /** head 校验规则, {@link ProtectedConstants} */
     @Setter
-    protected Integer headRules = ProtectedConstants.HEAD_RULES_STRICTLY_CONTAINS;
+    protected Integer headRules = ProtectedConstants.HEAD_RULES_CONTAINS;
     /** 校准后 head 是否有效 */
     protected Boolean validHead = false;
 
@@ -43,7 +44,7 @@ public class ListenerNoModel implements ReadListener<Map<Integer, String>> {
     protected Map<Integer, String> indexedCnHeadMap = new HashMap<>();
     /** 有效数据暂存, Excel 类 */
     protected List<Map<String, Object>> validList = new LinkedList<>();
-    /** 导入失败的数据, 非 override 不生效 */
+    /** 导入失败的数据, 默认仅文件无内容时报错, 可以 override 对应的校验方法 */
     protected List<List<Object>> invalidList = new LinkedList<>();
 
 // ------------------------------ 构造 ------------------------------
@@ -52,9 +53,13 @@ public class ListenerNoModel implements ReadListener<Map<Integer, String>> {
      * 构造: 附带中英列名对照
      *
      * @param cnToEnHeadNameMap Map(中文, 英文)
+     * @param headRules         校验规则 {@link ProtectedConstants}
      */
-    public ListenerNoModel(Map<String, String> cnToEnHeadNameMap) {
+    public ListenerNoModel(Map<String, String> cnToEnHeadNameMap, Integer headRules) {
         this.cnToEnHeadNameMap = cnToEnHeadNameMap == null ? new HashMap<>() : cnToEnHeadNameMap;
+        if (headRules != null) {
+            this.headRules = headRules;
+        }
         log.info("不指定 ExcelClass 读取 Excel 开始");
     }
 
@@ -73,7 +78,10 @@ public class ListenerNoModel implements ReadListener<Map<Integer, String>> {
         } else {
             // 存在中英列名转换时
             for (int index : excelLine.keySet()) {
-                currDataMap.put(cnToEnHeadNameMap.get(indexedCnHeadMap.get(index)), excelLine.get(index));
+                String columnEnName = cnToEnHeadNameMap.get(indexedCnHeadMap.get(index));
+                if (StringUtils.isNotBlank(columnEnName)) {
+                    currDataMap.put(columnEnName, excelLine.get(index));
+                }
             }
         }
         validList.add(currDataMap);
@@ -88,7 +96,7 @@ public class ListenerNoModel implements ReadListener<Map<Integer, String>> {
             return;
         } else if (validList.isEmpty()) {
             List<Object> tempInnerList = new LinkedList<>();
-            for (int i = 0; i <indexedCnHeadMap.size(); i++) {
+            for (int i = 0; i < indexedCnHeadMap.size(); i++) {
                 tempInnerList.add(null);
             }
             tempInnerList.add("文件内容为空");

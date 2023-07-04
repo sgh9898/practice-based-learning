@@ -1,18 +1,21 @@
 package com.demo.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.Arrays;
 import java.util.Base64;
 
 /**
@@ -138,4 +141,29 @@ public class AESUtils {
         }
         return new String(plainText);
     }
+
+    /**
+     * 数据解密, 不使用 IV
+     *
+     * @param cipherText 加密后的数据
+     * @param aesKey     AES 明文密钥
+     */
+    public static String decryptNoIv(String cipherText, String aesKey) {
+        if (null == cipherText) {
+            return null;
+        }
+        byte[] result;
+        try {
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(Arrays.copyOf(DigestUtils.sha1(aesKey), 16), "AES"));
+            result = cipher.doFinal(Base64.getDecoder().decode(cipherText.trim()));
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException |
+                 BadPaddingException e) {
+            log.error("数据解密失败, 密文: {}", cipherText, e);
+            throw new RuntimeException(e);
+        }
+
+        return new String(result, StandardCharsets.UTF_8);
+    }
+
 }

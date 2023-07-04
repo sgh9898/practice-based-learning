@@ -17,7 +17,6 @@ import javax.annotation.Resource;
 /**
  * @author Song gh on 2022/5/11.
  */
-@EnableSwagger2
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
@@ -50,16 +49,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(demoInterceptor).addPathPatterns("/aop/interceptor/**");
-    }
-
-    /** 避免 Swagger 无法访问 */
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("swagger-ui/index.html")
-                .addResourceLocations("classpath:/META-INF/resources/");
-
-        registry.addResourceHandler("/webjars/**")
-                .addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
 }
 

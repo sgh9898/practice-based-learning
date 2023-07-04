@@ -33,7 +33,7 @@ class ProtectedHandlerRowHeight extends AbstractRowHeightStyleStrategy {
         while (cellIterator.hasNext()) {
             Cell cell = cellIterator.next();
             // 根据 maven 依赖版本可能需要更换
-            // if (cell.getCellTypeEnum() == CellType.STRING) {
+//             if (cell.getCellTypeEnum() == CellType.STRING) {
             if (cell.getCellType() == CellType.STRING) {
                 // 获取内容本身的换行
                 String cellStr = cell.getStringCellValue();
