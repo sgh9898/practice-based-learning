@@ -103,6 +103,13 @@ spring:
       # 0 不返回, 1 leader 收到返回成功, all/-1 全员收到返回成功
       acks: 1
 
+  # Neo4j
+  neo4j:
+    uri: bolt://localhost:7687
+    authentication:
+      username: neo4j
+      password: RVsdbgjs~4921
+
   # Redis
   redis:
     host: localhost

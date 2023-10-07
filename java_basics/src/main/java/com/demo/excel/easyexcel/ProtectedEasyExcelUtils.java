@@ -4,6 +4,7 @@ package com.demo.excel.easyexcel;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.alibaba.excel.enums.CellExtraTypeEnum;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.alibaba.excel.write.builder.ExcelWriterSheetBuilder;
@@ -110,8 +111,8 @@ class ProtectedEasyExcelUtils {
             String fileName = StringUtils.isBlank(file.getOriginalFilename()) ? "" : file.getOriginalFilename();
             String fileNameNoPostfix = fileName.lastIndexOf('.') > 0 ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
             String errorFileName = fileNameNoPostfix + " Excel 导入报错" + new SimpleDateFormat("yyyyMMdd").format(new Date()) + ".xlsx";
-            // 存在错误信息
-            if (!listener.getInvalidList().isEmpty()) {
+            // 存在错误信息, 且需要导出
+            if (!listener.getInvalidList().isEmpty() && request != null && response != null) {
                 if (exportError) {
                     // 导出包含报错的 Excel
                     baseExportExcel(request, response, excelClass, errorFileName, null, listener.getInvalidList(),
@@ -260,6 +261,8 @@ class ProtectedEasyExcelUtils {
         int validColumnNum = 0;
         // 记录列名, 用于动态列名替换
         List<String[]> originalHeadList = new ArrayList<>();
+        // 记录手动指定列宽的字段
+        Set<String> doNotChangeWidth = new HashSet<>();
         for (Field field : excelClass.getDeclaredFields()) {
             ExcelProperty excelAnnotation = field.getAnnotation(ExcelProperty.class);
             if (excelAnnotation != null) {
@@ -269,6 +272,10 @@ class ProtectedEasyExcelUtils {
                     originalHeadList.add(excelAnnotation.value());
                     // 统计总数
                     validColumnNum++;
+                    // 记录手动指定的列宽
+                    if (excelClass.getAnnotation(ColumnWidth.class) != null || field.getAnnotation(ColumnWidth.class) != null) {
+                        doNotChangeWidth.add(field.getName());
+                    }
                 }
             } else {
                 excludedCols.add(field.getName());
@@ -305,7 +312,7 @@ class ProtectedEasyExcelUtils {
         }
         sheetBuilder.registerWriteHandler(new ProtectedHandlerDropDownMenu(dropDownMap, skipRowNum));
         // 自适应列宽
-        sheetBuilder.registerWriteHandler(new ProtectedHandlerColumnWidth(widthStrategy));
+        sheetBuilder.registerWriteHandler(new ProtectedHandlerColumnWidth(widthStrategy, doNotChangeWidth));
         // 自适应行高
         sheetBuilder.registerWriteHandler(new ProtectedHandlerRowHeight());
 

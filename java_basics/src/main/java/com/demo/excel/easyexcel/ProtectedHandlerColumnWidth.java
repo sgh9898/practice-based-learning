@@ -10,9 +10,7 @@ import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.poi.ss.usermodel.Cell;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Excel 自适应列宽, 与工具类 EasyExcelUtil 配合使用
@@ -30,6 +28,9 @@ class ProtectedHandlerColumnWidth extends AbstractColumnWidthStyleStrategy {
     /** 列宽总表, Map(sheetIndex, Map(columnIndex, width)) */
     private final Map<Integer, Map<Integer, Integer>> fileColumnWidthMap = MapUtils.newHashMapWithExpectedSize(8);
 
+    /** 不自动调整列宽的列 */
+    private final Set<String> doNotChangeWidth = new HashSet<>();
+
     /**
      * 列宽选取方式
      * 1. head 为准 --> 仅使用 head 宽度
@@ -44,17 +45,35 @@ class ProtectedHandlerColumnWidth extends AbstractColumnWidthStyleStrategy {
 
     /** Constructor: 指定列宽选取方式 */
     public ProtectedHandlerColumnWidth(ProtectedEnumsColWidth widthStrategy) {
-        if (widthStrategy == ProtectedEnumsColWidth.COL_WIDTH_HEAD || widthStrategy == ProtectedEnumsColWidth.COL_WIDTH_CONTENT) {
+        if (widthStrategy == ProtectedEnumsColWidth.COL_WIDTH_HEAD || widthStrategy == ProtectedEnumsColWidth.COL_WIDTH_CONTENT
+                || widthStrategy == ProtectedEnumsColWidth.COL_WIDTH_NONE) {
             this.widthStrategy = widthStrategy;
         } else {
             this.widthStrategy = ProtectedEnumsColWidth.COL_WIDTH_DEFAULT;
         }
     }
 
+    /** Constructor: 指定列宽选取方式, 部分固定列宽字段 */
+    public ProtectedHandlerColumnWidth(ProtectedEnumsColWidth widthStrategy, Set<String> doNotChangeWidth) {
+        if (widthStrategy == ProtectedEnumsColWidth.COL_WIDTH_HEAD || widthStrategy == ProtectedEnumsColWidth.COL_WIDTH_CONTENT
+                || widthStrategy == ProtectedEnumsColWidth.COL_WIDTH_NONE) {
+            this.widthStrategy = widthStrategy;
+        } else {
+            this.widthStrategy = ProtectedEnumsColWidth.COL_WIDTH_DEFAULT;
+        }
+        this.doNotChangeWidth.addAll(doNotChangeWidth);
+    }
+
     /** 设定列宽(单行, 此方法会被循环调用) */
     @Override
     protected void setColumnWidth(WriteSheetHolder writeSheetHolder, List<WriteCellData<?>> cellDataList, Cell cell,
                                   Head head, Integer relativeRowIndex, Boolean isHead) {
+        // 排除手动设置列宽的列
+        if (widthStrategy == ProtectedEnumsColWidth.COL_WIDTH_NONE) {
+            return;
+        } else if (this.doNotChangeWidth.contains(head.getFieldName())) {
+            return;
+        }
         // 排除不为标题且空置的单元格
         boolean needSetWidth = isHead || !CollectionUtils.isEmpty(cellDataList);
         if (!needSetWidth) {

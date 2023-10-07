@@ -255,6 +255,21 @@ public class EasyExcelUtils {
     }
 
     /**
+     * 导出含有报错的 Excel
+     *
+     * @param request       HttpServletRequest
+     * @param response      HttpServletResponse
+     * @param fileName      文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
+     * @param excelClass    Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelDataList [允许空/null] 数据, 格式需与 excelClass 保持一致
+     */
+    public static <T> void exportErrorData(HttpServletRequest request, HttpServletResponse response, String fileName, Class<T> excelClass, List<T> excelDataList) {
+        // 导出
+        ProtectedEasyExcelUtils.baseExportExcel(request, response, excelClass, fileName, "Sheet1", excelDataList,
+                null, null, null, null, null, null, null);
+    }
+
+    /**
      * 导出 Excel 模板: 数据为空, 可添加说明
      *
      * @param request    HttpServletRequest
@@ -417,7 +432,7 @@ public class EasyExcelUtils {
         if (setHeadAndDataNoModel(noModelEnHeadList, noModelDataList, noModelEnToCnHeadNameMap, newChineseHeadList, newDataList, orderedEnglishHead)) {
             // 配置下拉框
             Map<Integer, String[]> indexedDropDownMap = new HashMap<>();
-            int index = 1;
+            int index = 0;
             for (String head : orderedEnglishHead) {
                 if (noModelDropDownMap.containsKey(head)) {
                     indexedDropDownMap.put(index, noModelDropDownMap.get(head));

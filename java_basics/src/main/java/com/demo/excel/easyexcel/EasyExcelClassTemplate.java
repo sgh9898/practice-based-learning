@@ -45,6 +45,7 @@ import javax.validation.constraints.PositiveOrZero;
 public abstract class EasyExcelClassTemplate {
 
 //    示例:
+//    @ColumnWidth(50) // 手动指定列宽
 //    @NotBlank(message = "名称未填写")  // 初步校验, 未通过时报错信息会出现在报错返回的 Excel 中
 //    @ExcelProperty("名称")  // 多级列名会自动合并, 如 @ExcelProperty({"标题1", "标题2"}) 与 @ExcelProperty({"标题1", "标题3"}) 自动合并为"标题1"下"标题2""标题3"
 //    private String name;

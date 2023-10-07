@@ -10,6 +10,8 @@ import lombok.Getter;
 @Getter
 public enum ProtectedEnumsColWidth {
 
+    /** 不使用自动列宽 */
+    COL_WIDTH_NONE(-1),
     /** 默认 */
     COL_WIDTH_DEFAULT(0),
     /** 列宽以 head 为准 */

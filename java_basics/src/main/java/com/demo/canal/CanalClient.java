@@ -77,7 +77,7 @@ public class CanalClient {
     private JdbcTemplate jdbcTemplate;
 
     /** 需要在项目运行时启动 */
-    @PostConstruct
+// todo   @PostConstruct
     public void start() {
         log.info("canal 开始运行");
         // 链接数据库

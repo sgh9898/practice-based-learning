@@ -55,6 +55,14 @@ public class SampleIndexRepositoryImpl implements SampleIndexRepositoryCustom {
             boolQueryBuilder.filter(new WildcardQueryBuilder("name", dto.getName()));
         }
 
+        // null 字段匹配需要使用 exists
+        if (dto.getName() != null) {
+            boolQueryBuilder.filter(new ExistsQueryBuilder("name"));
+        }
+
+        // 最少需要满足 x 个 should
+        boolQueryBuilder.minimumShouldMatch(1);
+
         // 范围查询
         Date startTime = dto.getStartTime();
         Date endTime = dto.getEndTime();
