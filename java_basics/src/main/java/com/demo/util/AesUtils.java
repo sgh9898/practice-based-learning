@@ -25,10 +25,10 @@ import java.util.Arrays;
 public class AesUtils {
 
     /** 十六位密钥(需要前端和后端保持一致) */
-    private static final String DEFAULT_KEY_STR = "ihaierForTodoKey";
+    private static final String DEFAULT_KEY_STR = "pcWGuS2nQF11Sf+y";
 
     /** 十六位密钥偏移量(需要前端和后端保持一致) */
-    private static final String DEFAULT_IV_STR = "ihaierForTodo_Iv";
+    private static final String DEFAULT_IV_STR = "kvJRbJz7x5ycy+4V";
 
     /** AES 加密/解密算法 */
     private static final String AES_ALGORITHM = "AES/CBC/PKCS5Padding";

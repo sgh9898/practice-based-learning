@@ -17,7 +17,7 @@ import java.util.Date;
  * @author Song gh on 2023/02/28.
  */
 @Data
-@ApiModel(description = "演示类 DTO")
+@ApiModel("演示类 DTO")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DemoEntityDto {
 

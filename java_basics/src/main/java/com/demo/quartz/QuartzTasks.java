@@ -2,7 +2,6 @@ package com.demo.quartz;
 
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 
 /**
  * Quartz 定时任务
@@ -11,7 +10,7 @@ import org.quartz.JobExecutionException;
  */
 public class QuartzTasks implements Job {
 
-    public void execute(JobExecutionContext arg0) throws JobExecutionException {
-        System.out.println("This is a quartz job!");
+    public void execute(JobExecutionContext context) {
+        System.out.println("这是一个 Quartz 定时任务示例");
     }
 }

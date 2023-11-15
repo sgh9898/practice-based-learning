@@ -8,7 +8,6 @@ server:
       # 使用当前配置文件进行编码, 可配合 charset: utf-8 使用
       force: true
 
-
 # Canal 参数
 canal:
   # canal deployer 使用的数据库用户名
@@ -31,6 +30,13 @@ canal:
       schema: backup
       # 从表表名前缀
 #      table-name-prefix: backup_
+
+# MinIO 文件管理 part 1
+minio:
+  endpoint: http://localhost:9090
+  accessKey: admin
+  secretKey: 12345678
+  bucketName: test_bucket
 
 # Spring Auto-Configuration
 spring:
@@ -58,7 +64,6 @@ spring:
     hikari:
       minimum-idle: 3
       maximum-pool-size: 10
-
   task:
     # 线程池
     execution:
@@ -96,12 +101,17 @@ spring:
       default-topic: demo-topic
     consumer:
       group-id: demo-group
-      auto-offset-reset:
     listener:
       ack-mode: manual_immediate
     producer:
       # 0 不返回, 1 leader 收到返回成功, all/-1 全员收到返回成功
       acks: 1
+
+  # MinIO 文件管理 part 1
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
 
   # Neo4j
   neo4j:

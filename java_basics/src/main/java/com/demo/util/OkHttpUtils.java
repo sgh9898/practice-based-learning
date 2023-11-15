@@ -1,80 +1,97 @@
 package com.demo.util;
 
-import com.alibaba.fastjson2.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.net.ssl.*;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Http(s) 连接工具 (OkHttp)
- * <br>较 HttpClient 更为简洁, 非单例模式下响应更快
  *
  * @author Song gh on 2022/1/18.
  */
 @Slf4j
-public class OkHttpUtils {
-
-    // 信任的 host
-    @Value("${okhttp.trustedHosts}")
-    private static HashSet<String> trustedHosts;
+public abstract class OkHttpUtils {
 
     // 基本配置
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-
+    public static final MediaType APPLICATION_FORM_URLENCODED = MediaType.parse("application/x-www-form-urlencoded");
     // ------------------------------ 参数 ------------------------------
     // 超时时间
     public static final int CONNECT_TIME_OUT = 60;
     public static final int READ_TIME_OUT = 60;
     public static final int WRITE_TIME_OUT = 60;
-
+    public static final ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
+            .tlsVersions(TlsVersion.TLS_1_3)
+            .cipherSuites(
+                    CipherSuite.TLS_AES_256_GCM_SHA384,
+                    CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+                    CipherSuite.TLS_DHE_RSA_WITH_AES_128_GCM_SHA256)
+            .build();
     // 构建 client
     public static final OkHttpClient client = new OkHttpClient.Builder()
             //* 超时时间
             .connectTimeout(CONNECT_TIME_OUT, TimeUnit.SECONDS)
             .readTimeout(READ_TIME_OUT, TimeUnit.SECONDS)
             .writeTimeout(WRITE_TIME_OUT, TimeUnit.SECONDS)
+            .connectionSpecs(Collections.singletonList(spec))
+
 
             //* 验证
-            // 信任所有 host (不推荐)
-            .hostnameVerifier((hostName, session) -> true)
-//            // 信任指定 host
+//            // 信任指定 host (替换"信任所有 host")
 //             .hostnameVerifier(new StandardHostnameVerifier(trustedHosts))
-            // 信任所有证书 (不推荐)
+            // 信任所有 host
+            .hostnameVerifier((hostName, session) -> true)
+            // 信任所有证书
             .sslSocketFactory(createSSLSocketFactory(), new TrustAllCerts())
-
-            // 默认允许重定向
-            // .followRedirects(true)
-
             .build();
+    // 信任的 host
+    private static HashSet<String> trustedHosts;
+
+// ------------------------------ Public ------------------------------
 
     /**
-     * post 访问, Json Body
+     * get 访问
+     *
+     * @param url 接口 url
+     */
+    public static String get(String url) {
+        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
+        Request request = new Request.Builder().url(url).build();
+        return getStrResponse(request, url);
+    }
+
+    /**
+     * post 访问, 提交 json
      *
      * @param url  接口 url
-     * @param json RequestBody
-     * @return (String) url 返回结果
+     * @param json 参数, json string 格式
      */
     public static String postJson(String url, String json) {
+        if (StringUtils.isBlank(url)) {
+            throw new RuntimeException("url不能为空");
+        }
         RequestBody body = RequestBody.create(JSON, json);
         Request request = new Request.Builder().url(url).post(body).build();
         return getStrResponse(request, url);
     }
 
     /**
-     * post 访问, 自定义 Headers, Json Body
+     * post 访问, 提交 json, 自定义 Headers
      *
      * @param url     接口 url
      * @param headers headers
      * @param json    RequestBody
-     * @return (String) url 返回结果
      */
     public static String postJsonWithHeaders(String url, Headers headers, String json) {
         RequestBody body = RequestBody.create(JSON, json);
@@ -83,23 +100,91 @@ public class OkHttpUtils {
     }
 
     /**
-     * post 访问, 自定义 Headers, <b>Form Body</b>
+     * post 访问, 提交 form
      *
-     * @param url     接口 url
-     * @param headers headers
-     * @param params  FormBody
-     * @return (String) url 返回结果
+     * @param url  接口 url
+     * @param form 参数, 如: param1=value1&param2=value2
      */
-    public static String postFormWithHeaders(String url, Headers headers, JSONObject params) {
-        FormBody.Builder formBuilder = new FormBody.Builder();
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
-            formBuilder.add(entry.getKey(), (String) entry.getValue());
+    public static String postForm(String url, String form) {
+        if (StringUtils.isBlank(url)) {
+            throw new RuntimeException("url不能为空");
         }
-        Request request = new Request.Builder().url(url).headers(headers).post(formBuilder.build()).build();
+        RequestBody body = RequestBody.create(APPLICATION_FORM_URLENCODED, form);
+        Request request = new Request.Builder().url(url).post(body).build();
         return getStrResponse(request, url);
     }
 
-    /** 信任所有证书 (不推荐) */
+    /**
+     * post 访问, 提交 form (参数使用 UTF-8 编码)
+     *
+     * @param url    接口 url
+     * @param params 参数
+     */
+    public static String postForm(String url, Map<String, Object> params) {
+        if (StringUtils.isBlank(url)) {
+            throw new RuntimeException("url不能为空");
+        }
+        RequestBody body = RequestBody.create(APPLICATION_FORM_URLENCODED, Objects.requireNonNull(encodeValue(params, "UTF-8")));
+        Request request = new Request.Builder().url(url).post(body).build();
+        return getStrResponse(request, url);
+    }
+
+    /**
+     * post 访问, 提交 form (参数使用指定字符集编码)
+     *
+     * @param url    接口 url
+     * @param params 参数
+     * @param encode 字符集, {@link java.nio.charset.StandardCharsets}
+     */
+    public static String postForm(String url, LinkedHashMap<String, Object> params, String encode) {
+        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
+        RequestBody body = RequestBody.create(APPLICATION_FORM_URLENCODED, encodeValue(params, encode));
+        Request request = new Request.Builder().url(url).post(body).build();
+        return getStrResponse(request, url);
+    }
+
+// ------------------------------ Private ------------------------------
+
+    /** 返回 url 访问结果 (String) */
+    private static String getStrResponse(Request request, String url) {
+        try (Response response = client.newCall(request).execute()) {
+            return response.body() == null ? null : response.body().string();
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException("OkHttp 访问失败: " + url);
+        }
+    }
+
+    /**
+     * 将参数值进行编码
+     *
+     * @param params 参数
+     * @param encode 字符集, {@link java.nio.charset.StandardCharsets}
+     * @return like  a=v1&b=v2
+     */
+    private static String encodeValue(Map<String, Object> params, String encode) {
+        if (MapUtils.isNotEmpty(params)) {
+            StringBuilder sb = new StringBuilder();
+            for (Entry<String, Object> entry : params.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                sb.append(key).append("=");
+                if (value instanceof String) {
+                    try {
+                        sb.append(URLEncoder.encode((String) value, encode)).append("&");
+                    } catch (UnsupportedEncodingException e) {
+                        throw new RuntimeException("encode失败：" + key + "=" + value, e);
+                    }
+                } else {
+                    sb.append(value).append("&");
+                }
+            }
+            return sb.substring(0, sb.length() - 1);
+        }
+        return "";
+    }
+
+    /** 信任所有证书 */
     private static SSLSocketFactory createSSLSocketFactory() {
         SSLSocketFactory ssfFactory = null;
         try {
@@ -110,16 +195,6 @@ public class OkHttpUtils {
             e.printStackTrace();
         }
         return ssfFactory;
-    }
-
-    /** 返回 url 访问结果 (String) */
-    private static String getStrResponse(Request request, String url) {
-        try (Response response = client.newCall(request).execute()) {
-            return response.body() == null ? null : response.body().string();
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException("OkHttp 访问失败: " + url);
-        }
     }
 
     /**
@@ -135,7 +210,7 @@ public class OkHttpUtils {
             this.trustedHosts = trustedHosts;
         }
 
-        /** 判断 host 是否在 {@link OkHttpUtils#trustedHosts} 中 */
+        /** 判断 host 是否在 {@link #trustedHosts} 中 */
         @Override
         public boolean verify(String hostname, SSLSession session) {
             if (trustedHosts.contains(hostname)) {
@@ -147,7 +222,7 @@ public class OkHttpUtils {
         }
     }
 
-    /** 信任所有证书 (不推荐) */
+    /** 信任所有证书 */
     private static class TrustAllCerts implements X509TrustManager {
         public void checkClientTrusted(X509Certificate[] chain, String authType) {
         }
@@ -160,4 +235,3 @@ public class OkHttpUtils {
         }
     }
 }
-

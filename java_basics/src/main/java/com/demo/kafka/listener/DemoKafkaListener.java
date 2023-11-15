@@ -1,4 +1,4 @@
-package excluded.kafka.listener;
+package com.demo.kafka.listener;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -23,7 +23,7 @@ public class DemoKafkaListener {
      * @param msg            发送时消息格式
      * @param acknowledgment 发送消息确认
      */
-    @KafkaListener(id = "demoGroup", topics = {"demo-topic"}, containerFactory = "BaseContainerFactory")
+    @KafkaListener(groupId = "demoGroup", topics = {"demo-topic", "topic-sample"})
     public void basicListener(String msg, Acknowledgment acknowledgment) {
         try {
             log.info("收到消息: {}, 当前时间: {}", msg, new Date());

@@ -19,16 +19,17 @@
 6. [Exception](src/main/java/com/demo/exception)
     - [x] 异常类
     - [x] 异常类处理
-7. [Kafka](src/main/java/excluded/kafka)
-    - [x] [配置文件](src/main/java/excluded/kafka/config)
-    - [x] [消息接收](src/main/java/excluded/kafka/listener)
-    - [x] 消息推送
-8. [Open Api](src/main/java/com/demo/swagger) (Swagger)
-9. [Session](src/main/java/com/demo/session)
+7. [Kafka](src/main/java/com/demo/kafka) √
+    1. 配置文件
+    2. listener
+    3. producer 工具类
+8. [MinIO](src/main/java/com/demo/minio)
+9. [Open Api](src/main/java/com/demo/swagger) (Swagger)
+10. [Session](src/main/java/com/demo/session)
 
-10. [WebMvc](src/main/java/com/demo/webmvc)
+11. [WebMvc](src/main/java/com/demo/webmvc)
     - [x] [跨域配置](src/main/java/com/demo/webmvc/WebMvcConfig.java)
-11. WebSocket
+12. WebSocket
     - [x] [配置](src/main/java/com/demo/websocket/WebSocketConfig.java)
     - [x] 向前端推送消息
 

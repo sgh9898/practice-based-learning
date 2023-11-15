@@ -24,7 +24,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Table(name = "demo_entity")
-@ApiModel(description = "演示类")
+@ApiModel("演示类")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DemoEntity extends EasyExcelClassTemplate {
 
@@ -57,6 +57,10 @@ public class DemoEntity extends EasyExcelClassTemplate {
     @JsonIgnore
     @ApiModelProperty(value = "更新时间", hidden = true)
     private Date updateTime;
+
+    /** 用户信息token, 用于校验, 并作为 redis key */
+    @Transient
+    private String userInfoToken;
 
     /** 默认构建 */
     public DemoEntity() {

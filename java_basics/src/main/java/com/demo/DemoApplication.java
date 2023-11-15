@@ -31,12 +31,8 @@ import java.util.Enumeration;
 //@EnableJpaRepositories("com.demo.database")   // 解决 JPA 与 ElasticSearch 冲突
 public class DemoApplication {
 
-    public static void main(String[] args) throws SchedulerException {
+    public static void main(String[] args) {
         Environment env = SpringApplication.run(DemoApplication.class, args).getEnvironment();
-
-//        SchedulerFactory schedulerFactory = new StdSchedulerFactory();
-//        Scheduler scheduler = schedulerFactory.getScheduler();
-//        scheduler.start();
 
         String ip = getRealIp();
         log.info("\n--------------------------------------------------\n" +
