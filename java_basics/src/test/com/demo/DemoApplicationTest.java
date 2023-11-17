@@ -1,13 +1,12 @@
 package com.demo;
 
 import com.demo.db.repository.DemoEntityRepository;
-import com.demo.util.JacksonUtils;
+import com.demo.kafka.KafkaProducerUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Spring 相关测试
@@ -18,15 +17,21 @@ import java.util.List;
 class DemoApplicationTest {
 
     @Resource
+    private KafkaProducerUtils kafkaService;
+    @Resource
     private DemoEntityRepository demoEntityRepository;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @Test
-    void mainTest() {
-        List<Long> testList = new ArrayList<>();
-        testList.add(1L);
-        testList.add(2L);
-        testList.add(3L);
-        testList.add(4L);
-        System.out.println(JacksonUtils.beanToJson( demoEntityRepository.sqlGetByList(false, testList)));
+    void mainTest() throws InterruptedException {
+    }
+
+    @Test
+    void test1() throws InterruptedException {
+        boolean result = stringRedisTemplate.hasKey("testKey");
+        if (!result) {
+            System.out.println("1111");
+        }
     }
 }

@@ -46,19 +46,19 @@ public abstract class OkHttpUtils {
             .writeTimeout(WRITE_TIME_OUT, TimeUnit.SECONDS)
             .connectionSpecs(Collections.singletonList(spec))
 
-
             //* 验证
 //            // 信任指定 host (替换"信任所有 host")
 //             .hostnameVerifier(new StandardHostnameVerifier(trustedHosts))
             // 信任所有 host
             .hostnameVerifier((hostName, session) -> true)
-            // 信任所有证书
-            .sslSocketFactory(createSSLSocketFactory(), new TrustAllCerts())
+            // 信任所有证书, 配置多版本协议防止 handshake_failure
+            .sslSocketFactory(createSSLSocketFactoryTLS(), new TrustAllCerts())
+            .sslSocketFactory(createSSLSocketFactoryTLS13(), new TrustAllCerts())
             .build();
     // 信任的 host
     private static HashSet<String> trustedHosts;
 
-// ------------------------------ Public ------------------------------
+    // ------------------------------ Public ------------------------------
 
     /**
      * get 访问
@@ -185,10 +185,23 @@ public abstract class OkHttpUtils {
     }
 
     /** 信任所有证书 */
-    private static SSLSocketFactory createSSLSocketFactory() {
+    private static SSLSocketFactory createSSLSocketFactoryTLS() {
         SSLSocketFactory ssfFactory = null;
         try {
             SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{new TrustAllCerts()}, new SecureRandom());
+            ssfFactory = sslContext.getSocketFactory();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ssfFactory;
+    }
+
+    /** 信任所有证书, 协议为 TLSv1.3 */
+    private static SSLSocketFactory createSSLSocketFactoryTLS13() {
+        SSLSocketFactory ssfFactory = null;
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLSv1.3");
             sslContext.init(null, new TrustManager[]{new TrustAllCerts()}, new SecureRandom());
             ssfFactory = sslContext.getSocketFactory();
         } catch (Exception e) {

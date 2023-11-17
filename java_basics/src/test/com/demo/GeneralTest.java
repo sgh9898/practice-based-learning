@@ -1,6 +1,6 @@
 package com.demo;
 
-import com.demo.util.DateUtils;
+import okhttp3.*;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.junit.jupiter.api.Test;
@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -17,9 +16,9 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
-import java.util.Objects;
 
 /**
  * 普通测试
@@ -33,10 +32,24 @@ class GeneralTest {
 
     @Test
     void test() throws NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
-        File f = new File("src/data");
-        for (File file : f.listFiles()) {
-            System.out.println(file.getAbsolutePath());
-        }
+    }
+
+    @Test
+    void test1() throws IOException {
+        OkHttpClient client = new OkHttpClient().newBuilder()
+                .build();
+        MediaType mediaType = MediaType.parse("application/json");
+        RequestBody body = RequestBody.create(mediaType, "{\n    \"orgCode\": \"LJTS\",\n    \"reportedNo\": \"IAL3fx8dGEHaaPzIPvE/Pg==\",\n    \"reportingNo\": \"1oJhxRyiT8crGlMQu8aJvQ==\"\n}");
+        Request request = new Request.Builder()
+                .url("https://caictdnc.caict.ac.cn:1064/dnc/v1/query")
+                .method("POST", body)
+                .addHeader("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "*/*")
+                .addHeader("Host", "caictdnc.caict.ac.cn:1064")
+                .addHeader("Connection", "keep-alive")
+                .build();
+        Response response = client.newCall(request).execute();
     }
 
     @Test
