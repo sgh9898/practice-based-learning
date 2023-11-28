@@ -1,4 +1,4 @@
-package com.demo.kafka.config;
+package excluded.elasticsearch.kafka.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.TopicPartition;

@@ -14,6 +14,7 @@ import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
  *
  * @author Song gh on 2022/4/15.
  */
+@Repository
 public class SampleIndexRepositoryImpl implements SampleIndexRepositoryCustom {
 
     @Resource

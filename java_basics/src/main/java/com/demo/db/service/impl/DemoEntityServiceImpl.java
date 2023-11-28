@@ -5,10 +5,11 @@ import com.demo.db.pojo.DemoEntityDto;
 import com.demo.db.repository.DemoEntityRepository;
 import com.demo.db.service.DemoEntityService;
 import com.demo.excel.easyexcel.EasyExcelUtils;
-import com.demo.util.ValidationUtils;
 import com.demo.exception.BaseException;
+import com.demo.util.ValidationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,6 +78,13 @@ public class DemoEntityServiceImpl implements DemoEntityService {
     /** [分页查询] 演示类 */
     @Override
     public Page<DemoEntity> getPage(Pageable pageable) {
+//        // 分页参数
+//        int page = Math.max(0, dtoPage - 1);
+//        int size = dtoSize;
+//        if (size <= 0) {
+//            size = 10;
+//        }
+//        Pageable pageable = PageRequest.of(page, size);
         return demoEntityRepository.findAllByIsDeletedIsFalse(pageable);
     }
 
@@ -91,7 +99,7 @@ public class DemoEntityServiceImpl implements DemoEntityService {
 
     /** [导出模板] 演示类 */
     @Override
-    public void exportExcelTemplate(HttpServletRequest request, HttpServletResponse response) {
+    public void exportTemplate(HttpServletRequest request, HttpServletResponse response) {
         // 首行说明
         String note = "说明: 1. 黄色字段为必填项.\n" +
                 "         2.";

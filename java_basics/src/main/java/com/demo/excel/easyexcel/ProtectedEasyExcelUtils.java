@@ -91,10 +91,11 @@ class ProtectedEasyExcelUtils {
      * @param excelClass  Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
      * @param listener    ExcelListener, 允许 extends {@link Listener}
      * @param exportError 自动导出报错
+     * @param errorList   不自动导出时用于保存报错(exportError == false)
      * @return true = 成功, false = 文件为空, null = 失败且下载含报错信息的 Excel 文件
      */
     public static <T, U extends Listener<T>> Boolean baseImportExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response,
-                                                                     Class<T> excelClass, U listener, Boolean exportError) {
+                                                                     Class<T> excelClass, U listener, Boolean exportError, List<T> errorList) {
         if (file == null) {
             log.error("上传 Excel 文件为空");
             return false;
@@ -118,6 +119,11 @@ class ProtectedEasyExcelUtils {
                     baseExportExcel(request, response, excelClass, errorFileName, null, listener.getInvalidList(),
                             null, null, null, null, null, null, null);
                     return null;
+                } else {
+                    // 仅保存报错信息
+                    if (errorList != null) {
+                        errorList.addAll(listener.getInvalidList());
+                    }
                 }
             }
         } catch (IOException e) {
@@ -135,10 +141,11 @@ class ProtectedEasyExcelUtils {
      * @param request     HttpServletRequest
      * @param response    HttpServletResponse
      * @param exportError 自动导出报错
+     * @param errorList   不自动导出时用于保存报错(exportError == false)
      * @return true = 成功, false = 文件为空, null = 失败且下载含报错信息的 Excel 文件
      */
-    public static <T extends ListenerNoModel> Boolean noModelBaseImportExcel(MultipartFile file, HttpServletRequest request,
-                                                                             HttpServletResponse response, T listener, Boolean exportError) {
+    public static <T extends ListenerNoModel> Boolean noModelBaseImportExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response,
+                                                                             T listener, Boolean exportError, List<List<Object>> errorList) {
         if (file == null) {
             log.error("上传 Excel 文件为空");
             return false;
@@ -171,6 +178,11 @@ class ProtectedEasyExcelUtils {
                     noModelBaseExportExcel(request, response, errorFileName, "Sheet1", outerHeadList, listener.getInvalidList(),
                             null, null, null, null, null);
                     return null;
+                } else {
+                    // 仅保存报错信息
+                    if (errorList != null) {
+                        errorList.addAll(listener.getInvalidList());
+                    }
                 }
             }
         } catch (IOException e) {

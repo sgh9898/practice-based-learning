@@ -2,18 +2,26 @@ package com.demo.db.controller;
 
 import com.demo.async.AsyncService;
 import com.demo.db.entity.DemoEntity;
+import com.demo.db.pojo.ComplaintsSearchDto;
 import com.demo.db.repository.DemoEntityRepository;
+import com.demo.util.JacksonUtils;
 import com.demo.util.ResultUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -24,7 +32,7 @@ import java.util.concurrent.Future;
  * @author Song gh on 2022/5/18.
  */
 @Slf4j
-@RestController
+@Controller
 @Api(tags = "基础或未分类功能")
 @RequestMapping("/general")
 public class GeneralController {
@@ -80,5 +88,25 @@ public class GeneralController {
         demoEntity.setIsDeleted(false);
         demoEntityRepository.save(demoEntity);
         return ResultUtil.success();
+    }
+
+    @ApiOperation("转发请求(相同 host, port)")
+    @PostMapping("/forward")
+    public void okhttp(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String body = "{\n" +
+                "    \"validType\": 1\n" +
+                "}";
+        request.setAttribute("searchDto", body);
+        request.getRequestDispatcher("http://localhost:8071/accept-sm-api/api/acceptSm/excel/exportData").forward(request, response);
+    }
+
+    /** 此时不可使用 @RestController, 而是要使用 @Controller, 否则重定向不生效 */
+    @ApiOperation("重定向(不同 host, port)")
+    @PostMapping("/redirect")
+    public String okhttp1(RedirectAttributes attributes, @RequestBody ComplaintsSearchDto demo) {
+//        String body = "{\"validType\": 1}";
+        attributes.addAttribute("searchDto", JacksonUtils.beanToJson(demo));
+        String url = "http://localhost:8071/accept-sm-api/api/acceptSm/excel/exportData";
+        return "redirect:" + url;
     }
 }

@@ -91,6 +91,13 @@ public class DemoEntityController {
         demoEntityService.importData(file, request, response);
     }
 
+    /** [导出模板] 演示类 */
+    @GetMapping("/excel/exportTemplate")
+    @ApiOperation("[导出数据] 演示类")
+    public void exportTemplate(HttpServletRequest request, HttpServletResponse response) {
+        demoEntityService.exportTemplate(request, response);
+    }
+
     /** [导出数据] 演示类 */
     @GetMapping("/excel/exportData")
     @ApiOperation("[导出数据] 演示类")

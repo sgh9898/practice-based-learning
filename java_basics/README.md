@@ -19,7 +19,7 @@
 6. [Exception](src/main/java/com/demo/exception)
     - [x] 异常类
     - [x] 异常类处理
-7. [Kafka](src/main/java/com/demo/kafka) √
+7. [Kafka](src/main/java/excluded/kafka) √
     1. 配置文件
     2. listener
     3. producer 工具类

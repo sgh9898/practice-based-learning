@@ -36,7 +36,7 @@ public interface DemoEntityService {
     void importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response);
 
     /** [导出模板] 演示类 */
-    void exportExcelTemplate(HttpServletRequest request, HttpServletResponse response);
+    void exportTemplate(HttpServletRequest request, HttpServletResponse response);
 
     /** [导出数据] 演示类 */
     void exportData(HttpServletRequest request, HttpServletResponse response);

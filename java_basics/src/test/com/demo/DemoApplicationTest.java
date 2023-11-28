@@ -1,7 +1,7 @@
 package com.demo;
 
 import com.demo.db.repository.DemoEntityRepository;
-import com.demo.kafka.KafkaProducerUtils;
+import excluded.elasticsearch.kafka.KafkaProducerUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;

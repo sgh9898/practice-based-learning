@@ -164,7 +164,7 @@ public class EasyExcelUtils {
     public static <T> List<T> importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass, List<T> errorList) {
         Listener<T> listener = new Listener<>(excelClass);
         // 导入成功
-        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.baseImportExcel(file, request, response, excelClass, listener, false))) {
+        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.baseImportExcel(file, request, response, excelClass, listener, false, errorList))) {
             // 记录报错
             if (errorList != null) {
                 errorList.addAll(listener.getInvalidList());
@@ -188,7 +188,7 @@ public class EasyExcelUtils {
     public static <T> List<T> importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass) {
         Listener<T> listener = new Listener<>(excelClass);
         // 导入并进行初步校验: 成功 --> 返回数据; 失败 --> 自动下载报错信息
-        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.baseImportExcel(file, request, response, excelClass, listener, true))) {
+        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.baseImportExcel(file, request, response, excelClass, listener, true, null))) {
             return listener.getValidList();
         }
         return null;
@@ -208,7 +208,7 @@ public class EasyExcelUtils {
     public static List<Map<String, Object>> noModelImportExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Map<String, String> cnToEnHeadNameMap) {
         ListenerNoModel listenerNoModel = new ListenerNoModel(cnToEnHeadNameMap, null);
         // 导入成功
-        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.noModelBaseImportExcel(file, request, response, listenerNoModel, true))) {
+        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.noModelBaseImportExcel(file, request, response, listenerNoModel, true, null))) {
             return listenerNoModel.getValidList();
         }
         return null;
@@ -228,7 +228,7 @@ public class EasyExcelUtils {
     public static List<Map<String, Object>> noModelImportExcelStrictly(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Map<String, String> cnToEnHeadNameMap) {
         ListenerNoModel listenerNoModel = new ListenerNoModel(cnToEnHeadNameMap, ProtectedConstants.HEAD_RULES_STRICTLY_CONTAINS);
         // 导入成功
-        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.noModelBaseImportExcel(file, request, response, listenerNoModel, true))) {
+        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.noModelBaseImportExcel(file, request, response, listenerNoModel, true, null))) {
             return listenerNoModel.getValidList();
         }
         return null;
@@ -461,7 +461,7 @@ public class EasyExcelUtils {
         this.excelWriter = ProtectedEasyExcelUtils.createExcelWriter(request, response, fileName, useExcel07);
     }
 
-    /** 将指定列加入屏蔽 */
+    /** 不导出指定列(字段英文名) */
     public void addExcludedCols(String columnName) {
         if (StringUtils.isNotBlank(columnName)) {
             if (this.excludedCols == null) {
@@ -471,7 +471,7 @@ public class EasyExcelUtils {
         }
     }
 
-    /** 设定屏蔽列(通过保留的列) */
+    /** 仅导出指定列(字段英文名) */
     public void setIncludedCols(Class<?> targetClass, Set<String> includedCols) {
         if (includedCols == null || includedCols.isEmpty()) {
             return;

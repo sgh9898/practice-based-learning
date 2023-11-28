@@ -4,126 +4,149 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.net.ssl.*;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Http(s) 连接工具 (OkHttp)
+ * Http(s) 连接工具
+ * 1. static 方法默认使用 TLSv1.2 协议
+ * 2. 出现 handshake_failure 时需要切换 TLS 协议版本
  *
- * @author Song gh on 2022/1/18.
+ * @author Song gh on 2023/11/21.
  */
 @Slf4j
-public abstract class OkHttpUtils {
+public class OkHttpUtils {
 
     // 基本配置
-    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    public static final MediaType APPLICATION_FORM_URLENCODED = MediaType.parse("application/x-www-form-urlencoded");
-    // ------------------------------ 参数 ------------------------------
-    // 超时时间
-    public static final int CONNECT_TIME_OUT = 60;
-    public static final int READ_TIME_OUT = 60;
-    public static final int WRITE_TIME_OUT = 60;
-    public static final ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
-            .tlsVersions(TlsVersion.TLS_1_3)
-            .cipherSuites(
-                    CipherSuite.TLS_AES_256_GCM_SHA384,
-                    CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-                    CipherSuite.TLS_DHE_RSA_WITH_AES_128_GCM_SHA256)
-            .build();
-    // 构建 client
-    public static final OkHttpClient client = new OkHttpClient.Builder()
-            //* 超时时间
+    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    private static final MediaType APPLICATION_FORM_URLENCODED = MediaType.parse("application/x-www-form-urlencoded");
+
+// ------------------------------ 参数 ------------------------------
+
+    // 超时时间(秒)
+    private static final int CONNECT_TIME_OUT = 6;
+    private static final int READ_TIME_OUT = 6;
+    private static final int WRITE_TIME_OUT = 6;
+    // 信任的 host, 仅在需要时配置
+    private static final HashSet<String> trustedHosts = null;
+
+    // 构建默认 client, 协议版本 TLSv1.2
+    private static final OkHttpClient defaultClientTLS12 = new OkHttpClient.Builder()
+            // 超时时间
             .connectTimeout(CONNECT_TIME_OUT, TimeUnit.SECONDS)
             .readTimeout(READ_TIME_OUT, TimeUnit.SECONDS)
             .writeTimeout(WRITE_TIME_OUT, TimeUnit.SECONDS)
-            .connectionSpecs(Collections.singletonList(spec))
 
-            //* 验证
 //            // 信任指定 host (替换"信任所有 host")
-//             .hostnameVerifier(new StandardHostnameVerifier(trustedHosts))
+//            .hostnameVerifier(new StandardHostnameVerifier(trustedHosts))
             // 信任所有 host
             .hostnameVerifier((hostName, session) -> true)
-            // 信任所有证书, 配置多版本协议防止 handshake_failure
-            .sslSocketFactory(createSSLSocketFactoryTLS(), new TrustAllCerts())
-            .sslSocketFactory(createSSLSocketFactoryTLS13(), new TrustAllCerts())
+            // 信任所有证书, 协议版本 TLSv1.2, handshake_failure 需要考虑更换使用其他协议的 client
+            .sslSocketFactory(createSSLSocketFactory(TLSVersion.TLSv12), new TrustAllCerts())
             .build();
-    // 信任的 host
-    private static HashSet<String> trustedHosts;
 
-    // ------------------------------ Public ------------------------------
+// ------------------------------ Public Static ------------------------------
 
-    /**
-     * get 访问
-     *
-     * @param url 接口 url
-     */
+    /** post 传文件 */
+    public static String postFile(String url, MultipartFile multipartFile, Map<String, Object> params) {
+        File file = null;
+        try {
+            if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
+
+            // 二种：文件请求体
+            MediaType type = MediaType.parse("application/octet-stream");//"text/xml;charset=utf-8"
+            file = multipartFile2File(multipartFile);
+            RequestBody fileBody = RequestBody.create(type, file);
+
+
+            // 三种：混合参数和文件请求
+            MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.ALTERNATIVE)
+                    .addFormDataPart("file", multipartFile.getOriginalFilename(), fileBody);
+
+            for (Entry<String, Object> entry : params.entrySet()) {
+                builder.addFormDataPart(entry.getKey(), (String) entry.getValue());
+            }
+            RequestBody multipartBody = builder.build();
+
+            Request request = new Request.Builder().url(url).post(multipartBody)//传参数、文件或者混合，改一下就行请求体就行
+                    .build();
+            return getStrResponse(request, url);
+        } finally {
+            if (file != null) file.delete();
+        }
+    }
+
+    /** get 访问 */
     public static String get(String url) {
         if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
         Request request = new Request.Builder().url(url).build();
         return getStrResponse(request, url);
     }
 
-    /**
-     * post 访问, 提交 json
-     *
-     * @param url  接口 url
-     * @param json 参数, json string 格式
-     */
-    public static String postJson(String url, String json) {
-        if (StringUtils.isBlank(url)) {
-            throw new RuntimeException("url不能为空");
-        }
-        RequestBody body = RequestBody.create(JSON, json);
+    /** get 访问, 可切换协议版本 */
+    public static String getTLS(String url) {
+        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
+        Request request = new Request.Builder().url(url).build();
+        return getStrResponse(request, url);
+    }
+
+    /** post 访问, 提交 json */
+    public static String postJson(String url, String bodyJsonStr) {
+        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
+        RequestBody body = RequestBody.create(JSON, bodyJsonStr);
         Request request = new Request.Builder().url(url).post(body).build();
         return getStrResponse(request, url);
     }
 
-    /**
-     * post 访问, 提交 json, 自定义 Headers
-     *
-     * @param url     接口 url
-     * @param headers headers
-     * @param json    RequestBody
-     */
-    public static String postJsonWithHeaders(String url, Headers headers, String json) {
-        RequestBody body = RequestBody.create(JSON, json);
+    /** post 访问, 提交 json, 可切换协议版本 */
+    public static String postJsonTLS(String url, String bodyJsonStr) {
+        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
+        RequestBody body = RequestBody.create(JSON, bodyJsonStr);
+        Request request = new Request.Builder().url(url).post(body).build();
+        return getStrResponse(request, url);
+    }
+
+    /** post 访问, 提交 json, 自定义 Headers */
+    public static String postJsonWithHeaders(String url, Headers headers, String bodyJsonStr) {
+        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
+        RequestBody body = RequestBody.create(JSON, bodyJsonStr);
         Request request = new Request.Builder().url(url).headers(headers).post(body).build();
         return getStrResponse(request, url);
     }
 
-    /**
-     * post 访问, 提交 form
-     *
-     * @param url  接口 url
-     * @param form 参数, 如: param1=value1&param2=value2
-     */
-    public static String postForm(String url, String form) {
-        if (StringUtils.isBlank(url)) {
-            throw new RuntimeException("url不能为空");
-        }
-        RequestBody body = RequestBody.create(APPLICATION_FORM_URLENCODED, form);
+    /** post 访问, 提交 json, 自定义 Headers, 可切换协议版本 */
+    public static String postJsonWithHeadersTLS(String url, Headers headers, String bodyJsonStr) {
+        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
+        RequestBody body = RequestBody.create(JSON, bodyJsonStr);
+        Request request = new Request.Builder().url(url).headers(headers).post(body).build();
+        return getStrResponse(request, url);
+    }
+
+    /** post 访问, 提交 form (参数使用 UTF-8 编码) */
+    public static String postForm(String url, Map<String, Object> params) {
+        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
+        RequestBody body = RequestBody.create(APPLICATION_FORM_URLENCODED, Objects.requireNonNull(encodeValue(params, "UTF-8")));
         Request request = new Request.Builder().url(url).post(body).build();
         return getStrResponse(request, url);
     }
 
-    /**
-     * post 访问, 提交 form (参数使用 UTF-8 编码)
-     *
-     * @param url    接口 url
-     * @param params 参数
-     */
-    public static String postForm(String url, Map<String, Object> params) {
-        if (StringUtils.isBlank(url)) {
-            throw new RuntimeException("url不能为空");
-        }
+    /** post 访问, 提交 form (参数使用 UTF-8 编码) */
+    public static String postFormTLS(String url, Map<String, Object> params, TLSVersion tlsVersion) {
+        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
         RequestBody body = RequestBody.create(APPLICATION_FORM_URLENCODED, Objects.requireNonNull(encodeValue(params, "UTF-8")));
         Request request = new Request.Builder().url(url).post(body).build();
         return getStrResponse(request, url);
@@ -143,17 +166,17 @@ public abstract class OkHttpUtils {
         return getStrResponse(request, url);
     }
 
-// ------------------------------ Private ------------------------------
-
-    /** 返回 url 访问结果 (String) */
+    /** 返回 url 访问结果 (String), 协议版本 TLSv1.2 */
     private static String getStrResponse(Request request, String url) {
-        try (Response response = client.newCall(request).execute()) {
+        try (Response response = defaultClientTLS12.newCall(request).execute()) {
             return response.body() == null ? null : response.body().string();
         } catch (IOException e) {
             log.error(e.getMessage(), e);
-            throw new RuntimeException("OkHttp 访问失败: " + url);
+            throw new RuntimeException("OkHttp 访问失败, url: " + url);
         }
     }
+
+// ------------------------------ Private ------------------------------
 
     /**
      * 将参数值进行编码
@@ -184,30 +207,46 @@ public abstract class OkHttpUtils {
         return "";
     }
 
-    /** 信任所有证书 */
-    private static SSLSocketFactory createSSLSocketFactoryTLS() {
-        SSLSocketFactory ssfFactory = null;
+    /**
+     * 信任所有证书
+     *
+     * @param tlsVersion 协议版本, 默认为 TLSv1.2
+     */
+    private static SSLSocketFactory createSSLSocketFactory(TLSVersion tlsVersion) {
+        SSLSocketFactory ssfFactory;
+        String tlsVersionStr = "TLS";
         try {
-            SSLContext sslContext = SSLContext.getInstance("TLS");
+            // 切换协议版本
+            if (tlsVersion == TLSVersion.TLSv13) {
+                tlsVersionStr = "TLSv1.3";
+            }
+            SSLContext sslContext = SSLContext.getInstance(tlsVersionStr);
             sslContext.init(null, new TrustManager[]{new TrustAllCerts()}, new SecureRandom());
             ssfFactory = sslContext.getSocketFactory();
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("不支持 " + tlsVersionStr + " 协议");
         }
         return ssfFactory;
     }
 
-    /** 信任所有证书, 协议为 TLSv1.3 */
-    private static SSLSocketFactory createSSLSocketFactoryTLS13() {
-        SSLSocketFactory ssfFactory = null;
+    private static File multipartFile2File(MultipartFile multipartFile) {
+        String path = "." + File.separator + multipartFile.getOriginalFilename();
+        File file = new File(path);
         try {
-            SSLContext sslContext = SSLContext.getInstance("TLSv1.3");
-            sslContext.init(null, new TrustManager[]{new TrustAllCerts()}, new SecureRandom());
-            ssfFactory = sslContext.getSocketFactory();
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            // 底层也是通过io流写入文件file
+            FileCopyUtils.copy(multipartFile.getBytes(), file);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return ssfFactory;
+        return file;
+    }
+
+    /** TLS 协议版本 */
+    private enum TLSVersion {
+        TLSv12, TLSv13
     }
 
     /**
