@@ -1,8 +1,6 @@
 package com.demo.util;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import lombok.Data;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
 
@@ -13,62 +11,48 @@ import java.util.Map;
 
 /**
  * 统一的接口返回格式
- * 1. 常规接口, 返回格式 {@link ApiResp}
- * 2. 实体类单条数据, 返回格式 {@link Entity}
- * 3. 实体类列表数据, 返回格式 {@link ListEntity}
- * 2. 实体类分页数据, 返回格式 {@link PageEntity}
+ * (便于 OpenAPI 自动生成接口文档时解析数据结构)
+ * 1. 常规接口(无数据), 返回格式 {@link ApiResp}
+ * 2. 常规接口(有数据), 返回格式 {@link Data}
+ * 3. 实体类(单条数据), 返回格式 {@link Entity}
+ * 4. 实体类(列表数据), 返回格式 {@link ListEntity}
+ * 5. 实体类(分页数据), 返回格式 {@link PageEntity}
  *
  * @author Song gh on 2023/11/24.
  */
-@Data
+@Getter
 @JsonPropertyOrder({"code", "message"})
 public class ApiResp {
 
 // ------------------------------ 参数 ------------------------------
     /** 状态码, {@link ResultStatus#getCode()} */
-    private int code;
+    private final int code;
 
     /** 返回信息 or 报错描述, {@link ResultStatus#getMessage()} */
-    private String message;
-
-    /** 自定义数据, null 时不展示 */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Object data;
+    private final String message;
 
 // ------------------------------ 构造 ------------------------------
 
+    /** [构造] 自定义 code, message */
+    protected ApiResp(int code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+
     /** [构造] 使用已有的 code, message */
-    public ApiResp(ResultStatus resultStatus) {
+    protected ApiResp(ResultStatus resultStatus) {
         this.code = resultStatus.getCode();
         this.message = resultStatus.getMessage();
-    }
-
-    /** [构造] 自定义 code, message */
-    public ApiResp(int code, String message) {
-        this.code = code;
-        this.message = message;
-    }
-
-    /** [构造] 自定义 code, message, data */
-    public ApiResp(int code, String message, Object data) {
-        this.code = code;
-        this.message = message;
-        this.data = data;
     }
 
 // ------------------------------ 通用返回方法 ------------------------------
 
     /** 成功 */
     public static ApiResp success() {
-        return new ApiResp(ResultStatus.SUCCESS.getCode(), ResultStatus.SUCCESS.getMessage(), null);
+        return new ApiResp(ResultStatus.SUCCESS);
     }
 
-    /** 成功: 使用 "data" 字段存放数据 */
-    public static ApiResp success(Object data) {
-        return new ApiResp(ResultStatus.SUCCESS.getCode(), ResultStatus.SUCCESS.getMessage(), data);
-    }
-
-    /** 成功: 合并 code, message, 以及自定义 map 数据 */
+    /** 成功: 在最外层(code, message 层)添加自定义 map 数据 */
     public static Map<String, Object> success(Map<String, Object> dataMap) {
         Map<String, Object> returnMap = new HashMap<>();
         returnMap.put("code", ResultStatus.SUCCESS.getCode());
@@ -79,7 +63,27 @@ public class ApiResp {
 
     /** 失败 */
     public static ApiResp error() {
-        return new ApiResp(ResultStatus.ERROR.getCode(), ResultStatus.ERROR.getMessage(), null);
+        return new ApiResp(ResultStatus.ERROR);
+    }
+
+    /** 自定义返回: 手动设置 code, message */
+    public static ApiResp info(Integer code, String message) {
+        return new ApiResp(code, message);
+    }
+
+// ------------------------------ 通用返回, 附带数据 ------------------------------
+
+    /** [通用] 返回时附带数据 */
+    @Getter
+    public static class Data extends ApiResp {
+
+        /** 返回数据, 格式不限 */
+        private final Object data;
+
+        public Data(Object data) {
+            super(ResultStatus.SUCCESS);
+            this.data = data;
+        }
     }
 
 // ------------------------------ 实体类, 单条数据 ------------------------------
@@ -88,9 +92,10 @@ public class ApiResp {
     @Getter
     public static class Entity<T> extends ApiResp {
 
-        /** 数据格式 */
+        /** 实体类单条数据 */
         private final T data;
 
+        /** [构造] 实体类单条数据 */
         public Entity(T data) {
             super(ResultStatus.SUCCESS);
             this.data = data;
@@ -103,9 +108,10 @@ public class ApiResp {
     @Getter
     public static class ListEntity<T> extends ApiResp {
 
-        /** 数据格式 */
+        /** 实体类列表数据 */
         private final Collection<T> data;
 
+        /** [构造] 实体类列表数据 */
         public ListEntity(Collection<T> data) {
             super(ResultStatus.SUCCESS);
             this.data = data;
@@ -118,15 +124,16 @@ public class ApiResp {
     @Getter
     public static class PageEntity<T> extends ApiResp {
 
+        /** 实体类列表数据 */
+        private final List<T> data;
+
         /** 总数据量 */
         private final Integer totalNum;
 
         /** 总页码 */
         private final Integer totalPage;
 
-        /** 数据格式 */
-        List<T> data;
-
+        /** [构造] 实体类分页数据 */
         public PageEntity(Page<T> pageResult) {
             super(ResultStatus.SUCCESS);
             this.data = pageResult.getContent();
@@ -134,10 +141,19 @@ public class ApiResp {
             this.totalPage = pageResult.getTotalPages();
         }
 
-        public PageEntity(List<T> dataCollection, Integer totalNum, Integer totalPage) {
+        /** [构造] 自定义实体类分页数据 */
+        public PageEntity(List<T> listData, Integer totalNum, Integer totalPage) {
             super(ResultStatus.SUCCESS);
-            this.data = dataCollection;
+            this.data = listData;
             this.totalNum = totalNum;
+            this.totalPage = totalPage;
+        }
+
+        /** [构造] 自定义实体类分页数据 */
+        public PageEntity(List<T> listData, Long totalNum, Integer totalPage) {
+            super(ResultStatus.SUCCESS);
+            this.data = listData;
+            this.totalNum = Math.toIntExact(totalNum);
             this.totalPage = totalPage;
         }
     }

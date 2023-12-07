@@ -1,10 +1,9 @@
 package com.demo.openfeign;
 
-import com.demo.db.entity.DemoEntity;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
 
 /**
+ * todo
  * OpenFeign 调用接口
  *
  * @author Song gh on 2023/3/16.
@@ -12,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @FeignClient(value = "demoOpenFeignClient", url = "http://localhost:8080/demo")
 public interface OpenFeignClient {
 
-//    @PostMapping(value = "/demoEntity/get", produces = "application/json")
-    @GetMapping("/demoEntity/get")
-    DemoEntity getDemoEntity(Long id);
+////    @PostMapping(value = "/demoEntity/get", produces = "application/json")
+//    @GetMapping("/demoEntity/get")
+//    DemoEntity getDemoEntity(Long id);
 }

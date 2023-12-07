@@ -17,6 +17,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
+import java.util.Objects;
 
 /**
  * Demo 应用, 包含通用功能或演示
@@ -33,21 +34,25 @@ public class DemoApplication {
 
     public static void main(String[] args) {
         Environment env = SpringApplication.run(DemoApplication.class, args).getEnvironment();
+        // 仅在开发环境展示 swagger
+        if (Objects.equals(env.getActiveProfiles()[0], "dev")) {
+            String ip = getRealIp();
+            log.info("\n--------------------------------------------------\n" +
+                            "  Swagger(local):   http://localhost:{}{}/swagger-ui.html\n" +
+                            "  Swagger(network): http://{}:{}{}/swagger-ui.html\n" +
+                            "  Active Profiles:  {}\n" +
+                            "--------------------------------------------------",
+                    env.getProperty("server.port"),
+                    env.getProperty("server.servlet.context-path"),
 
-        String ip = getRealIp();
-        log.info("\n--------------------------------------------------\n" +
-                        "  Swagger(local):   http://localhost:{}{}/swagger-ui.html\n" +
-                        "  Swagger(network): http://{}:{}{}/swagger-ui.html\n" +
-                        "  Active Profiles:  {}\n" +
-                        "--------------------------------------------------",
-                env.getProperty("server.port"),
-                env.getProperty("server.servlet.context-path"),
+                    ip,
+                    env.getProperty("server.port"),
+                    env.getProperty("server.servlet.context-path"),
 
-                ip,
-                env.getProperty("server.port"),
-                env.getProperty("server.servlet.context-path"),
-
-                env.getActiveProfiles());
+                    env.getActiveProfiles());
+        } else {
+            log.info("\n--------------------------------------------------\n  启动成功\n");
+        }
     }
 
     /** 获取本机真实 ip */

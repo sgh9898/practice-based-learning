@@ -14,11 +14,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,7 +29,8 @@ import java.util.concurrent.TimeUnit;
 public class OkHttpUtils {
 
     // 基本配置
-    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    private static final MediaType APPLICATION_JSON = MediaType.parse("application/json; charset=utf-8");
+    private static final MediaType APPLICATION_FILE = MediaType.parse("application/octet-stream");
     private static final MediaType APPLICATION_FORM_URLENCODED = MediaType.parse("application/x-www-form-urlencoded");
 
 // ------------------------------ 参数 ------------------------------
@@ -59,36 +57,7 @@ public class OkHttpUtils {
             .sslSocketFactory(createSSLSocketFactory(TLSVersion.TLSv12), new TrustAllCerts())
             .build();
 
-// ------------------------------ Public Static ------------------------------
-
-    /** post 传文件 */
-    public static String postFile(String url, MultipartFile multipartFile, Map<String, Object> params) {
-        File file = null;
-        try {
-            if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
-
-            // 二种：文件请求体
-            MediaType type = MediaType.parse("application/octet-stream");//"text/xml;charset=utf-8"
-            file = multipartFile2File(multipartFile);
-            RequestBody fileBody = RequestBody.create(type, file);
-
-
-            // 三种：混合参数和文件请求
-            MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.ALTERNATIVE)
-                    .addFormDataPart("file", multipartFile.getOriginalFilename(), fileBody);
-
-            for (Entry<String, Object> entry : params.entrySet()) {
-                builder.addFormDataPart(entry.getKey(), (String) entry.getValue());
-            }
-            RequestBody multipartBody = builder.build();
-
-            Request request = new Request.Builder().url(url).post(multipartBody)//传参数、文件或者混合，改一下就行请求体就行
-                    .build();
-            return getStrResponse(request, url);
-        } finally {
-            if (file != null) file.delete();
-        }
-    }
+// ------------------------------ Get 访问 ------------------------------
 
     /** get 访问 */
     public static String get(String url) {
@@ -97,55 +66,28 @@ public class OkHttpUtils {
         return getStrResponse(request, url);
     }
 
-    /** get 访问, 可切换协议版本 */
-    public static String getTLS(String url) {
-        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
-        Request request = new Request.Builder().url(url).build();
-        return getStrResponse(request, url);
-    }
+// ------------------------------ Post 访问 ------------------------------
 
     /** post 访问, 提交 json */
     public static String postJson(String url, String bodyJsonStr) {
         if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
-        RequestBody body = RequestBody.create(JSON, bodyJsonStr);
-        Request request = new Request.Builder().url(url).post(body).build();
-        return getStrResponse(request, url);
-    }
-
-    /** post 访问, 提交 json, 可切换协议版本 */
-    public static String postJsonTLS(String url, String bodyJsonStr) {
-        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
-        RequestBody body = RequestBody.create(JSON, bodyJsonStr);
+        RequestBody body = RequestBody.create(APPLICATION_JSON, bodyJsonStr);
         Request request = new Request.Builder().url(url).post(body).build();
         return getStrResponse(request, url);
     }
 
     /** post 访问, 提交 json, 自定义 Headers */
-    public static String postJsonWithHeaders(String url, Headers headers, String bodyJsonStr) {
+    public static String postJsonWithHeaders(String url, String bodyJsonStr, Map<String, String> headers) {
         if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
-        RequestBody body = RequestBody.create(JSON, bodyJsonStr);
-        Request request = new Request.Builder().url(url).headers(headers).post(body).build();
-        return getStrResponse(request, url);
-    }
-
-    /** post 访问, 提交 json, 自定义 Headers, 可切换协议版本 */
-    public static String postJsonWithHeadersTLS(String url, Headers headers, String bodyJsonStr) {
-        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
-        RequestBody body = RequestBody.create(JSON, bodyJsonStr);
-        Request request = new Request.Builder().url(url).headers(headers).post(body).build();
+        RequestBody body = RequestBody.create(APPLICATION_JSON, bodyJsonStr);
+        Request.Builder builder = new Request.Builder().url(url);
+        headers.forEach(builder::addHeader);
+        Request request = builder.post(body).build();
         return getStrResponse(request, url);
     }
 
     /** post 访问, 提交 form (参数使用 UTF-8 编码) */
     public static String postForm(String url, Map<String, Object> params) {
-        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
-        RequestBody body = RequestBody.create(APPLICATION_FORM_URLENCODED, Objects.requireNonNull(encodeValue(params, "UTF-8")));
-        Request request = new Request.Builder().url(url).post(body).build();
-        return getStrResponse(request, url);
-    }
-
-    /** post 访问, 提交 form (参数使用 UTF-8 编码) */
-    public static String postFormTLS(String url, Map<String, Object> params, TLSVersion tlsVersion) {
         if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
         RequestBody body = RequestBody.create(APPLICATION_FORM_URLENCODED, Objects.requireNonNull(encodeValue(params, "UTF-8")));
         Request request = new Request.Builder().url(url).post(body).build();
@@ -166,6 +108,69 @@ public class OkHttpUtils {
         return getStrResponse(request, url);
     }
 
+    /**
+     * post 访问, 提交单个文件 + 多个参数
+     *
+     * @param fileParamName 文件参数名
+     * @param params        常规参数
+     */
+    public static String postFile(String url, String fileParamName, MultipartFile multipartFile, Map<String, Object> params) {
+        File file = null;
+        try {
+            if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
+            // 文件请求体
+            file = multiFiletoFile(multipartFile);
+            RequestBody fileBody = RequestBody.create(APPLICATION_FILE, file);
+            // 添加文件
+            MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.ALTERNATIVE)
+                    .addFormDataPart(fileParamName, multipartFile.getOriginalFilename(), fileBody);
+            // 添加参数
+            for (Entry<String, Object> entry : params.entrySet()) {
+                builder.addFormDataPart(entry.getKey(), (String) entry.getValue());
+            }
+            RequestBody multipartBody = builder.build();
+            Request request = new Request.Builder().url(url).post(multipartBody).build();
+            return getStrResponse(request, url);
+        } finally {
+            if (file != null) {
+                file.delete();
+            }
+        }
+    }
+
+    /**
+     * post 访问, 提交多个文件 + 多个参数
+     *
+     * @param fileMap Map(文件参数名, 文件实体)
+     * @param params  常规参数
+     */
+    public static String postFiles(String url, Map<String, MultipartFile> fileMap, Map<String, Object> params) {
+        List<File> fileList = new LinkedList<>();
+        try {
+            if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
+            // 添加文件
+            MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.ALTERNATIVE);
+            for (Entry<String, MultipartFile> fileEntry : fileMap.entrySet()) {
+                MultipartFile multipartFile = fileEntry.getValue();
+                File file = multiFiletoFile(multipartFile);
+                fileList.add(file);
+                RequestBody fileBody = RequestBody.create(APPLICATION_FILE, file);
+                builder.addFormDataPart(fileEntry.getKey(), multipartFile.getOriginalFilename(), fileBody);
+            }
+            // 添加参数
+            for (Entry<String, Object> entry : params.entrySet()) {
+                builder.addFormDataPart(entry.getKey(), (String) entry.getValue());
+            }
+            RequestBody multipartBody = builder.build();
+            Request request = new Request.Builder().url(url).post(multipartBody).build();
+            return getStrResponse(request, url);
+        } finally {
+            fileList.forEach(File::delete);
+        }
+    }
+
+// ------------------------------ Private ------------------------------
+
     /** 返回 url 访问结果 (String), 协议版本 TLSv1.2 */
     private static String getStrResponse(Request request, String url) {
         try (Response response = defaultClientTLS12.newCall(request).execute()) {
@@ -175,8 +180,6 @@ public class OkHttpUtils {
             throw new RuntimeException("OkHttp 访问失败, url: " + url);
         }
     }
-
-// ------------------------------ Private ------------------------------
 
     /**
      * 将参数值进行编码
@@ -229,14 +232,14 @@ public class OkHttpUtils {
         return ssfFactory;
     }
 
-    private static File multipartFile2File(MultipartFile multipartFile) {
+    /** MultipartFile 转 File */
+    private static File multiFiletoFile(MultipartFile multipartFile) {
         String path = "." + File.separator + multipartFile.getOriginalFilename();
         File file = new File(path);
         try {
             if (!file.exists()) {
                 file.createNewFile();
             }
-            // 底层也是通过io流写入文件file
             FileCopyUtils.copy(multipartFile.getBytes(), file);
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -1,6 +1,7 @@
 package com.demo.excel.service;
 
-import com.demo.db.entity.DemoEntity;
+import com.demo.database.db.entity.AreaCodeRegion;
+import com.demo.database.pojo.excel.ExcelAreaCodeRegion;
 import com.demo.excel.easyexcel.EasyExcelUtils;
 import com.demo.excel.pojo.ExcelToDdl;
 import org.apache.commons.lang3.StringUtils;
@@ -20,7 +21,7 @@ import java.util.*;
 public class ExcelService {
 
     public void exportExcel(HttpServletRequest request, HttpServletResponse response) {
-        EasyExcelUtils excelUtils = new EasyExcelUtils(request, response, "Excel导出测试", DemoEntity.class);
+        EasyExcelUtils excelUtils = new EasyExcelUtils(request, response, "Excel导出测试", ExcelAreaCodeRegion.class);
         excelUtils.setTitle("这是一条标题");
         excelUtils.exportExcelCustomized();
     }

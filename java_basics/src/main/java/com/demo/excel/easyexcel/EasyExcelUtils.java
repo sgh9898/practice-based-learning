@@ -43,7 +43,7 @@ import java.util.*;
 @Setter
 public class EasyExcelUtils {
 
-// ------------------------------ 内部配置 ------------------------------
+// ------------------------------ 内部配置(不可修改) ------------------------------
     /** Excel 数据导出主体 */
     @Setter(AccessLevel.PRIVATE)
     private ExcelWriter excelWriter;
@@ -72,7 +72,7 @@ public class EasyExcelUtils {
     /** 自定义说明行(列名之上) */
     private String note;
     /** 列宽选取方式 */
-    private ProtectedEnumsColWidth widthStrategy;
+    private ZippedEnumsColWidth widthStrategy;
     /** 启用 07 版 Excel: 默认 false, 出现兼容问题时可尝试 true */
     private Boolean useExcel07;
 
@@ -130,7 +130,7 @@ public class EasyExcelUtils {
         this.response = response;
         this.fileName = fileName;
         this.excelClass = excelClass;
-        this.excelWriter = ProtectedEasyExcelUtils.createExcelWriter(request, response, fileName, false);
+        this.excelWriter = ZippedEasyExcelUtils.createExcelWriter(request, response, fileName, false);
     }
 
     /**
@@ -144,7 +144,7 @@ public class EasyExcelUtils {
         this.request = request;
         this.response = response;
         this.fileName = fileName;
-        this.excelWriter = ProtectedEasyExcelUtils.createExcelWriter(request, response, fileName, false);
+        this.excelWriter = ZippedEasyExcelUtils.createExcelWriter(request, response, fileName, false);
     }
 
 // ------------------------------ Static, 导入 ------------------------------
@@ -162,14 +162,14 @@ public class EasyExcelUtils {
      * @return List(ExcelClass) = 成功, null = 失败且下载含报错信息的 Excel 文件
      */
     public static <T> List<T> importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass, List<T> errorList) {
-        Listener<T> listener = new Listener<>(excelClass);
+        ZippedListener<T> zippedListener = new ZippedListener<>(excelClass);
         // 导入成功
-        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.baseImportExcel(file, request, response, excelClass, listener, false, errorList))) {
+        if (Boolean.TRUE.equals(ZippedEasyExcelUtils.baseImportExcel(file, request, response, excelClass, zippedListener, false, errorList))) {
             // 记录报错
             if (errorList != null) {
-                errorList.addAll(listener.getInvalidList());
+                errorList.addAll(zippedListener.getInvalidList());
             }
-            return listener.getValidList();
+            return zippedListener.getValidList();
         }
         return null;
     }
@@ -186,10 +186,10 @@ public class EasyExcelUtils {
      * @return List(ExcelClass) = 成功, null = 失败且下载含报错信息的 Excel 文件
      */
     public static <T> List<T> importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass) {
-        Listener<T> listener = new Listener<>(excelClass);
+        ZippedListener<T> zippedListener = new ZippedListener<>(excelClass);
         // 导入并进行初步校验: 成功 --> 返回数据; 失败 --> 自动下载报错信息
-        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.baseImportExcel(file, request, response, excelClass, listener, true, null))) {
-            return listener.getValidList();
+        if (Boolean.TRUE.equals(ZippedEasyExcelUtils.baseImportExcel(file, request, response, excelClass, zippedListener, true, null))) {
+            return zippedListener.getValidList();
         }
         return null;
     }
@@ -206,10 +206,10 @@ public class EasyExcelUtils {
      * @return List(Map) = 成功, null = 失败且下载含报错信息的 Excel 文件
      */
     public static List<Map<String, Object>> noModelImportExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Map<String, String> cnToEnHeadNameMap) {
-        ListenerNoModel listenerNoModel = new ListenerNoModel(cnToEnHeadNameMap, null);
+        ZippedListenerNoModel zippedListenerNoModel = new ZippedListenerNoModel(cnToEnHeadNameMap, null);
         // 导入成功
-        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.noModelBaseImportExcel(file, request, response, listenerNoModel, true, null))) {
-            return listenerNoModel.getValidList();
+        if (Boolean.TRUE.equals(ZippedEasyExcelUtils.noModelBaseImportExcel(file, request, response, zippedListenerNoModel, true, null))) {
+            return zippedListenerNoModel.getValidList();
         }
         return null;
     }
@@ -226,10 +226,10 @@ public class EasyExcelUtils {
      * @return List(Map) = 成功, null = 失败且下载含报错信息的 Excel 文件
      */
     public static List<Map<String, Object>> noModelImportExcelStrictly(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Map<String, String> cnToEnHeadNameMap) {
-        ListenerNoModel listenerNoModel = new ListenerNoModel(cnToEnHeadNameMap, ProtectedConstants.HEAD_RULES_STRICTLY_CONTAINS);
+        ZippedListenerNoModel zippedListenerNoModel = new ZippedListenerNoModel(cnToEnHeadNameMap, ZippedEasyExcelConstants.HEAD_RULES_STRICTLY_CONTAINS);
         // 导入成功
-        if (Boolean.TRUE.equals(ProtectedEasyExcelUtils.noModelBaseImportExcel(file, request, response, listenerNoModel, true, null))) {
-            return listenerNoModel.getValidList();
+        if (Boolean.TRUE.equals(ZippedEasyExcelUtils.noModelBaseImportExcel(file, request, response, zippedListenerNoModel, true, null))) {
+            return zippedListenerNoModel.getValidList();
         }
         return null;
     }
@@ -248,9 +248,9 @@ public class EasyExcelUtils {
     public static <T> void exportData(HttpServletRequest request, HttpServletResponse response, String fileName, Class<T> excelClass, List<T> excelDataList) {
         // 默认排除"错误信息"列
         Set<String> defaultExcludedCols = new HashSet<>();
-        defaultExcludedCols.add(ProtectedConstants.DEFAULT_ERROR_PARAM);
+        defaultExcludedCols.add(ZippedEasyExcelConstants.DEFAULT_ERROR_PARAM);
         // 导出
-        ProtectedEasyExcelUtils.baseExportExcel(request, response, excelClass, fileName, "Sheet1", excelDataList,
+        ZippedEasyExcelUtils.baseExportExcel(request, response, excelClass, fileName, "Sheet1", excelDataList,
                 null, null, defaultExcludedCols, null, null, null, null);
     }
 
@@ -265,7 +265,7 @@ public class EasyExcelUtils {
      */
     public static <T> void exportErrorData(HttpServletRequest request, HttpServletResponse response, String fileName, Class<T> excelClass, List<T> excelDataList) {
         // 导出
-        ProtectedEasyExcelUtils.baseExportExcel(request, response, excelClass, fileName, "Sheet1", excelDataList,
+        ZippedEasyExcelUtils.baseExportExcel(request, response, excelClass, fileName, "Sheet1", excelDataList,
                 null, null, null, null, null, null, null);
     }
 
@@ -281,10 +281,10 @@ public class EasyExcelUtils {
     public static void exportTemplate(HttpServletRequest request, HttpServletResponse response, String fileName, Class<?> excelClass, String note) {
         // 默认排除"错误信息"列
         Set<String> defaultExcludedCols = new HashSet<>();
-        defaultExcludedCols.add(ProtectedConstants.DEFAULT_ERROR_PARAM);
+        defaultExcludedCols.add(ZippedEasyExcelConstants.DEFAULT_ERROR_PARAM);
         // 导出
-        ProtectedEasyExcelUtils.baseExportExcel(request, response, excelClass, fileName, "Sheet1", null, null, note,
-                defaultExcludedCols, null, null, ProtectedEnumsColWidth.COL_WIDTH_HEAD, null);
+        ZippedEasyExcelUtils.baseExportExcel(request, response, excelClass, fileName, "Sheet1", null, null, note,
+                defaultExcludedCols, null, null, ZippedEnumsColWidth.COL_WIDTH_HEAD, null);
     }
 
     /**
@@ -303,7 +303,7 @@ public class EasyExcelUtils {
         List<List<String>> newHeadList = new LinkedList<>();
         List<List<Object>> newDataList = new LinkedList<>();
         if (setHeadAndDataNoModel(headList, dataList, noModelHeadMap, newHeadList, newDataList, null)) {
-            ProtectedEasyExcelUtils.noModelBaseExportExcel(request, response, fileName, "Sheet1", newHeadList, newDataList,
+            ZippedEasyExcelUtils.noModelBaseExportExcel(request, response, fileName, "Sheet1", newHeadList, newDataList,
                     null, null, null, null, null);
         }
     }
@@ -321,7 +321,7 @@ public class EasyExcelUtils {
         // 整理列名与数据格式
         List<List<String>> newHeadList = new LinkedList<>();
         if (setHeadAndDataNoModel(headList, null, null, newHeadList, null, null)) {
-            ProtectedEasyExcelUtils.noModelBaseExportExcel(request, response, fileName, "Sheet1", newHeadList, null,
+            ZippedEasyExcelUtils.noModelBaseExportExcel(request, response, fileName, "Sheet1", newHeadList, null,
                     null, note, null, null, null);
         }
     }
@@ -412,8 +412,8 @@ public class EasyExcelUtils {
             throw new RuntimeException("未指定 ExcelClass");
         }
         // 默认排除"错误信息"列
-        excludedCols.add(ProtectedConstants.DEFAULT_ERROR_PARAM);
-        ProtectedEasyExcelUtils.baseWriteSheet(excelWriter, excelClass, sheetIndex, sheetName, dataList, excludedCols, title, note, dynamicDropDownMap, dynamicHeadMap, widthStrategy);
+        excludedCols.add(ZippedEasyExcelConstants.DEFAULT_ERROR_PARAM);
+        ZippedEasyExcelUtils.baseWriteSheet(excelWriter, excelClass, sheetIndex, sheetName, dataList, excludedCols, title, note, dynamicDropDownMap, dynamicHeadMap, widthStrategy);
         sheetIndex++;
     }
 
@@ -449,7 +449,7 @@ public class EasyExcelUtils {
                 }
             }
             // 写数据
-            ProtectedEasyExcelUtils.noModelBaseWriteSheet(excelWriter, sheetIndex, sheetName, newChineseHeadList, cnSpecialHeadSet, newDataList,
+            ZippedEasyExcelUtils.noModelBaseWriteSheet(excelWriter, sheetIndex, sheetName, newChineseHeadList, cnSpecialHeadSet, newDataList,
                     title, note, indexedDropDownMap, widthStrategy);
         }
         sheetIndex++;
@@ -458,7 +458,7 @@ public class EasyExcelUtils {
     /** 配置 Excel 兼容格式, 并重新生成 Excel Writer */
     public void setUseExcel07(Boolean useExcel07) {
         this.useExcel07 = useExcel07;
-        this.excelWriter = ProtectedEasyExcelUtils.createExcelWriter(request, response, fileName, useExcel07);
+        this.excelWriter = ZippedEasyExcelUtils.createExcelWriter(request, response, fileName, useExcel07);
     }
 
     /** 不导出指定列(字段英文名) */
