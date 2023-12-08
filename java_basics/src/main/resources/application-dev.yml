@@ -8,6 +8,7 @@ server:
       # 使用当前配置文件进行编码, 可配合 charset: utf-8 使用
       force: true
 
+
 # Canal 参数
 canal:
   # canal deployer 使用的数据库用户名
@@ -142,6 +143,12 @@ spring:
   # Thymeleaf
   thymeleaf:
     check-template-location: false
+  quartz:
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName=SsmScheduler:
 
 # 日志
 logging:

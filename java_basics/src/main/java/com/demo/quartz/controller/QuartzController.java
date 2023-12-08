@@ -1,4 +1,4 @@
-package com.demo.quartz;
+package com.demo.quartz.controller;
 
 import com.demo.quartz.dto.QuartzConfigDto;
 import com.demo.quartz.service.QuartzJobService;
@@ -7,6 +7,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,7 +29,7 @@ public class QuartzController {
     private QuartzJobService quartzJobService;
 
     /** 添加新任务 */
-    @RequestMapping("/addJob")
+    @PostMapping("/addJob")
     @ApiOperation("添加新任务")
     public ApiResp addJob(@RequestBody QuartzConfigDto configDTO) {
         quartzJobService.addJob(configDTO.getJobClass(), configDTO.getJobName(), configDTO.getGroupName(), configDTO.getCronExpression(), configDTO.getParam());
@@ -36,7 +37,7 @@ public class QuartzController {
     }
 
     /** 暂停任务 */
-    @RequestMapping("/pauseJob")
+    @PostMapping("/pauseJob")
     @ApiOperation("暂停任务")
     public ApiResp pauseJob(@RequestBody QuartzConfigDto configDTO) {
         quartzJobService.pauseJob(configDTO.getJobName(), configDTO.getGroupName());
@@ -44,7 +45,7 @@ public class QuartzController {
     }
 
     /** 恢复任务 */
-    @RequestMapping("/resumeJob")
+    @PostMapping("/resumeJob")
     @ApiOperation("暂停任务")
     public ApiResp resumeJob(@RequestBody QuartzConfigDto configDTO) {
         quartzJobService.resumeJob(configDTO.getJobName(), configDTO.getGroupName());
@@ -52,7 +53,7 @@ public class QuartzController {
     }
 
     /** 立即运行一次定时任务 */
-    @RequestMapping("/runOnce")
+    @PostMapping("/runOnce")
     @ApiOperation("立即运行一次定时任务")
     public ApiResp runOnce(@RequestBody QuartzConfigDto configDTO) {
         quartzJobService.runOnce(configDTO.getJobName(), configDTO.getGroupName());
@@ -60,7 +61,7 @@ public class QuartzController {
     }
 
     /** 更新任务 */
-    @RequestMapping("/updateJob")
+    @PostMapping("/updateJob")
     @ApiOperation("更新任务")
     public ApiResp updateJob(@RequestBody QuartzConfigDto configDTO) {
         quartzJobService.updateJob(configDTO.getJobName(), configDTO.getGroupName(), configDTO.getCronExpression(), configDTO.getParam());
@@ -68,7 +69,7 @@ public class QuartzController {
     }
 
     /** 删除任务 */
-    @RequestMapping("/deleteJob")
+    @PostMapping("/deleteJob")
     @ApiOperation("删除任务")
     public ApiResp deleteJob(@RequestBody QuartzConfigDto configDTO) {
         quartzJobService.deleteJob(configDTO.getJobName(), configDTO.getGroupName());
@@ -76,7 +77,7 @@ public class QuartzController {
     }
 
     /** 启动所有任务 */
-    @RequestMapping("/startAllJobs")
+    @PostMapping("/startAllJobs")
     @ApiOperation("启动所有任务")
     public ApiResp startAllJobs() {
         quartzJobService.startAllJobs();
@@ -84,7 +85,7 @@ public class QuartzController {
     }
 
     /** 暂停所有任务 */
-    @RequestMapping("/pauseAllJobs")
+    @PostMapping("/pauseAllJobs")
     @ApiOperation("暂停所有任务")
     public ApiResp pauseAllJobs() {
         quartzJobService.pauseAllJobs();
@@ -92,7 +93,7 @@ public class QuartzController {
     }
 
     /** 恢复所有任务 */
-    @RequestMapping("/resumeAllJobs")
+    @PostMapping("/resumeAllJobs")
     @ApiOperation("恢复所有任务")
     public ApiResp resumeAllJobs() {
         quartzJobService.resumeAllJobs();
@@ -100,7 +101,7 @@ public class QuartzController {
     }
 
     /** 关闭所有任务 */
-    @RequestMapping("/shutdownAllJobs")
+    @PostMapping("/shutdownAllJobs")
     @ApiOperation("关闭所有任务")
     public ApiResp shutdownAllJobs() {
         quartzJobService.shutdownAllJobs();
