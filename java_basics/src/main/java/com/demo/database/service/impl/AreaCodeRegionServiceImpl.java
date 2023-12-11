@@ -19,9 +19,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * 区号
+ * [功能类] 区号
  *
- * @author Song gh on 2023/12/04.
+ * @author Song gh on 2023/12/11.
  */
 @Service
 public class AreaCodeRegionServiceImpl implements AreaCodeRegionService {

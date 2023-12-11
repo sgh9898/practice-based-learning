@@ -1,49 +1,54 @@
 package com.demo.quartz.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import org.quartz.SchedulerException;
+import lombok.Getter;
+import lombok.Setter;
 import org.quartz.utils.ConnectionProvider;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
+/**
+ * Druid 数据库连接池配置
+ *
+ * @author Song gh on 2023/12/11.
+ */
+@Getter
+@Setter
 @Configuration
 public class DruidConnectionProvider implements ConnectionProvider {
 
-    /**
-     * 常量配置，与quartz.properties文件的key保持一致(去掉前缀)，同时提供set方法，Quartz框架自动注入值。
-     * @return
-     * @throws SQLException
-     */
+    /** 数据库默认最大连接数 */
+    private static final int DEFAULT_DB_MAX_CONNECTIONS = 10;
 
-    //JDBC驱动
-    public String driver;
-    //JDBC连接串
-    public String URL;
-    //数据库用户名
-    public String user;
-    //数据库用户密码
-    public String password;
-    //数据库最大连接数
-    public int maxConnection;
-    //数据库SQL查询每次连接返回执行到连接池，以确保它仍然是有效的。
-    public String validationQuery;
+    /** 默认每个链接缓存120个预编译语句 */
+    private static final int DEFAULT_DB_MAX_CACHED_STATEMENTS_PER_CONNECTION = 120;
 
+// ------------------------------ 自动读取配置文件 ------------------------------
+    /** 数据库驱动 */
+    private String driver;
+    /** 数据库 url */
+    private String URL;
+    /** 数据库用户名 */
+    private String user;
+    /** 数据库密码 */
+    private String password;
+    /** 数据库最大连接数 */
+    private int maxConnection;
+    /** 测试数据库连接的 sql, 数据库SQL查询每次连接返回执行到连接池，以确保它仍然是有效的。 */
+    private String validationQuery;
+    /** 每个链接最多缓存预编译语句的数量 */
+    private String maxCachedStatementsPerConnection;
+    /** 是否每次从池中取连接时, 验证连接可用性 */
     private boolean validateOnCheckout;
-
+    /** 空闲连接超过当前值时进行验证, 单位: 秒 */
     private int idleConnectionValidationSeconds;
+    /** 空闲连接超过当前值时丢弃, 单位: 秒 */
+    private int discardIdleConnectionsSeconds;
+// ============================== 自动读取配置文件 End ==============================
 
-    public String maxCachedStatementsPerConnection;
-
-    private String discardIdleConnectionsSeconds;
-
-    public static final int DEFAULT_DB_MAX_CONNECTIONS = 10;
-
-    public static final int DEFAULT_DB_MAX_CACHED_STATEMENTS_PER_CONNECTION = 120;
-
-    //Druid连接池
+    /** Druid 连接池 */
     private DruidDataSource datasource;
 
     @Override
@@ -59,25 +64,20 @@ public class DruidConnectionProvider implements ConnectionProvider {
     @Override
     public void initialize() throws SQLException {
         if (this.URL == null) {
-            throw new SQLException("DBPool could not be created: DB URL cannot be null");
+            throw new SQLException("连接池创建失败: url 不能为空");
         }
-
         if (this.driver == null) {
-            throw new SQLException("DBPool driver could not be created: DB driver class name cannot be null!");
+            throw new SQLException("连接池创建失败: driver 不能为空");
         }
-
         if (this.maxConnection < 0) {
-            throw new SQLException("DBPool maxConnectins could not be created: Max connections must be greater than zero!");
+            throw new SQLException("连接池创建失败: 最大连接数不能小于 0");
         }
 
         datasource = new DruidDataSource();
-        try{
+        try {
             datasource.setDriverClassName(this.driver);
         } catch (Exception e) {
-            try {
-                throw new SchedulerException("Problem setting driver class name on datasource: " + e.getMessage(), e);
-            } catch (SchedulerException e1) {
-            }
+            throw new RuntimeException("配置 driver 失败: " + e.getMessage(), e);
         }
 
         datasource.setUrl(this.URL);
@@ -90,91 +90,12 @@ public class DruidConnectionProvider implements ConnectionProvider {
 
         if (this.validationQuery != null) {
             datasource.setValidationQuery(this.validationQuery);
-            if(!this.validateOnCheckout)
+            if (!this.validateOnCheckout) {
                 datasource.setTestOnReturn(true);
-            else
+            } else {
                 datasource.setTestOnBorrow(true);
-            datasource.setValidationQueryTimeout(this.idleConnectionValidationSeconds);
+                datasource.setValidationQueryTimeout(this.idleConnectionValidationSeconds);
+            }
         }
-    }
-
-    public String getDriver() {
-        return driver;
-    }
-
-    public void setDriver(String driver) {
-        this.driver = driver;
-    }
-
-    public String getURL() {
-        return URL;
-    }
-
-    public void setURL(String URL) {
-        this.URL = URL;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public int getMaxConnection() {
-        return maxConnection;
-    }
-
-    public void setMaxConnection(int maxConnection) {
-        this.maxConnection = maxConnection;
-    }
-
-    public String getValidationQuery() {
-        return validationQuery;
-    }
-
-    public void setValidationQuery(String validationQuery) {
-        this.validationQuery = validationQuery;
-    }
-
-    public boolean isValidateOnCheckout() {
-        return validateOnCheckout;
-    }
-
-    public void setValidateOnCheckout(boolean validateOnCheckout) {
-        this.validateOnCheckout = validateOnCheckout;
-    }
-
-    public int getIdleConnectionValidationSeconds() {
-        return idleConnectionValidationSeconds;
-    }
-
-    public void setIdleConnectionValidationSeconds(int idleConnectionValidationSeconds) {
-        this.idleConnectionValidationSeconds = idleConnectionValidationSeconds;
-    }
-
-    public DruidDataSource getDatasource() {
-        return datasource;
-    }
-
-    public void setDatasource(DruidDataSource datasource) {
-        this.datasource = datasource;
-    }
-
-    public String getDiscardIdleConnectionsSeconds() {
-        return discardIdleConnectionsSeconds;
-    }
-
-    public void setDiscardIdleConnectionsSeconds(String discardIdleConnectionsSeconds) {
-        this.discardIdleConnectionsSeconds = discardIdleConnectionsSeconds;
     }
 }

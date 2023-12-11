@@ -6,8 +6,8 @@ import com.demo.util.ApiResp;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,7 +17,7 @@ import javax.annotation.Resource;
 /**
  * Quartz 定时任务
  *
- * @author Song gh on 2023/12/04.
+ * @author Song gh on 2023/12/11.
  */
 @Slf4j
 @Api(tags = "Quartz 定时任务")
@@ -28,11 +28,27 @@ public class QuartzController {
     @Resource
     private QuartzJobService quartzJobService;
 
-    /** 添加新任务 */
-    @PostMapping("/addJob")
-    @ApiOperation("添加新任务")
+    /** [新增/更新] 添加任务并启动(任务已存在时转为更新) */
+    @PostMapping("/upsertJob")
+    @ApiOperation("[新增/更新] 添加任务并启动(任务已存在时转为更新)")
+    public ApiResp upsertJob(@RequestBody QuartzConfigDto configDTO) {
+        quartzJobService.upsertJob(configDTO.getJobClass(), configDTO.getJobName(), configDTO.getGroupName(), configDTO.getCronExpression(), configDTO.getParam());
+        return ApiResp.success();
+    }
+
+    /** [新增] 添加任务并启动(任务已存在时不执行) */
+    @PostMapping("/addJobIfNotExists")
+    @ApiOperation("[新增] 添加任务并启动(任务已存在时不执行)")
     public ApiResp addJob(@RequestBody QuartzConfigDto configDTO) {
-        quartzJobService.addJob(configDTO.getJobClass(), configDTO.getJobName(), configDTO.getGroupName(), configDTO.getCronExpression(), configDTO.getParam());
+        quartzJobService.addJobIfNotExists(configDTO.getJobClass(), configDTO.getJobName(), configDTO.getGroupName(), configDTO.getCronExpression(), configDTO.getParam());
+        return ApiResp.success();
+    }
+
+    /** [更新] 更新任务 */
+    @PostMapping("/updateJob")
+    @ApiOperation("[更新] 更新任务")
+    public ApiResp updateJob(@RequestBody QuartzConfigDto configDTO) {
+        quartzJobService.updateJob(configDTO.getJobName(), configDTO.getGroupName(), configDTO.getCronExpression(), configDTO.getParam());
         return ApiResp.success();
     }
 
@@ -46,7 +62,7 @@ public class QuartzController {
 
     /** 恢复任务 */
     @PostMapping("/resumeJob")
-    @ApiOperation("暂停任务")
+    @ApiOperation("恢复任务")
     public ApiResp resumeJob(@RequestBody QuartzConfigDto configDTO) {
         quartzJobService.resumeJob(configDTO.getJobName(), configDTO.getGroupName());
         return ApiResp.success();
@@ -57,14 +73,6 @@ public class QuartzController {
     @ApiOperation("立即运行一次定时任务")
     public ApiResp runOnce(@RequestBody QuartzConfigDto configDTO) {
         quartzJobService.runOnce(configDTO.getJobName(), configDTO.getGroupName());
-        return ApiResp.success();
-    }
-
-    /** 更新任务 */
-    @PostMapping("/updateJob")
-    @ApiOperation("更新任务")
-    public ApiResp updateJob(@RequestBody QuartzConfigDto configDTO) {
-        quartzJobService.updateJob(configDTO.getJobName(), configDTO.getGroupName(), configDTO.getCronExpression(), configDTO.getParam());
         return ApiResp.success();
     }
 

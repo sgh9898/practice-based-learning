@@ -15,13 +15,13 @@ import javax.validation.constraints.PositiveOrZero;
 import java.util.Date;
 
 /**
- * [导入/导出] 区号 excel
+ * [Excel 导入/导出] 区号
  *
- * @author Song gh on 2023/12/04.
+ * @author Song gh on 2023/12/11.
  */
 @Getter
 @Setter
-@ApiModel("区号 Excel")
+@ApiModel("[Excel 导入/导出] 区号")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ExcelAreaCodeRegion extends EasyExcelClassTemplate {
 

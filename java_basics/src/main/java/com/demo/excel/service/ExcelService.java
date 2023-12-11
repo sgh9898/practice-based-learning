@@ -1,6 +1,5 @@
 package com.demo.excel.service;
 
-import com.demo.database.db.entity.AreaCodeRegion;
 import com.demo.database.pojo.excel.ExcelAreaCodeRegion;
 import com.demo.excel.easyexcel.EasyExcelUtils;
 import com.demo.excel.pojo.ExcelToDdl;

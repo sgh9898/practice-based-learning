@@ -11,9 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
- * 区号
+ * [功能类] 区号
  *
- * @author Song gh on 2023/12/04.
+ * @author Song gh on 2023/12/11.
  */
 public interface AreaCodeRegionService {
     

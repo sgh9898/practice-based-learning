@@ -11,12 +11,12 @@ import lombok.Data;
 import java.util.Date;
 
 /**
- * [展示] 区号 vo
+ * [展示 VO] 区号
  *
- * @author Song gh on 2023/12/04.
+ * @author Song gh on 2023/12/11.
  */
 @Data
-@ApiModel("[展示] 区号 vo")
+@ApiModel("[展示 VO] 区号")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AreaCodeRegionVo {
     

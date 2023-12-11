@@ -15,15 +15,15 @@ import javax.persistence.*;
 import java.util.Date;
 
 /**
- * 区号
+ * [实体类] 区号
  *
- * @author Song gh on 2023/12/04.
+ * @author Song gh on 2023/12/11.
  */
 @Entity
 @Getter
 @Setter
 @Table(name = "area_code_region")
-@ApiModel("区号")
+@ApiModel("[实体类] 区号")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AreaCodeRegion {
 
