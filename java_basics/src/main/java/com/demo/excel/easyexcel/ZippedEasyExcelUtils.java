@@ -216,7 +216,7 @@ class ZippedEasyExcelUtils {
                                        List<?> dataList, String title, String note, Set<String> excludedCols, Map<String, String> headMap,
                                        Map<String, String[]> dynamicDropDownMap, ZippedEnumsColWidth widthStrategy, Boolean useExcel07) {
         ExcelWriter excelWriter = createExcelWriter(request, response, fileName, useExcel07);
-        baseWriteSheet(excelWriter, excelClass, 0, sheetName, dataList, excludedCols, title, note, dynamicDropDownMap, headMap, widthStrategy);
+        baseWriteSheet(excelWriter, excelClass, 1, sheetName, dataList, excludedCols, title, note, dynamicDropDownMap, headMap, widthStrategy);
         closeExcelWriter(response, excelWriter);
     }
 
@@ -239,7 +239,7 @@ class ZippedEasyExcelUtils {
                                               List<List<String>> cnHeadList, List<List<Object>> dataList, String title, String note,
                                               Map<Integer, String[]> dropDownMap, ZippedEnumsColWidth widthStrategy, Boolean useExcel07) {
         ExcelWriter excelWriter = createExcelWriter(request, response, fileName, useExcel07);
-        noModelBaseWriteSheet(excelWriter, 0, sheetName, cnHeadList, null, dataList, title, note, dropDownMap, widthStrategy);
+        noModelBaseWriteSheet(excelWriter, 1, sheetName, cnHeadList, null, dataList, title, note, dropDownMap, widthStrategy);
         closeExcelWriter(response, excelWriter);
     }
 
@@ -311,7 +311,8 @@ class ZippedEasyExcelUtils {
         }
 
         // 创建表单
-        ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(sheetIndex, sheetName);
+        String finalSheetName = StringUtils.isBlank(sheetName) ? "Sheet" + sheetIndex: sheetName;
+        ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(sheetIndex, finalSheetName);
         // 需要排除的列
         sheetBuilder.excludeColumnFieldNames(excludedCols);
         // 下拉框
@@ -322,7 +323,7 @@ class ZippedEasyExcelUtils {
         if (StringUtils.isNotBlank(note)) {
             skipRowNum++;
         }
-        sheetBuilder.registerWriteHandler(new ZippedHandlerDropDownMenu(dropDownMap, skipRowNum));
+        sheetBuilder.registerWriteHandler(new ZippedSheetWriteHandler(dropDownMap, skipRowNum));
         // 自适应列宽
         sheetBuilder.registerWriteHandler(new ZippedHandlerColumnWidth(widthStrategy, doNotChangeWidth));
         // 自适应行高
@@ -381,8 +382,8 @@ class ZippedEasyExcelUtils {
         int validColumnNum = cnHeadList.size();
 
         // 导出
-        // 创建表格
-        ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(sheetIndex, sheetName);
+        String finalSheetName = StringUtils.isBlank(sheetName) ? "Sheet" + sheetIndex: sheetName;
+        ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(sheetIndex, finalSheetName);
         // 下拉框
         int skipRowNum = 0;
         if (StringUtils.isNotBlank(title)) {
@@ -396,7 +397,7 @@ class ZippedEasyExcelUtils {
             headRows = Math.max(headRows, headColumn.size());
         }
         skipRowNum = skipRowNum + headRows - 1;
-        sheetBuilder.registerWriteHandler(new ZippedHandlerDropDownMenu(dropDownMap, skipRowNum));
+        sheetBuilder.registerWriteHandler(new ZippedSheetWriteHandler(dropDownMap, skipRowNum));
         // 配置 head 样式
         sheetBuilder.registerWriteHandler(new ZippedHandlerVerticalStyleNoModel(specialHeadSet));
         // 自适应列宽

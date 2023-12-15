@@ -41,7 +41,7 @@ public class MinioUtil {
      * 如果 bucket 不存在, 则新建 bucket
      *
      * @param bucketName bucket 名称
-     * @return true: 成功创建, false: 已存在
+     * @return true: 成功创建; false: 已存在
      */
     public boolean createBucketIfNotExist(String bucketName) {
         try {

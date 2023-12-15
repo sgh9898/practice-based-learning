@@ -1,0 +1,210 @@
+# Sharding 分库分表配置
+# Song gh on 2023/12/15.
+
+# ------------------------------ 目录 ------------------------------
+# mode          单机/集群模式配置
+# dataSources   数据源配置, 支持多数据源
+# rules         其他规则
+#     - !READWRITE_SPLITTING  读写分离
+#     - !SHARDING             分库分表
+#     - !TRANSACTION          事务
+#     - !ENCRYPT              数据库加密
+#     - !MASK                 数据库脱敏
+# props         其他配置
+# ======================================================================
+
+# ------------------------------↓ 单机模式配置 ↓------------------------------
+mode:
+  type: Standalone
+  repository:
+    type: JDBC
+
+# ------------------------------↓ 集群模式配置 ↓------------------------------
+#mode:
+#  type: Cluster
+#  repository:
+#    type: zookeeper
+#    props:
+#      namespace: governance_ds
+#      server-lists: zookeeper-headless:2181
+#      retryIntervalMilliseconds: 500
+#      timeToLiveSeconds: 60
+#      maxRetries: 3
+#      operationTimeoutMilliseconds: 500
+
+# ------------------------------↓ 数据源配置(支持多数据源) ↓------------------------------
+dataSources:
+  ds_1:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver   # 部分低版本数据库使用 com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/sharding_ds_1?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
+    username: root
+    password: "RVsdbgjs~4921"
+    hikari:
+      minimum-idle: 3
+      maximum-pool-size: 30
+      idle-timeout: 120000
+  ds_2:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver   # 部分低版本数据库使用 com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/sharding_ds_2?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
+    username: root
+    password: "RVsdbgjs~4921"
+    hikari:
+      minimum-idle: 3
+      maximum-pool-size: 30
+      idle-timeout: 120000
+
+# ------------------------------↓ 规则配置 ↓------------------------------
+rules:
+  # ------------------------------↓ 读写分离 ↓------------------------------
+  - !READWRITE_SPLITTING
+    dataSources:
+      readwrite_ds:
+        staticStrategy:
+          writeDataSourceName: write_ds
+          readDataSourceNames:
+            - read_ds_0
+            - read_ds_1
+        loadBalancerName: random-robin
+    loadBalancers:
+      random:
+        type: RANDOM
+        props:
+          transaction-read-query-strategy: FIXED_PRIMARY
+      random-robin:
+        type: ROUND_ROBIN
+        props:
+          transaction-read-query-strategy: FIXED_PRIMARY
+
+  # ------------------------------↓ 分库分表 ↓------------------------------
+  # 不需要分表的表无需配置, sharding 可以自动读取
+  - !SHARDING
+    tables:
+      complaints_phone:     # 需要分表的表名
+        actualDataNodes: readwrite_ds.complaints_phone${0..9}   # 表名后的 ${0..9} 表示分10张表
+        tableStrategy:
+          standard:
+            shardingColumn: link_user_id
+            shardingAlgorithmName: database_hash  # 分表使用的算法, 需要在 shardingAlgorithms 中定义
+        keyGenerateStrategy:
+          column: id
+          keyGeneratorName: myKeyGenerators
+      complaints_phone_user:
+        # 表名后的 ${0..9} 表示分10张表
+        actualDataNodes: readwrite_ds.complaints_phone_user${0..9}
+        tableStrategy:
+          standard:
+            shardingColumn: id
+            shardingAlgorithmName: database_hash
+      complaints_phone_file:
+        # 表名后的 ${0..9} 表示分10张表
+        actualDataNodes: readwrite_ds.complaints_phone_file${0..9}
+        tableStrategy:
+          standard:
+            shardingColumn: id
+            shardingAlgorithmName: database_hash
+        keyGenerateStrategy:
+          column: id
+          keyGeneratorName: myKeyGenerators
+    #      complaints_phone_exception:
+    #        actualDataNodes: readwrite_ds.complaints_phone_exception
+    #        keyGenerateStrategy:
+    #          column: id
+    #          keyGeneratorName: myKeyGenerators
+    # 按相同字段的表(逗号分隔), 用于 join 查询
+    bindingTables:
+      - complaints_phone, complaints_phone_user
+    defaultShardingColumn: id
+    defaultDatabaseStrategy:
+      none:
+    defaultTableStrategy:
+      none:
+    shardingAlgorithms:
+      database_hash:
+        type: HASH_MOD
+        props:
+          sharding-count: 10
+    keyGenerators:
+      myKeyGenerators:
+        type: myId
+      snowflake:
+        type: SNOWFLAKE
+    auditors:
+      sharding_key_required_auditor:
+        type: DML_SHARDING_CONDITIONS
+  # ------------------------------↓ 事务 ↓------------------------------
+  - !TRANSACTION
+    defaultType: XA
+    providerType: Atomikos
+  # ------------------------------↓ 数据库加密 ↓------------------------------
+  # Encrypt-加密规则
+  #  - !ENCRYPT
+  #    tables:
+  #      # 需要加密的表
+  #      base_user:
+  #        # 需要加密的列
+  #        columns:
+  #          name:
+  #            cipherColumn: name
+  #            encryptorName: aes_encryptor
+  #          username:
+  #            cipherColumn: username
+  #            encryptorName: aes_encryptor
+  #          mobile:
+  #            cipherColumn: mobile
+  #            encryptorName: aes_encryptor
+  #          idcard_no:
+  #            cipherColumn: idcard_no
+  #            encryptorName: aes_encryptor
+  #        queryWithCipherColumn: true
+  #    encryptors:
+  #      aes_encryptor:
+  #        type: AES
+  #        props:
+  #          aes-key-value: xc0528WM1ST1SGH3
+  #      md5_encryptor:
+  #        type: MD5
+  #      like_encryptor:
+  #        type: CHAR_DIGEST_LIKE
+
+  # ------------------------------↓ 数据库脱敏 ↓------------------------------
+#  - !MASK
+#    tables:
+#      base_user:
+#        columns:
+#          #          name:
+#          #            maskAlgorithm: mask_before_special_chars_mask
+#          mobile:
+#            maskAlgorithm: keep_first_3_last_4_mask
+#          idcard_no:
+#            maskAlgorithm: keep_first_4_last_4_mask
+#      base_identity:
+#        columns:
+#          idcard_no:
+#            maskAlgorithm: keep_first_4_last_4_mask
+#    maskAlgorithms:
+#      md5_mask:
+#        type: MD5
+#      mask_before_special_chars_mask:
+#        type: MASK_BEFORE_SPECIAL_CHARS
+#        props:
+#          special-chars: '@'
+#          replace-char: '*'
+#      keep_first_3_last_4_mask:
+#        type: KEEP_FIRST_N_LAST_M
+#        props:
+#          first-n: 3
+#          last-m: 4
+#          replace-char: '*'
+#      keep_first_4_last_4_mask:
+#        type: KEEP_FIRST_N_LAST_M
+#        props:
+#          first-n: 4
+#          last-m: 4
+#          replace-char: '*'
+
+# ------------------------------↓ 其他 ↓------------------------------
+props:
+  sql-show: true
+  proxy-hint-enabled: true

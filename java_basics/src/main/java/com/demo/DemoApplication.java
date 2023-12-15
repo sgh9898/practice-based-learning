@@ -1,10 +1,6 @@
 package com.demo;
 
 import lombok.extern.slf4j.Slf4j;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.SchedulerFactory;
-import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -51,7 +47,9 @@ public class DemoApplication {
 
                     env.getActiveProfiles());
         } else {
-            log.info("\n--------------------------------------------------\n  启动成功\n");
+            log.info("\n--------------------------------------------------" +
+                    "\n  启动成功" +
+                    "\n--------------------------------------------------");
         }
     }
 

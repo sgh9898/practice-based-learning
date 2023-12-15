@@ -2,6 +2,7 @@ package com.demo.exception.handler;
 
 import com.demo.exception.BaseException;
 import com.demo.exception.JsonException;
+import com.demo.util.ApiResp;
 import com.demo.util.ResultUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,14 +21,14 @@ public class DemoExceptionHandler {
 
     /** 基础异常处理 */
     @ExceptionHandler(value = BaseException.class)
-    public Map<String, Object> handleControllerException(BaseException e) {
-        return ResultUtil.error(e.getMessage());
+    public ApiResp handleControllerException(BaseException e) {
+        return ApiResp.error(e.getMessage());
     }
 
     /** Json 异常处理 */
     @ExceptionHandler(value = JsonException.class)
-    public Map<String, Object> jsonExceptionHandler(JsonException jsonException) {
+    public ApiResp jsonExceptionHandler(JsonException jsonException) {
         log.error("[Json 异常]: {}", jsonException.getMessage());
-        return ResultUtil.error("Json 出现异常");
+        return ApiResp.error("Json 出现异常");
     }
 }

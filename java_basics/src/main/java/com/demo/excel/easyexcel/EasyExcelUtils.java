@@ -31,7 +31,7 @@ import java.util.*;
  * <br> 3. 导出, Non-Static, 使用自定义配置:
  * <br>     1) 自定义配置: 使用 setter 进行配置; 通用配置始终生效, ExcelClass/NoModel 系列参数仅在对应方法中生效
  * <br>     2) ExcelClass 系列:
- * <br>         a. 导出 Excel(使用通用配置与 ExcelClass 相关配置): {@link #exportExcelCustomized}
+ * <br>         a. 导出 Excel(使用通用配置与 ExcelClass 相关配置): {@link #exportExcel}
  * <br>         b. 写入单张 Sheet: {@link #writeSheet}, 完成全部写入后必须手动调用 {@link #closeExcel} 关闭流
  * <br>     3) NoModel 系列(不指定 ExcelClass):
  * <br>         a. 导出 Excel(使用通用配置与 NoModel 相关配置): {@link #noModelExportExcelCustomized}
@@ -62,7 +62,7 @@ public class EasyExcelUtils {
 
     /** 表序号 */
     @Setter(AccessLevel.PRIVATE)
-    private Integer sheetIndex = 0;
+    private Integer sheetIndex = 1;
 
 // ------------------------------ 通用配置 ------------------------------
     /** 表名 */
@@ -400,7 +400,7 @@ public class EasyExcelUtils {
     }
 
     /** 导出 Excel: (NoModel 系列参数不生效) */
-    public void exportExcelCustomized() {
+    public void exportExcel() {
         writeSheet();
         closeExcel();
     }

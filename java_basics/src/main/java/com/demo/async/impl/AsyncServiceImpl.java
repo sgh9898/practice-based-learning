@@ -10,7 +10,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Async Service
+ * 异步功能
  *
  * @author Song gh on 2022/5/6.
  */

@@ -6,8 +6,8 @@ import org.aspectj.lang.annotation.*;
 import org.springframework.stereotype.Component;
 
 /**
- * 使用 aop 切面对已有日志功能进行扩充
- * <br> 需要 @Aspect, @Component 标注
+ * 使用切面对已有日志功能进行扩充
+ * <br> 切面类需要 {@link Aspect}, {@link Component} 注解
  *
  * @author Song gh on 2022/3/31.
  */
@@ -24,23 +24,31 @@ public class LogAspect {
     public void controllerPoint() {
     }
 
+    /** 被监控的方法调用前 */
     @Before("controllerPoint()")
     public void beforeCut(JoinPoint joinPoint) {
-        log.info(joinPoint.toString());
-        log.info("Controller 切面, 调用对象: {}, 方法: {}",
+        log.info("[切面功能] [前置] 切入点: {}, 方法所属 Class: {}, 方法名: {}",
+                joinPoint.toString(),
                 joinPoint.getSignature().getDeclaringType(),
                 joinPoint.getSignature().getName());
     }
 
+    /** 被监控的方法调用后 */
     @After("controllerPoint()")
     public void afterCut(JoinPoint joinPoint) {
-        log.info(joinPoint.toString());
-        log.info("Controller 切面, 调用完毕");
+        log.info("[切面功能] [后置] 切入点: {}, 方法所属 Class: {}, 方法名: {}",
+                joinPoint.toString(),
+                joinPoint.getSignature().getDeclaringType(),
+                joinPoint.getSignature().getName());
     }
 
+    /** 被监控的方法抛出异常后 */
     @AfterThrowing(value = "controllerPoint()", throwing = "e")
     public void cutThrowing(JoinPoint joinPoint, Exception e) {
-        //发生异常之后输出异常信息
-        log.error(joinPoint + ",发生异常：" + e.getMessage());
+        log.error("[切面功能] [异常] 切入点: {}, 方法所属 Class: {}, 方法名: {}, 异常信息: {}",
+                joinPoint.toString(),
+                joinPoint.getSignature().getDeclaringType(),
+                joinPoint.getSignature().getName(),
+                e.getMessage());
     }
 }

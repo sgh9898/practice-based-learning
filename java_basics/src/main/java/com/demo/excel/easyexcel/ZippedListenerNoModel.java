@@ -175,7 +175,7 @@ class ZippedListenerNoModel implements ReadListener<Map<Integer, String>> {
         if (currentInvalidHeadRowNum > maxInvalidHeadRowNum) {
             maxInvalidHeadRowNum++;
             currentInvalidHeadRowNum = 0;
-            headRowNum += maxInvalidHeadRowNum;
+            headRowNum++;
             validHead = false;
         } else {
             validHead = true;

@@ -1,12 +1,14 @@
 package com.demo.excel.service;
 
-import com.demo.database.pojo.excel.ExcelAreaCodeRegion;
+import com.demo.database.db.repository.RegionRepository;
+import com.demo.database.pojo.excel.ExcelRegion;
 import com.demo.excel.easyexcel.EasyExcelUtils;
 import com.demo.excel.pojo.ExcelToDdl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
@@ -19,10 +21,27 @@ import java.util.*;
 @Service
 public class ExcelService {
 
-    public void exportExcel(HttpServletRequest request, HttpServletResponse response) {
-        EasyExcelUtils excelUtils = new EasyExcelUtils(request, response, "Excel导出测试", ExcelAreaCodeRegion.class);
-        excelUtils.setTitle("这是一条标题");
-        excelUtils.exportExcelCustomized();
+    @Resource
+    private RegionRepository regionRepository;
+
+    /** 导入数据 */
+    public Object importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response) {
+        return EasyExcelUtils.importData(file, request, response, ExcelRegion.class);
+    }
+
+    /** 导出模板 */
+    public void exportTemplate(HttpServletRequest request, HttpServletResponse response) {
+        EasyExcelUtils.exportTemplate(request, response, "Excel-Template.xlsx", ExcelRegion.class, "这是一条说明");
+    }
+
+    /** 导出数据 */
+    public void exportData(HttpServletRequest request, HttpServletResponse response) {
+        List<ExcelRegion> excelList = regionRepository.getExcelList();
+
+        EasyExcelUtils excelUtils = new EasyExcelUtils(request, response, "Excel-Data.xlsx", ExcelRegion.class);
+        excelUtils.setTitle("测试标题");
+        excelUtils.setDataList(excelList);
+        excelUtils.exportExcel();
     }
 
     /** 无模板导出 */

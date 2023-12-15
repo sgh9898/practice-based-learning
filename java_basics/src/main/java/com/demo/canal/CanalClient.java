@@ -18,6 +18,7 @@ import java.util.List;
 
 /**
  * Canal Client 功能
+ * <br> 启用: 在 {@link #start()} 方法之上注解 {@link PostConstruct}
  *
  * @author Song gh on 2023/5/11.
  */
@@ -68,7 +69,7 @@ public class CanalClient {
     @Value("${canal.extension.slave.schema:}")
     private String BACKUP_SCHEMA;
 
-    /** 备份表统一前缀 */
+    /** 备份表统一前缀, 格式统一为下划线 _ 结尾 */
     @Value("${canal.extension.slave.table-name-prefix:}")
     private String BACKUP_PREFIX;
 // ============================== 业务参数 End ==============================
@@ -76,8 +77,8 @@ public class CanalClient {
     @Resource
     private JdbcTemplate jdbcTemplate;
 
-    /** 需要在项目运行时启动 */
-// todo   @PostConstruct
+    /** Canal 总开关, 启用时注解 @PostConstruct */
+//    @PostConstruct
     public void start() {
         log.info("canal 开始运行");
         // 链接数据库
@@ -181,7 +182,8 @@ public class CanalClient {
             // 持续监听数据库, 连续为空时延迟/停止监听
             int emptyCount = 0;
             while (MAX_EMPTY_COUNT < 0 || emptyCount <= MAX_EMPTY_COUNT) {
-                Message message = connector.getWithoutAck(BATCH_SIZE); // 获取指定数量的数据
+                // 获取指定数量的数据
+                Message message = connector.getWithoutAck(BATCH_SIZE);
                 long batchId = message.getId();
                 int size = message.getEntries().size();
                 if (batchId == -1 || size == 0) {
@@ -192,7 +194,7 @@ public class CanalClient {
                     dealWithOneLineEntry(message.getEntries());
                 }
                 // 确认并提交 ≤ batchId 的 Message
-                connector.ack(batchId); // 提交确认
+                connector.ack(batchId);
             }
             log.info("连续 {} 批次监听数据为空, 终止监听", MAX_EMPTY_COUNT);
         } catch (Exception e) {
@@ -207,7 +209,8 @@ public class CanalClient {
     private void dealWithOneLineEntry(List<Entry> entries) {
         for (Entry entry : entries) {
             // 跳过默认事件
-            if (entry.getEntryType() == EntryType.TRANSACTIONBEGIN || entry.getEntryType() == EntryType.TRANSACTIONEND) {
+            if (entry.getEntryType() == EntryType.TRANSACTIONBEGIN
+                    || entry.getEntryType() == EntryType.TRANSACTIONEND) {
                 continue;
             }
 

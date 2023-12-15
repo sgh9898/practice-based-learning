@@ -6,6 +6,7 @@ import com.alibaba.excel.metadata.data.ReadCellData;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ConverterUtils;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,7 +37,8 @@ public class ZippedListener<T> implements ReadListener<T> {
     protected Integer currentInvalidHeadRowNum;
     /** 校准后 head 是否有效 */
     protected Boolean validHead;
-    /** head 校验规则 */
+    /** head 校验规则, {@link ZippedEasyExcelConstants} */
+    @Setter
     protected Integer headRules;
     /** 标准 head 行数 */
     protected Integer headRowNum;
@@ -127,15 +129,6 @@ public class ZippedListener<T> implements ReadListener<T> {
         log.info("读取 Excel 完成, 均通过初步校验, 所属类别: {} ", excelClass.getName());
     }
 
-    /**
-     * 设置 head 校验规则
-     *
-     * @see ZippedEasyExcelConstants
-     */
-    public void setHeadRules(Integer headRules) {
-        this.headRules = headRules;
-    }
-
     /** 读取 head */
     @Override
     public void invokeHead(Map<Integer, ReadCellData<?>> headMap, AnalysisContext context) {
@@ -194,7 +187,7 @@ public class ZippedListener<T> implements ReadListener<T> {
         if (currentInvalidHeadRowNum > maxInvalidHeadRowNum) {
             maxInvalidHeadRowNum++;
             currentInvalidHeadRowNum = 0;
-            headRowNum += maxInvalidHeadRowNum;
+            headRowNum++;
             validHead = false;
         } else {
             validHead = true;

@@ -1,7 +1,7 @@
 package com.demo.database.pojo.excel;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.demo.database.db.entity.AreaCodeRegion;
+import com.demo.database.db.entity.Region;
 import com.demo.excel.easyexcel.EasyExcelClassTemplate;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -12,18 +12,17 @@ import lombok.Setter;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.Date;
 
 /**
  * [Excel 导入/导出] 区号
  *
- * @author Song gh on 2023/12/11.
+ * @author Song gh on 2023/12/15.
  */
 @Getter
 @Setter
 @ApiModel("[Excel 导入/导出] 区号")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ExcelAreaCodeRegion extends EasyExcelClassTemplate {
+public class ExcelRegion extends EasyExcelClassTemplate {
 
     @NotBlank(message = "长途区号未填写")
     @ExcelProperty("长途区号")
@@ -60,16 +59,16 @@ public class ExcelAreaCodeRegion extends EasyExcelClassTemplate {
     @ExcelProperty("区号对应的行政区域全称和描述")
     @JsonAlias("district_name_des")
     private String districtNameDes;
-    
+
     /** [构造] */
-    public ExcelAreaCodeRegion() {
+    public ExcelRegion() {
     }
-    
+
     /**
      * [构造] 根据实体类创建
      * p.s. 在 jpa 中直接使用 hql 语法创建时, 需要对入参实体类进行 null 判断, 否则会产生报错
      */
-    public ExcelAreaCodeRegion(AreaCodeRegion input) {
+    public ExcelRegion(Region input) {
         if (input != null) {
             this.areaCode = input.getAreaCode();
             this.provinceCode = input.getProvinceCode();

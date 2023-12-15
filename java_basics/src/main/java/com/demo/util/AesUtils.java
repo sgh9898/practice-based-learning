@@ -16,6 +16,9 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * AES 加密/解密工具
@@ -24,17 +27,23 @@ import java.util.Arrays;
  */
 public class AesUtils {
 
-    /** 十六位密钥(需要前端和后端保持一致) */
+    /** 十六位密钥(需要前端和后端保持一致), 更换项目时必须重新生成 */
     private static final String DEFAULT_KEY_STR = "pcWGuS2nQF11Sf+y";
 
-    /** 十六位密钥偏移量(需要前端和后端保持一致) */
+    /** 十六位密钥偏移量(需要前端和后端保持一致), 更换项目时必须重新生成 */
     private static final String DEFAULT_IV_STR = "kvJRbJz7x5ycy+4V";
 
     /** AES 加密/解密算法 */
     private static final String AES_ALGORITHM = "AES/CBC/PKCS5Padding";
 
+    /** 生成随机 Key 与 IV */
+    public static void main(String[] args) {
+        System.out.println("随机 Key: " + generateRandomStr(16));
+        System.out.println("随机 IV: " + generateRandomStr(16));
+    }
+
     /**
-     * AES 解密, 使用默认的 Key 与 IV
+     * [AES 解密] 使用默认的 Key 与 IV
      *
      * @param encryptedStr base64 加密后的数据
      */
@@ -56,7 +65,7 @@ public class AesUtils {
     }
 
     /**
-     * AES 解密, 使用 String 格式的 Key
+     * [AES 解密] 使用 String 格式的 Key
      *
      * @param encryptedStr base64 加密后的数据
      * @param keyStr       String 格式的 {@link SecretKey}, 必须与加密时相同
@@ -80,7 +89,7 @@ public class AesUtils {
     }
 
     /**
-     * AES 解密, 使用 String 格式的 Key 与 IV
+     * [AES 解密] 使用 String 格式的 Key 与 IV
      *
      * @param encryptedStr base64 加密后的数据
      * @param keyStr       String 格式的 {@link SecretKey}, 必须与加密时相同
@@ -108,7 +117,7 @@ public class AesUtils {
     }
 
     /**
-     * AES 解密, 使用标准 Key 与 IV
+     * [AES 解密] 使用标准 Key 与 IV
      *
      * @param encryptedStr base64 加密后的数据
      * @param key          {@link SecretKey}, 必须与加密时相同
@@ -130,7 +139,7 @@ public class AesUtils {
     }
 
     /**
-     * AES 加密, 使用默认的 Key 与 IV
+     * [AES 加密] 使用默认的 Key 与 IV
      *
      * @param plainText 明文数据
      */
@@ -154,7 +163,7 @@ public class AesUtils {
     }
 
     /**
-     * AES 加密, 使用 String 格式的 Key 与 IV
+     * [AES 加密] 使用 String 格式的 Key 与 IV
      *
      * @param plainText 明文数据
      * @param keyStr    String 格式的 {@link SecretKey}, 解密时相同
@@ -180,7 +189,7 @@ public class AesUtils {
     }
 
     /**
-     * AES 加密, 使用标准 Key 与 IV
+     * [AES 加密] 使用标准 Key 与 IV
      *
      * @param plainText 明文数据
      * @param key       {@link SecretKey}, 解密时相同
@@ -197,22 +206,6 @@ public class AesUtils {
             throw new RuntimeException(e);
         }
         return java.util.Base64.getEncoder().encodeToString(encryptedStr);
-    }
-
-    /**
-     * 随机生成 Key
-     *
-     * @param keySize key 长度: 128, 192, or 256
-     */
-    public static SecretKey getRandomKey(int keySize) {
-        KeyGenerator keyGenerator;
-        try {
-            keyGenerator = KeyGenerator.getInstance("AES");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-        keyGenerator.init(keySize);
-        return keyGenerator.generateKey();
     }
 
     /**
@@ -253,13 +246,6 @@ public class AesUtils {
         return new SecretKeySpec(decodedKey, "AES");
     }
 
-    /** 随机生成 IV */
-    public static IvParameterSpec getRandomIv() {
-        byte[] iv = new byte[16];
-        new SecureRandom().nextBytes(iv);
-        return new IvParameterSpec(iv);
-    }
-
     /** String 转为 IV */
     public static IvParameterSpec strToIv(String ivStr) {
         byte[] iv = ivStr.getBytes();
@@ -268,6 +254,19 @@ public class AesUtils {
 
     /** IV 转为 String */
     public static String ivToStr(IvParameterSpec iv) {
-        return new String(iv.getIV());
+        return new String(iv.getIV(), StandardCharsets.UTF_8);
+    }
+
+// ------------------------------ Private ------------------------------
+
+    /** 随机生成指定长度的 string */
+    private static String generateRandomStr(int length) {
+        SecureRandom random = new SecureRandom();
+        int strLength = (int) Math.round(length * 4.0 / 3.0);
+        List<Character> tokenList = random.ints(strLength, 32, 1025).mapToObj(i -> (char) i).collect(Collectors.toList());
+        Collections.shuffle(tokenList);
+        String token = tokenList.stream().map(String::valueOf).collect(Collectors.joining());
+        String base64Token = java.util.Base64.getEncoder().encodeToString(token.getBytes());
+        return base64Token.substring(0, Math.min(length, base64Token.length()));
     }
 }

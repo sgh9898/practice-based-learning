@@ -1,11 +1,11 @@
 package com.demo.database.service.impl;
 
-import com.demo.database.db.entity.AreaCodeRegion;
-import com.demo.database.db.repository.AreaCodeRegionRepository;
-import com.demo.database.pojo.excel.ExcelAreaCodeRegion;
-import com.demo.database.pojo.query.AreaCodeRegionQueryDto;
-import com.demo.database.pojo.upsert.AreaCodeRegionUpsertDto;
-import com.demo.database.service.AreaCodeRegionService;
+import com.demo.database.db.entity.Region;
+import com.demo.database.db.repository.RegionRepository;
+import com.demo.database.pojo.excel.ExcelRegion;
+import com.demo.database.pojo.query.RegionQueryDto;
+import com.demo.database.pojo.upsert.RegionUpsertDto;
+import com.demo.database.service.RegionService;
 import com.demo.excel.easyexcel.EasyExcelUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,71 +21,71 @@ import java.util.List;
 /**
  * [功能类] 区号
  *
- * @author Song gh on 2023/12/11.
+ * @author Song gh on 2023/12/15.
  */
 @Service
-public class AreaCodeRegionServiceImpl implements AreaCodeRegionService {
-    
+public class RegionServiceImpl implements RegionService {
+
     @Resource
-    private AreaCodeRegionRepository areaCodeRegionRepository;
-    
+    private RegionRepository regionRepository;
+
     /** [新增/更新] 区号 */
     @Override
-    public void upsert(AreaCodeRegionUpsertDto dto) {
+    public void upsert(RegionUpsertDto dto) {
         // 仅当 id 存在且有效时更新数据, 否则新增数据
         Integer id = dto.getId();
         if (id != null) {
-            AreaCodeRegion optData = areaCodeRegionRepository.findFirstByIdAndIsDeletedIsFalse(id);
+            Region optData = regionRepository.findFirstByIdAndIsDeletedIsFalse(id);
             if (optData != null) {
                 // 数据有效, 更新并记录时间
                 optData.update(dto);
-                areaCodeRegionRepository.save(optData);
+                regionRepository.save(optData);
                 return;
             }
         }
         // id 不存在或无效则新增
-        areaCodeRegionRepository.save(new AreaCodeRegion(dto));
+        regionRepository.save(new Region(dto));
     }
-    
+
     /** [删除] 区号 */
     @Override
     public void delete(List<Integer> idList) {
-        areaCodeRegionRepository.markDeletedByIdList(idList);
+        regionRepository.markDeletedByIdList(idList);
     }
-    
+
     /** [查询] 区号 */
     @Override
-    public AreaCodeRegion get(Integer id){
-        return areaCodeRegionRepository.findFirstByIdAndIsDeletedIsFalse(id);
+    public Region get(Integer id) {
+        return regionRepository.findFirstByIdAndIsDeletedIsFalse(id);
     }
-    
+
     /** [列表] 区号 */
     @Override
-    public List<AreaCodeRegion> getList(){
-        return areaCodeRegionRepository.findAllByIsDeletedIsFalse();
+    public List<Region> getList() {
+        return regionRepository.findAllByIsDeletedIsFalse();
     }
-    
+
     /** [分页] 区号 */
     @Override
-    public Page<AreaCodeRegion> getPage(AreaCodeRegionQueryDto dto){
+    public Page<Region> getPage(RegionQueryDto dto) {
         // 分页参数
         int page = Math.max(0, dto.getPage() - 1);
         int size = dto.getSize();
         if (size <= 0) {
             size = 10;
         }
-        return areaCodeRegionRepository.findAllByIsDeletedIsFalse(PageRequest.of(page, size));
+        return regionRepository.findAllByIsDeletedIsFalse(PageRequest.of(page, size));
     }
 
     /** [导入] 区号 */
     @Override
     public void importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response) {
-        List<ExcelAreaCodeRegion> excelList = EasyExcelUtils.importData(file, request, response, ExcelAreaCodeRegion.class);
-        List<AreaCodeRegion> entityList = new LinkedList<>();
+        List<ExcelRegion> excelList = EasyExcelUtils.importData(file, request, response, ExcelRegion.class);
+        List<Region> entityList = new LinkedList<>();
         if (excelList != null && !excelList.isEmpty()) {
-            excelList.forEach(currExcel -> entityList.add(new AreaCodeRegion(currExcel)));
+            excelList.forEach(currExcel -> entityList.add(new Region(currExcel)));
         }
-        areaCodeRegionRepository.saveAll(entityList);
+        regionRepository.saveAll(entityList);
     }
 
     /** [模板] 区号 */
@@ -94,13 +94,13 @@ public class AreaCodeRegionServiceImpl implements AreaCodeRegionService {
         // 首行说明
         String note = "说明: 1. 黄色字段为必填项.\n" +
                 "         2. 时间格式为 yyyy-MM-dd HH:mm:ss\n";
-        EasyExcelUtils.exportTemplate(request, response, "区号模板.xlsx", ExcelAreaCodeRegion.class, note);
+        EasyExcelUtils.exportTemplate(request, response, "区号模板.xlsx", ExcelRegion.class, note);
     }
-    
+
     /** [导出] 区号 */
     @Override
     public void exportData(HttpServletRequest request, HttpServletResponse response) {
-        List<ExcelAreaCodeRegion> excelList = areaCodeRegionRepository.getExcelList();
-        EasyExcelUtils.exportData(request, response, "区号导出数据", ExcelAreaCodeRegion.class, excelList);
+        List<ExcelRegion> excelList = regionRepository.getExcelList();
+        EasyExcelUtils.exportData(request, response, "区号导出数据", ExcelRegion.class, excelList);
     }
 }

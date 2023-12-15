@@ -3,7 +3,7 @@ package com.demo.session;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * Session Service
+ * Session 功能
  *
  * @author Song gh on 2023/3/6.
  */

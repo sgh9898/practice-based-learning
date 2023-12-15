@@ -1,23 +1,20 @@
 package com.demo.database.pojo.query;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.util.Date;
-
 /**
  * [查询 DTO] 区号
  *
- * @author Song gh on 2023/12/11.
+ * @author Song gh on 2023/12/15.
  */
 @Data
 @ApiModel("[查询 DTO] 区号")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AreaCodeRegionQueryDto {
+public class RegionQueryDto {
 
     /** id */
     @ApiModelProperty("id")

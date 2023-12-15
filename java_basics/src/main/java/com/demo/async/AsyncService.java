@@ -3,7 +3,7 @@ package com.demo.async;
 import java.util.concurrent.Future;
 
 /**
- * Async Service
+ * 异步功能
  *
  * @author Song gh on 2022/5/6.
  */

@@ -65,7 +65,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
             Class<? extends Job> jobClass = (Class<? extends Job>) Class.forName(clazzName);
             JobDetail jobDetail = JobBuilder.newJob(jobClass).withIdentity(jobName, groupName).build();
             // 配置任务执行时间
-            CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExp);
+            CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExp).withMisfireHandlingInstructionDoNothing();
             CronTrigger trigger = TriggerBuilder.newTrigger().withIdentity(jobName, groupName).withSchedule(scheduleBuilder).build();
             // 传入 job 所需参数
             if (jobParams != null) {
@@ -95,7 +95,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
 
             // 更新任务执行时间
             if (cronExp != null) {
-                CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExp);
+                CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExp).withMisfireHandlingInstructionDoNothing();
                 trigger = trigger.getTriggerBuilder().withIdentity(triggerKey).withSchedule(scheduleBuilder).build();
             }
             // 传入 job 所需参数

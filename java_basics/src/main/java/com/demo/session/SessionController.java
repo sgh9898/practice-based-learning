@@ -10,6 +10,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 /**
+ * Session 功能
+ *
  * @author Song gh on 2023/3/7.
  */
 @RestController

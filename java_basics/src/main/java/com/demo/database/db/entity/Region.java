@@ -1,7 +1,7 @@
 package com.demo.database.db.entity;
 
-import com.demo.database.pojo.excel.ExcelAreaCodeRegion;
-import com.demo.database.pojo.upsert.AreaCodeRegionUpsertDto;
+import com.demo.database.pojo.excel.ExcelRegion;
+import com.demo.database.pojo.upsert.RegionUpsertDto;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -17,15 +17,15 @@ import java.util.Date;
 /**
  * [实体类] 区号
  *
- * @author Song gh on 2023/12/11.
+ * @author Song gh on 2023/12/15.
  */
 @Entity
 @Getter
 @Setter
-@Table(name = "area_code_region")
+@Table(name = "region")
 @ApiModel("[实体类] 区号")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AreaCodeRegion {
+public class Region {
 
     /** id */
     @Id
@@ -90,18 +90,18 @@ public class AreaCodeRegion {
     private Date updateTime;
 
     /** [构造] */
-    public AreaCodeRegion() {
+    public Region() {
         init();
     }
-    
+
     /** [构造] 根据 dto 创建 */
-    public AreaCodeRegion(AreaCodeRegionUpsertDto dto) {
+    public Region(RegionUpsertDto dto) {
         init();
         update(dto);
     }
 
     /** [构造] 根据 excel 创建 */
-    public AreaCodeRegion(ExcelAreaCodeRegion excel) {
+    public Region(ExcelRegion excel) {
         init();
         this.areaCode = excel.getAreaCode();
         this.provinceCode = excel.getProvinceCode();
@@ -120,7 +120,7 @@ public class AreaCodeRegion {
     }
 
     /** 根据 dto 更新 */
-    public void update(AreaCodeRegionUpsertDto dto) {
+    public void update(RegionUpsertDto dto) {
         this.areaCode = dto.getAreaCode();
         this.provinceCode = dto.getProvinceCode();
         this.provinceName = dto.getProvinceName();

@@ -1,4 +1,4 @@
-package com.demo.database.controller;
+package com.demo.redis;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.demo.util.ResultUtil;
