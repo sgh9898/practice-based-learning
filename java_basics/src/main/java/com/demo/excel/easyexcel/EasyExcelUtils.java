@@ -34,7 +34,7 @@ import java.util.*;
  * <br>         a. 导出 Excel(使用通用配置与 ExcelClass 相关配置): {@link #exportExcel}
  * <br>         b. 写入单张 Sheet: {@link #writeSheet}, 完成全部写入后必须手动调用 {@link #closeExcel} 关闭流
  * <br>     3) NoModel 系列(不指定 ExcelClass):
- * <br>         a. 导出 Excel(使用通用配置与 NoModel 相关配置): {@link #noModelExportExcelCustomized}
+ * <br>         a. 导出 Excel(使用通用配置与 NoModel 相关配置): {@link #noModelExportExcel}
  * <br>         b. 写入单张 Sheet: {@link #noModelWriteSheet}, 完成全部写入后必须手动调用 {@link #closeExcel} 关闭流
  *
  * @author Song gh on 2023/3/1.
@@ -418,7 +418,7 @@ public class EasyExcelUtils {
     }
 
     /** [不指定 ExcelClass] 导出 Excel */
-    public void noModelExportExcelCustomized() {
+    public void noModelExportExcel() {
         noModelWriteSheet();
         closeExcel();
     }

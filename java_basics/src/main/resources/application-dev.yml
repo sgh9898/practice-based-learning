@@ -1,6 +1,6 @@
 server:
   # 端口
-  port: 8080
+  port: 8081
   servlet:
     # 访问路径前缀
     context-path: /demo
@@ -34,10 +34,11 @@ canal:
 
 # MinIO 文件管理 part 1
 minio:
-  endpoint: http://localhost:9090
-  accessKey: admin
-  secretKey: 12345678
+  endpoint: http://localhost:9000
+  accessKey: lGVSfahkzSI8W0GmH3ur
+  secretKey: 7L6KUYuOSKToU7DlCIicGO1tUfH62xvM8wHzhlAO
   bucketName: test_bucket
+  fileUrlHost: http://172.16.30.35:9000/customized-minio/
 
 # Spring Auto-Configuration
 spring:

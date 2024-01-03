@@ -1,4 +1,4 @@
-package com.demo.minio;
+package com.demo.minio.config;
 
 import io.minio.MinioClient;
 import lombok.Data;
@@ -6,27 +6,34 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.annotation.PostConstruct;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * MinIO 配置
  *
- * @author Song gh on 2023/10/13.
+ * @author Song gh on 2023/12/26.
  */
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "minio")
 public class MinioConfig {
 
-    /** 端点 */
+    /** minio 服务器地址 */
     private String endpoint;
 
-    /** 用户名 */
+    /** 用户名, 在 minio 管理页面生成 */
     private String accessKey;
 
-    /** 密码 */
+    /** 密码, 在 minio 管理页面生成 */
     private String secretKey;
 
-    /** 桶名称 */
-    private String bucketName;
+    /** 默认 bucket 名称 */
+    private String defaultBucketName;
+
+    /** 自定义文件访问路径 host(配合 nginx 使用) */
+    private String fileUrlHost;
 
     @Bean
     public MinioClient minioClient() {

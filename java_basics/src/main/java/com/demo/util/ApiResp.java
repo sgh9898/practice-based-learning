@@ -11,12 +11,12 @@ import java.util.Map;
 
 /**
  * 统一的接口返回格式
- * (便于 OpenAPI 自动生成接口文档时解析数据结构)
- * 1. 常规接口(无数据), 返回格式 {@link ApiResp}
- * 2. 常规接口(有数据), 返回格式 {@link Data}
- * 3. 实体类(单条数据), 返回格式 {@link Entity}
- * 4. 实体类(列表数据), 返回格式 {@link ListEntity}
- * 5. 实体类(分页数据), 返回格式 {@link PageEntity}
+ * <br> (便于 OpenAPI 自动生成接口文档时解析数据结构)
+ * <br> 1. 常规接口(无数据), 返回格式 {@link ApiResp}
+ * <br> 2. 常规接口(有数据), 返回格式 {@link Data}
+ * <br> 3. 实体类(单条数据), 返回格式 {@link Entity}
+ * <br> 4. 实体类(列表数据), 返回格式 {@link ListEntity}
+ * <br> 5. 实体类(分页数据), 返回格式 {@link PageEntity}
  *
  * @author Song gh on 2023/11/24.
  */

@@ -70,7 +70,7 @@ public class ExcelService {
         easyExcelUtils.setNoModelEnHeadList(outerHeadList);
         easyExcelUtils.setSheetName("11111");
         easyExcelUtils.setNoModelEnSpecialHeadSet(importantSet);
-        easyExcelUtils.noModelExportExcelCustomized();
+        easyExcelUtils.noModelExportExcel();
     }
 
     /** 生成建表语句 */
