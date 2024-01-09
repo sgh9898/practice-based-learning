@@ -26,8 +26,9 @@ public interface MinioService {
      * 如果 bucket 不存在, 则新建 bucket
      *
      * @param bucketName bucket 名称, 不传时使用默认名称 {@link MinioConfig#getDefaultBucketName()}
+     * @return true: 成功创建, false: 已存在
      */
-    void createBucketIfNotExist(String bucketName);
+    boolean createBucketIfNotExist(String bucketName);
 
     /**
      * 配置 bucket 文件公开读取(允许通过 url 直接访问文件)

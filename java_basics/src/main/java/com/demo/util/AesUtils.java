@@ -1,5 +1,6 @@
 package com.demo.util;
 
+import com.demo.exception.BaseException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,7 +35,7 @@ public class AesUtils {
     private static final String DEFAULT_IV_STR = "kvJRbJz7x5ycy+4V";
 
     /** AES 加密/解密算法 */
-    private static final String AES_ALGORITHM = "AES/CBC/PKCS5Padding";
+    private static final String AES_ALGORITHM = "AES/GCM/NoPadding”";
 
     /** 生成随机 Key 与 IV */
     public static void main(String[] args) {
@@ -60,7 +61,7 @@ public class AesUtils {
             byte[] decryptBytes = cipher.doFinal(Base64.decodeBase64(encryptedStr));
             return new String(decryptBytes, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new BaseException("AES 解密失败", e);
         }
     }
 
@@ -84,7 +85,7 @@ public class AesUtils {
             return new String(decryptBytes, StandardCharsets.UTF_8);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
                  IllegalBlockSizeException | BadPaddingException e) {
-            throw new RuntimeException(e);
+            throw new BaseException("AES 解密失败", e);
         }
     }
 
@@ -112,7 +113,7 @@ public class AesUtils {
             return new String(decryptBytes, StandardCharsets.UTF_8);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
                  InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
-            throw new RuntimeException(e);
+            throw new BaseException("AES 解密失败", e);
         }
     }
 
@@ -134,7 +135,7 @@ public class AesUtils {
             return new String(decryptBytes, StandardCharsets.UTF_8);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
                  InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
-            throw new RuntimeException(e);
+            throw new BaseException("AES 解密失败", e);
         }
     }
 
@@ -157,7 +158,7 @@ public class AesUtils {
             encryptedStr = cipher.doFinal(plainText.getBytes());
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
                  InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
-            throw new RuntimeException(e);
+            throw new BaseException("AES 加密失败", e);
         }
         return java.util.Base64.getEncoder().encodeToString(encryptedStr);
     }
@@ -183,7 +184,7 @@ public class AesUtils {
             encryptedStr = cipher.doFinal(plainText.getBytes());
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
                  InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
-            throw new RuntimeException(e);
+            throw new BaseException("AES 加密失败", e);
         }
         return java.util.Base64.getEncoder().encodeToString(encryptedStr);
     }
@@ -203,7 +204,7 @@ public class AesUtils {
             encryptedStr = cipher.doFinal(plainText.getBytes());
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
                  InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
-            throw new RuntimeException(e);
+            throw new BaseException("AES 加密失败", e);
         }
         return java.util.Base64.getEncoder().encodeToString(encryptedStr);
     }
@@ -230,7 +231,7 @@ public class AesUtils {
             }
             return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new RuntimeException(e);
+            throw new BaseException("生成 AES Key 失败", e);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.demo.util;
 
+import com.demo.exception.BaseException;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -45,7 +46,7 @@ public class JsonUtils {
         try {
             return MAPPER.writeValueAsString(bean);
         } catch (Exception e) {
-            throw new RuntimeException("转换 Java Bean 为 Json 错误", e);
+            throw new BaseException("转换 Java Bean 为 Json 错误", e);
         }
     }
 
@@ -54,7 +55,7 @@ public class JsonUtils {
         try {
             return NON_NULL_MAPPER.writeValueAsString(bean);
         } catch (Exception e) {
-            throw new RuntimeException("转换 Java Bean 为 Json 错误", e);
+            throw new BaseException("转换 Java Bean 为 Json 错误", e);
         }
     }
 
@@ -72,7 +73,7 @@ public class JsonUtils {
             return MAPPER.readValue(json, new TypeReference<HashMap<String, Object>>() {
             });
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("转换 Json 为 Map 错误:" + json, e);
+            throw new BaseException("转换 Json 为 Map 错误:" + json, e);
         }
     }
 
@@ -81,7 +82,7 @@ public class JsonUtils {
         try {
             return MAPPER.readValue(json, beanType);
         } catch (Exception e) {
-            throw new RuntimeException("转换 Json 为 Java Bean 错误: " + json, e);
+            throw new BaseException("转换 Json 为 Java Bean 错误: " + json, e);
         }
     }
 
@@ -91,7 +92,7 @@ public class JsonUtils {
             CollectionType type = MAPPER.getTypeFactory().constructCollectionType(List.class, beanType);
             return MAPPER.readValue(json, type);
         } catch (Exception e) {
-            throw new RuntimeException("转换 Json 为 JavaList 错误: " + json, e);
+            throw new BaseException("转换 Json 为 JavaList 错误: " + json, e);
         }
     }
 
@@ -102,7 +103,7 @@ public class JsonUtils {
         try {
             return MAPPER.readTree(json);
         } catch (IOException e) {
-            throw new RuntimeException("转换 Json 为 JsonNode 错误: " + json, e);
+            throw new BaseException("转换 Json 为 JsonNode 错误: " + json, e);
         }
     }
 

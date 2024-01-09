@@ -68,10 +68,13 @@ public class MinioServiceImpl implements MinioService {
      * 如果 bucket 不存在, 则新建 bucket
      *
      * @param bucketName bucket 名称, 不传时使用默认名称 {@link MinioConfig#getDefaultBucketName()}
+     * @return true: 成功创建, false: 已存在
      */
     @Override
-    public void createBucketIfNotExist(String bucketName) {
-        if (!existBucket(bucketName)) {
+    public boolean createBucketIfNotExist(String bucketName) {
+        if (existBucket(bucketName)) {
+            return false;
+        } else {
             try {
                 // 新建 bucket, 未提供名称时使用默认名称
                 if (StringUtils.isBlank(bucketName)) {
@@ -82,6 +85,7 @@ public class MinioServiceImpl implements MinioService {
                 throw new BaseException("创建 bucket 失败, 名称: " + bucketName, e);
             }
         }
+        return true;
     }
 
     /**
@@ -149,16 +153,20 @@ public class MinioServiceImpl implements MinioService {
         }
 
         // 保存文件
+        InputStream inputStream = null;
         try {
             // 保存文件, 名称相同会覆盖
+            inputStream = file.getInputStream();
             minioClient.putObject(PutObjectArgs.builder()
                     .bucket(bucketName)
                     .object(newFileName)
-                    .stream(file.getInputStream(), file.getSize(), -1)
+                    .stream(inputStream, file.getSize(), -1)
                     .contentType(file.getContentType())
                     .build());
         } catch (Exception e) {
             throw new BaseException("保存文件失败, 文件名: " + originalFileName, e);
+        } finally {
+            closeInputStream(inputStream);
         }
         return newFileName;
     }
@@ -255,6 +263,17 @@ public class MinioServiceImpl implements MinioService {
             return minioConfig.getFileUrlHost() + originalUrl.getPath();
         } catch (Exception e) {
             throw new BaseException("获取文件路径失败, bucket 名称: " + bucketName + "; 文件名: " + fileName, e);
+        }
+    }
+
+    /** 关闭文件流 */
+    private static void closeInputStream(InputStream inputStream) {
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                throw new BaseException("文件流关闭失败", e);
+            }
         }
     }
 }

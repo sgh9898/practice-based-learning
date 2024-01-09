@@ -162,7 +162,7 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
-        <!--MinIO-->
+        <!-- MinIO 文件管理 -->
         <dependency>
             <groupId>io.minio</groupId>
             <artifactId>minio</artifactId>

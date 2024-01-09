@@ -34,11 +34,11 @@ canal:
 
 # MinIO 文件管理 part 1
 minio:
-  endpoint: http://localhost:9000
-  accessKey: lGVSfahkzSI8W0GmH3ur
-  secretKey: 7L6KUYuOSKToU7DlCIicGO1tUfH62xvM8wHzhlAO
-  bucketName: test_bucket
-  fileUrlHost: http://172.16.30.35:9000/customized-minio/
+  endpoint: http://localhost:9000                       # 服务器地址
+  accessKey: lGVSfahkzSI8W0GmH3ur                       # 访问密钥, 在服务器网页管理界面配置
+  secretKey: 7L6KUYuOSKToU7DlCIicGO1tUfH62xvM8wHzhlAO   # 访问密钥的密码, 在服务器网页管理界面配置
+  bucketName: test_bucket                               # 默认 bucket 名称
+  fileUrlHost: http://172.16.30.35:9000/customized-minio/   # 手动指定的 MinIO 文件访问前缀, 用于 nginx 配置后
 
 # Spring Auto-Configuration
 spring:
@@ -113,7 +113,7 @@ spring:
       # 0 不返回, 1 leader 收到返回成功, all/-1 全员收到返回成功
       acks: 1
 
-  # MinIO 文件管理 part 1
+  # MinIO 文件管理 part 2
   servlet:
     multipart:
       max-file-size: 5MB
