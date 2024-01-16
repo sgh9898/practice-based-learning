@@ -66,7 +66,7 @@ public class AesUtils {
     }
 
     /**
-     * [AES 解密] 使用 String 格式的 Key
+     * [AES 解密] 使用 String 格式的 Key, 不使用 IV
      *
      * @param encryptedStr base64 加密后的数据
      * @param keyStr       String 格式的 {@link SecretKey}, 必须与加密时相同
@@ -75,18 +75,16 @@ public class AesUtils {
         if (StringUtils.isBlank(encryptedStr)) {
             return "";
         }
+        byte[] result;
         try {
-            Cipher cipher = Cipher.getInstance(AES_ALGORITHM);
-            // key
-            SecretKey secretKey = new SecretKeySpec(Arrays.copyOf(DigestUtils.sha1(keyStr), 16), "AES");
-
-            cipher.init(Cipher.DECRYPT_MODE, secretKey);
-            byte[] decryptBytes = cipher.doFinal(Base64.decodeBase64(encryptedStr));
-            return new String(decryptBytes, StandardCharsets.UTF_8);
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
-                 IllegalBlockSizeException | BadPaddingException e) {
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(Arrays.copyOf(DigestUtils.sha1(keyStr), 16), "AES"));
+            result = cipher.doFinal(java.util.Base64.getDecoder().decode(encryptedStr.trim()));
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException |
+                 BadPaddingException e) {
             throw new BaseException("AES 解密失败", e);
         }
+        return new String(result, StandardCharsets.UTF_8);
     }
 
     /**
@@ -242,7 +240,7 @@ public class AesUtils {
     }
 
     /** String 转为 Key */
-    public static SecretKey StrToSecretKey(String keyStr) {
+    public static SecretKey strToSecretKey(String keyStr) {
         byte[] decodedKey = keyStr.getBytes();
         return new SecretKeySpec(decodedKey, "AES");
     }

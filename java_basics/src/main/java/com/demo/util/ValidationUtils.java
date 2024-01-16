@@ -14,11 +14,15 @@ public class ValidationUtils {
 
     private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-    /** 校验实体类: 通过返回 null, 未通过返回报错 */
+    /**
+     * 校验实体类字段
+     *
+     * @return 通过返回 null, 未通过返回报错, 多条报错只返回其中一条
+     */
     public static String validate(Object entity) {
         Set<ConstraintViolation<Object>> violationSet = validator.validate(entity);
-        for (ConstraintViolation<Object> violation : violationSet) {
-            return violation.getMessage();
+        if (violationSet != null && !violationSet.isEmpty()) {
+            return violationSet.iterator().next().getMessage();
         }
         return null;
     }
@@ -28,12 +32,17 @@ public class ValidationUtils {
      *
      * @param entity       实体类
      * @param propertyName 字段名
+     * @return 通过返回 null, 未通过返回报错, 多条报错只返回其中一条
      */
     public static String validateProperty(Object entity, String propertyName) {
         Set<ConstraintViolation<Object>> violationSet = validator.validateProperty(entity, propertyName);
-        for (ConstraintViolation<Object> violation : violationSet) {
-            return violation.getMessage();
+        if (violationSet != null && !violationSet.isEmpty()) {
+            return violationSet.iterator().next().getMessage();
         }
         return null;
+    }
+
+    private ValidationUtils() {
+        throw new IllegalStateException("工具类, 无实例");
     }
 }

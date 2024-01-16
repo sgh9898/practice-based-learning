@@ -21,7 +21,7 @@ import java.util.Map;
  *
  * @author Song gh on 2023/5/12.
  */
-public class JdbcConfigUtils {
+public class JdbcUtils {
 
     /**
      * 自行配置数据源, 创建 JDBC template

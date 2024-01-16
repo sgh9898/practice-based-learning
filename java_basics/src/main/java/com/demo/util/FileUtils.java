@@ -1,15 +1,17 @@
 package com.demo.util;
 
+import com.demo.exception.BaseException;
 import org.apache.http.entity.ContentType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -20,7 +22,37 @@ import java.util.zip.ZipInputStream;
  */
 public class FileUtils {
 
-    /** 解压 zip 文件 */
+    /** 锁定并写入文件(防止并发) */
+    public static void lockThenWriteToFile(String fileName, List<String> contentList) {
+        if (contentList == null || contentList.isEmpty()) {
+            return;
+        }
+
+        // 尝试锁定文件
+        try (RandomAccessFile fileWriter = new RandomAccessFile(fileName, "rw");
+             FileChannel channel = fileWriter.getChannel();
+             FileLock lock = channel.tryLock()) {
+
+            // 在文件末尾附加
+            String lineSeparator = System.lineSeparator();
+            if (lock != null) {
+                fileWriter.seek(fileWriter.length());
+                for (String content : contentList) {
+                    String line = content + lineSeparator;
+                    fileWriter.write(line.getBytes(StandardCharsets.UTF_8));
+                }
+            }
+        } catch (IOException e) {
+            throw new BaseException("锁定或写入文件失败", e);
+        }
+    }
+
+    /**
+     * 解压 zip 文件及其内部文件
+     *
+     * @param zipFilePath 压缩文件路径
+     * @param destDirPath 目标文件路径
+     */
     public static File unzip(String zipFilePath, String destDirPath) {
         File destDir = new File(destDirPath);
         byte[] buffer = new byte[1024];
@@ -34,31 +66,30 @@ public class FileUtils {
                 if (!newFile.getCanonicalPath().startsWith(destDir.getCanonicalPath() + File.separator)) {
                     throw new IOException("目标文件夹超出范围: " + zipEntry.getName());
                 }
-                if (zipEntry.isDirectory()) {
-                    // 需要创建文件夹
-                    if (!newFile.isDirectory() && !newFile.mkdirs()) {
-                        throw new IOException("创建文件夹失败: " + newFile);
-                    }
-                } else {
-                    // 解压文件
-                    File parent = newFile.getParentFile();
-                    if (!parent.isDirectory() && !parent.mkdirs()) {
-                        throw new IOException("创建文件夹失败: " + parent);
-                    }
-                    FileOutputStream fileOutputStream = new FileOutputStream(newFile);
-                    int len;
-                    while ((len = zipInputStream.read(buffer)) > 0) {
-                        fileOutputStream.write(buffer, 0, len);
-                    }
-                    fileOutputStream.close();
+
+                // 创建文件夹
+                if (zipEntry.isDirectory() && (!newFile.isDirectory() && !newFile.mkdirs())) {
+                    throw new IOException("创建文件夹失败: " + newFile);
                 }
+                // 解压文件
+                File parent = newFile.getParentFile();
+                if (!parent.isDirectory() && !parent.mkdirs()) {
+                    throw new IOException("创建文件夹失败: " + parent);
+                }
+                FileOutputStream fileOutputStream = new FileOutputStream(newFile);
+                int len;
+                while ((len = zipInputStream.read(buffer)) > 0) {
+                    fileOutputStream.write(buffer, 0, len);
+                }
+                fileOutputStream.close();
+
                 zipEntry = zipInputStream.getNextEntry();
             }
 
             zipInputStream.closeEntry();
             zipInputStream.close();
         } catch (IOException e) {
-            throw new RuntimeException("解压文件失败: " + zipFilePath);
+            throw new BaseException("解压文件失败: " + zipFilePath);
         }
         return destDir;
     }
@@ -70,7 +101,7 @@ public class FileUtils {
             FileInputStream fileInputStream = new FileInputStream(file);
             multipartFile = new MockMultipartFile("file", file.getName(), ContentType.APPLICATION_OCTET_STREAM.toString(), fileInputStream);
         } catch (IOException e) {
-            throw new RuntimeException("转换 File 为 MultipartFile 失败");
+            throw new BaseException("转换 File 为 MultipartFile 失败");
         }
         return multipartFile;
     }
@@ -81,8 +112,11 @@ public class FileUtils {
         try {
             multipartFile.transferTo(file);
         } catch (IOException e) {
-            throw new RuntimeException("转换 MultipartFile 为 File 失败");
+            throw new BaseException("转换 MultipartFile 为 File 失败");
         }
         return file;
+    }
+
+    private FileUtils() {
     }
 }

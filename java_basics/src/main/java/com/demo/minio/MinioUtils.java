@@ -1,13 +1,11 @@
-package com.demo.minio.service.impl;
+package com.demo.minio;
 
 
 import com.demo.exception.BaseException;
-import com.demo.minio.config.MinioConfig;
-import com.demo.minio.service.MinioService;
 import io.minio.*;
 import io.minio.messages.Bucket;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -25,8 +23,8 @@ import java.util.UUID;
  *
  * @author Song gh on 2023/12/26.
  */
-@Service
-public class MinioServiceImpl implements MinioService {
+@Component
+public class MinioUtils {
 
     /** bucket 文件公开读取配置(允许通过 url 访问) */
     private static final String PUBLIC_READING_TEMPLATE = "{\n" +
@@ -55,7 +53,6 @@ public class MinioServiceImpl implements MinioService {
     private MinioClient minioClient;
 
     /** 判断 bucket 是否存在 */
-    @Override
     public boolean existBucket(String bucketName) {
         try {
             return minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
@@ -70,7 +67,6 @@ public class MinioServiceImpl implements MinioService {
      * @param bucketName bucket 名称, 不传时使用默认名称 {@link MinioConfig#getDefaultBucketName()}
      * @return true: 成功创建, false: 已存在
      */
-    @Override
     public boolean createBucketIfNotExist(String bucketName) {
         if (existBucket(bucketName)) {
             return false;
@@ -94,7 +90,6 @@ public class MinioServiceImpl implements MinioService {
      * @param bucketName     bucket 名称
      * @param fileNamePrefix 允许公开读取的文件名前缀, 结尾不要添加通配符(*), 为空时允许读取 bucket 全部文件
      */
-    @Override
     public void allowsPublicReading(String bucketName, String fileNamePrefix) {
         if (StringUtils.isBlank(fileNamePrefix)) {
             fileNamePrefix = "";
@@ -108,7 +103,6 @@ public class MinioServiceImpl implements MinioService {
     }
 
     /** 删除 bucket */
-    @Override
     public void removeBucket(String bucketName) {
         try {
             minioClient.removeBucket(RemoveBucketArgs.builder().bucket(bucketName).build());
@@ -118,7 +112,6 @@ public class MinioServiceImpl implements MinioService {
     }
 
     /** 查询所有 bucket */
-    @Override
     public List<Bucket> getAllBuckets() {
         try {
             return minioClient.listBuckets();
@@ -134,7 +127,6 @@ public class MinioServiceImpl implements MinioService {
      * @param bucketName bucket 名称, 不存在时会自动创建
      * @return 新文件名
      */
-    @Override
     public String uploadFileWithUuidName(MultipartFile file, String bucketName) {
         // 不存在则创建 bucket
         createBucketIfNotExist(bucketName);
@@ -178,7 +170,6 @@ public class MinioServiceImpl implements MinioService {
      * @param bucketName bucket 名称
      * @return 新文件名
      */
-    @Override
     public List<String> batchUploadFileWithUuidName(MultipartFile[] files, String bucketName) {
         List<String> newFileNames = new ArrayList<>(files.length);
         for (MultipartFile file : files) {
@@ -193,7 +184,6 @@ public class MinioServiceImpl implements MinioService {
      * @param bucketName 文件所在 bucket 名称
      * @param fileName   文件名称
      */
-    @Override
     public void downloadFile(HttpServletResponse response, String bucketName, String fileName) {
         if (!existBucket(bucketName)) {
             throw new BaseException("bucket 不存在: " + bucketName);
@@ -233,7 +223,6 @@ public class MinioServiceImpl implements MinioService {
      * @param bucketName 文件所在 bucket 名称
      * @param fileName   文件名称
      */
-    @Override
     public void deleteFile(String bucketName, String fileName) {
         if (!existBucket(bucketName)) {
             throw new BaseException("bucket 不存在: " + bucketName);
@@ -246,7 +235,6 @@ public class MinioServiceImpl implements MinioService {
     }
 
     /** 获取 minio 文件下载/预览地址 */
-    @Override
     public String getFileUrl(String bucketName, String fileName) {
         try {
             return minioClient.getObjectUrl(bucketName, fileName);
@@ -256,7 +244,6 @@ public class MinioServiceImpl implements MinioService {
     }
 
     /** 获取 minio 文件下载/预览地址, 并将 url 更换为指定 host */
-    @Override
     public String getCustomizedFileUrl(String bucketName, String fileName) {
         try {
             URL originalUrl = new URL(minioClient.getObjectUrl(bucketName, fileName));

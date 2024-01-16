@@ -4,6 +4,7 @@ import java.util.Base64;
 
 /**
  * Base64 加密/解密工具
+ *
  * @author Song gh on 2024/1/4.
  */
 public class Base64Utils {
@@ -14,7 +15,9 @@ public class Base64Utils {
     }
 
     /** Base64 解密 */
-    public static String decode(Striung encodedStr) {
+    public static String decode(String encodedStr) {
         return new String(Base64.getDecoder().decode(encodedStr));
     }
+
+    private Base64Utils() {}
 }

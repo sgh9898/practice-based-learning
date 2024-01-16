@@ -1,4 +1,4 @@
-package com.demo.minio.config;
+package com.demo.minio;
 
 import io.minio.MinioClient;
 import lombok.Data;
