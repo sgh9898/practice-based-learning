@@ -23,7 +23,7 @@ public class QuartzTaskTemplate implements Job {
     @Override
     public void execute(JobExecutionContext context) {
         try {
-            System.out.println("一分钟 Quartz 定时任务示例, 执行时间: " + new Date());
+            log.info("一分钟 Quartz 定时任务示例, 执行时间: " + new Date());
         } catch (Exception e) {
             log.error("任务执行失败", e);
         }

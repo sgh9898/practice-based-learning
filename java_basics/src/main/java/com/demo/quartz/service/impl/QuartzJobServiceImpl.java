@@ -1,5 +1,6 @@
 package com.demo.quartz.service.impl;
 
+import com.demo.exception.BaseException;
 import com.demo.quartz.service.QuartzJobService;
 import org.quartz.*;
 import org.springframework.stereotype.Service;
@@ -75,7 +76,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
             // 添加新任务
             scheduler.scheduleJob(jobDetail, trigger);
         } catch (Exception e) {
-            throw new RuntimeException("[Quartz] 创建任务失败", e);
+            throw new BaseException("[Quartz] 创建任务失败", e);
         }
     }
 
@@ -106,7 +107,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
             // 使用新的 trigger 重新执行
             scheduler.rescheduleJob(triggerKey, trigger);
         } catch (Exception e) {
-            throw new RuntimeException("[Quartz] 更新任务失败", e);
+            throw new BaseException("[Quartz] 更新任务失败", e);
         }
     }
 
@@ -121,7 +122,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         try {
             return scheduler.checkExists(JobKey.jobKey(jobName, groupName));
         } catch (SchedulerException e) {
-            throw new RuntimeException("[Quartz] 查询任务是否存在失败", e);
+            throw new BaseException("[Quartz] 查询任务是否存在失败", e);
         }
     }
 
@@ -139,7 +140,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
             scheduler.unscheduleJob(TriggerKey.triggerKey(jobName, groupName));
             scheduler.deleteJob(JobKey.jobKey(jobName, groupName));
         } catch (Exception e) {
-            throw new RuntimeException("[Quartz] 删除任务失败", e);
+            throw new BaseException("[Quartz] 删除任务失败", e);
         }
     }
 
@@ -154,7 +155,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         try {
             scheduler.pauseJob(JobKey.jobKey(jobName, groupName));
         } catch (SchedulerException e) {
-            throw new RuntimeException("[Quartz] 暂停任务失败", e);
+            throw new BaseException("[Quartz] 暂停任务失败", e);
         }
     }
 
@@ -169,7 +170,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         try {
             scheduler.resumeJob(JobKey.jobKey(jobName, groupName));
         } catch (SchedulerException e) {
-            throw new RuntimeException("[Quartz] 恢复任务失败", e);
+            throw new BaseException("[Quartz] 恢复任务失败", e);
         }
     }
 
@@ -184,7 +185,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         try {
             scheduler.triggerJob(JobKey.jobKey(jobName, groupName));
         } catch (SchedulerException e) {
-            throw new RuntimeException("[Quartz] 立即运行一次定时任务失败", e);
+            throw new BaseException("[Quartz] 立即运行一次定时任务失败", e);
         }
     }
 
@@ -194,7 +195,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         try {
             scheduler.start();
         } catch (Exception e) {
-            throw new RuntimeException("[Quartz] 开启所有任务失败", e);
+            throw new BaseException("[Quartz] 开启所有任务失败", e);
         }
     }
 
@@ -204,7 +205,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         try {
             scheduler.pauseAll();
         } catch (Exception e) {
-            throw new RuntimeException("[Quartz] 暂停所有任务失败", e);
+            throw new BaseException("[Quartz] 暂停所有任务失败", e);
         }
     }
 
@@ -214,7 +215,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
         try {
             scheduler.resumeAll();
         } catch (Exception e) {
-            throw new RuntimeException("[Quartz] 恢复所有任务失败", e);
+            throw new BaseException("[Quartz] 恢复所有任务失败", e);
         }
     }
 
@@ -228,7 +229,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
                 scheduler.shutdown(true);
             }
         } catch (Exception e) {
-            throw new RuntimeException("[Quartz] 关闭所有任务失败", e);
+            throw new BaseException("[Quartz] 关闭所有任务失败", e);
         }
     }
 }

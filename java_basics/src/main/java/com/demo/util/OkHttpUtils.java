@@ -1,5 +1,6 @@
 package com.demo.util;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.apache.commons.collections4.MapUtils;
@@ -12,6 +13,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.security.AccessControlException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -23,9 +26,9 @@ import java.util.concurrent.TimeUnit;
  * 1. static 方法默认使用 TLSv1.2 协议
  * 2. 出现 handshake_failure 时需要切换 TLS 协议版本
  *
- * @author Song gh on 2023/11/21.
+ * @author Song gh
+ * @version 2024.1.17
  */
-@Slf4j
 public class OkHttpUtils {
 
     // 基本配置
@@ -54,14 +57,16 @@ public class OkHttpUtils {
             // 信任所有 host
             .hostnameVerifier((hostName, session) -> true)
             // 信任所有证书, 协议版本 TLSv1.2, handshake_failure 需要考虑更换使用其他协议的 client
-            .sslSocketFactory(createSSLSocketFactory(TLSVersion.TLSv12), new TrustAllCerts())
+            .sslSocketFactory(createSSLSocketFactory(TLSVersion.TLS_V12), new TrustAllCerts())
             .build();
 
 // ------------------------------ Get 访问 ------------------------------
 
     /** get 访问 */
     public static String get(String url) {
-        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
+        if (StringUtils.isBlank(url)) {
+            throw new IllegalArgumentException("url 不能为空");
+        }
         Request request = new Request.Builder().url(url).build();
         return getStrResponse(request, url);
     }
@@ -70,16 +75,20 @@ public class OkHttpUtils {
 
     /** post 访问, 提交 json */
     public static String postJson(String url, String bodyJsonStr) {
-        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
-        RequestBody body = RequestBody.create(APPLICATION_JSON, bodyJsonStr);
+        if (StringUtils.isBlank(url)) {
+            throw new IllegalArgumentException("url 不能为空");
+        }
+        RequestBody body = RequestBody.create(bodyJsonStr, APPLICATION_JSON);
         Request request = new Request.Builder().url(url).post(body).build();
         return getStrResponse(request, url);
     }
 
     /** post 访问, 提交 json, 自定义 Headers */
     public static String postJsonWithHeaders(String url, String bodyJsonStr, Map<String, String> headers) {
-        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
-        RequestBody body = RequestBody.create(APPLICATION_JSON, bodyJsonStr);
+        if (StringUtils.isBlank(url)) {
+            throw new IllegalArgumentException("url 不能为空");
+        }
+        RequestBody body = RequestBody.create(bodyJsonStr, APPLICATION_JSON);
         Request.Builder builder = new Request.Builder().url(url);
         headers.forEach(builder::addHeader);
         Request request = builder.post(body).build();
@@ -88,8 +97,10 @@ public class OkHttpUtils {
 
     /** post 访问, 提交 form (参数使用 UTF-8 编码) */
     public static String postForm(String url, Map<String, Object> params) {
-        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
-        RequestBody body = RequestBody.create(APPLICATION_FORM_URLENCODED, Objects.requireNonNull(encodeValue(params, "UTF-8")));
+        if (StringUtils.isBlank(url)) {
+            throw new IllegalArgumentException("url 不能为空");
+        }
+        RequestBody body = RequestBody.create(Objects.requireNonNull(encodeValue(params, "UTF-8")), APPLICATION_FORM_URLENCODED);
         Request request = new Request.Builder().url(url).post(body).build();
         return getStrResponse(request, url);
     }
@@ -101,10 +112,38 @@ public class OkHttpUtils {
      * @param params 参数
      * @param encode 字符集, {@link java.nio.charset.StandardCharsets}
      */
-    public static String postForm(String url, LinkedHashMap<String, Object> params, String encode) {
-        if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
-        RequestBody body = RequestBody.create(APPLICATION_FORM_URLENCODED, encodeValue(params, encode));
+    public static String postForm(String url, Map<String, Object> params, String encode) {
+        if (StringUtils.isBlank(url)) {
+            throw new IllegalArgumentException("url 不能为空");
+        }
+        RequestBody body = RequestBody.create(encodeValue(params, encode), APPLICATION_FORM_URLENCODED);
         Request request = new Request.Builder().url(url).post(body).build();
+        return getStrResponse(request, url);
+    }
+
+    /**
+     * post 访问, 提交单个文件 + 多个参数
+     *
+     * @param fileParamName 文件参数名
+     * @param params        常规参数
+     */
+    public static String postFile(String url, String fileParamName, String filePath, Map<String, Object> params) {
+        if (StringUtils.isBlank(url)) {
+            throw new IllegalArgumentException("url 不能为空");
+        }
+        // 文件请求体
+        File file = new File(filePath);
+        RequestBody fileBody = RequestBody.create(file, APPLICATION_FILE);
+        // 添加文件
+        MultipartBody.Builder builder = new MultipartBody.Builder()
+                .setType(MultipartBody.ALTERNATIVE)
+                .addFormDataPart(fileParamName, file.getName(), fileBody);
+        // 添加参数
+        for (Entry<String, Object> entry : params.entrySet()) {
+            builder.addFormDataPart(entry.getKey(), (String) entry.getValue());
+        }
+        RequestBody multipartBody = builder.build();
+        Request request = new Request.Builder().url(url).post(multipartBody).build();
         return getStrResponse(request, url);
     }
 
@@ -117,10 +156,12 @@ public class OkHttpUtils {
     public static String postFile(String url, String fileParamName, MultipartFile multipartFile, Map<String, Object> params) {
         File file = null;
         try {
-            if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
+            if (StringUtils.isBlank(url)) {
+                throw new IllegalArgumentException("url 不能为空");
+            }
             // 文件请求体
             file = multiFiletoFile(multipartFile);
-            RequestBody fileBody = RequestBody.create(APPLICATION_FILE, file);
+            RequestBody fileBody = RequestBody.create(file, APPLICATION_FILE);
             // 添加文件
             MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.ALTERNATIVE)
                     .addFormDataPart(fileParamName, multipartFile.getOriginalFilename(), fileBody);
@@ -147,14 +188,16 @@ public class OkHttpUtils {
     public static String postFiles(String url, Map<String, MultipartFile> fileMap, Map<String, Object> params) {
         List<File> fileList = new LinkedList<>();
         try {
-            if (StringUtils.isBlank(url)) throw new RuntimeException("url不能为空");
+            if (StringUtils.isBlank(url)) {
+                throw new IllegalArgumentException("url 不能为空");
+            }
             // 添加文件
             MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.ALTERNATIVE);
             for (Entry<String, MultipartFile> fileEntry : fileMap.entrySet()) {
                 MultipartFile multipartFile = fileEntry.getValue();
                 File file = multiFiletoFile(multipartFile);
                 fileList.add(file);
-                RequestBody fileBody = RequestBody.create(APPLICATION_FILE, file);
+                RequestBody fileBody = RequestBody.create(file, APPLICATION_FILE);
                 builder.addFormDataPart(fileEntry.getKey(), multipartFile.getOriginalFilename(), fileBody);
             }
             // 添加参数
@@ -176,8 +219,7 @@ public class OkHttpUtils {
         try (Response response = defaultClientTLS12.newCall(request).execute()) {
             return response.body() == null ? null : response.body().string();
         } catch (IOException e) {
-            log.error(e.getMessage(), e);
-            throw new RuntimeException("OkHttp 访问失败, url: " + url);
+            throw new AccessControlException("OkHttp 访问失败, url: " + url);
         }
     }
 
@@ -199,7 +241,7 @@ public class OkHttpUtils {
                     try {
                         sb.append(URLEncoder.encode((String) value, encode)).append("&");
                     } catch (UnsupportedEncodingException e) {
-                        throw new RuntimeException("encode失败：" + key + "=" + value, e);
+                        throw new IllegalArgumentException("encode 失败：" + key + "=" + value, e);
                     }
                 } else {
                     sb.append(value).append("&");
@@ -220,14 +262,14 @@ public class OkHttpUtils {
         String tlsVersionStr = "TLS";
         try {
             // 切换协议版本
-            if (tlsVersion == TLSVersion.TLSv13) {
+            if (tlsVersion == TLSVersion.TLS_V13) {
                 tlsVersionStr = "TLSv1.3";
             }
             SSLContext sslContext = SSLContext.getInstance(tlsVersionStr);
             sslContext.init(null, new TrustManager[]{new TrustAllCerts()}, new SecureRandom());
             ssfFactory = sslContext.getSocketFactory();
         } catch (Exception e) {
-            throw new RuntimeException("不支持 " + tlsVersionStr + " 协议");
+            throw new AccessControlException("不支持 " + tlsVersionStr + " 协议");
         }
         return ssfFactory;
     }
@@ -237,19 +279,28 @@ public class OkHttpUtils {
         String path = "." + File.separator + multipartFile.getOriginalFilename();
         File file = new File(path);
         try {
-            if (!file.exists()) {
-                file.createNewFile();
+            boolean created = file.createNewFile();
+            if (!created) {
+                throw new UnsupportedOperationException("文件已存在, 创建失败");
             }
             FileCopyUtils.copy(multipartFile.getBytes(), file);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new UnsupportedOperationException("MultipartFile 转 File 失败");
         }
         return file;
     }
 
     /** TLS 协议版本 */
+    @Getter
     private enum TLSVersion {
-        TLSv12, TLSv13
+        TLS_V12("TLSv12"),
+        TLS_V13("TLSv13");
+
+        private final String version;
+
+        TLSVersion (String version) {
+            this.version = version;
+        }
     }
 
     /**
@@ -259,9 +310,9 @@ public class OkHttpUtils {
      */
     private static class StandardHostnameVerifier implements HostnameVerifier {
 
-        private final HashSet<String> trustedHosts;
+        private final Set<String> trustedHosts;
 
-        public StandardHostnameVerifier(HashSet<String> trustedHosts) {
+        public StandardHostnameVerifier(Set<String> trustedHosts) {
             this.trustedHosts = trustedHosts;
         }
 
@@ -280,9 +331,11 @@ public class OkHttpUtils {
     /** 信任所有证书 */
     private static class TrustAllCerts implements X509TrustManager {
         public void checkClientTrusted(X509Certificate[] chain, String authType) {
+            // 保持为空即可
         }
 
         public void checkServerTrusted(X509Certificate[] chain, String authType) {
+            // 保持为空即可
         }
 
         public X509Certificate[] getAcceptedIssuers() {

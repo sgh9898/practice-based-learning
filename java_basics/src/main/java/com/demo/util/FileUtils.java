@@ -1,7 +1,6 @@
 package com.demo.util;
 
 import com.demo.exception.BaseException;
-import org.apache.http.entity.ContentType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,12 +21,10 @@ import java.util.zip.ZipInputStream;
  */
 public class FileUtils {
 
-    /** 锁定并写入文件(防止并发) */
-    public static void lockThenWriteToFile(String fileName, List<String> contentList) {
-        if (contentList == null || contentList.isEmpty()) {
-            return;
-        }
+    private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
 
+    /** 锁定并写入文件(防止并发), 无内容时则仅创建文件 */
+    public static void lockThenWriteToFile(String fileName, List<String> contentList) {
         // 尝试锁定文件
         try (RandomAccessFile fileWriter = new RandomAccessFile(fileName, "rw");
              FileChannel channel = fileWriter.getChannel();
@@ -35,7 +32,7 @@ public class FileUtils {
 
             // 在文件末尾附加
             String lineSeparator = System.lineSeparator();
-            if (lock != null) {
+            if (lock != null && contentList != null) {
                 fileWriter.seek(fileWriter.length());
                 for (String content : contentList) {
                     String line = content + lineSeparator;
@@ -99,7 +96,7 @@ public class FileUtils {
         MultipartFile multipartFile;
         try {
             FileInputStream fileInputStream = new FileInputStream(file);
-            multipartFile = new MockMultipartFile("file", file.getName(), ContentType.APPLICATION_OCTET_STREAM.toString(), fileInputStream);
+            multipartFile = new MockMultipartFile("file", file.getName(), APPLICATION_OCTET_STREAM, fileInputStream);
         } catch (IOException e) {
             throw new BaseException("转换 File 为 MultipartFile 失败");
         }

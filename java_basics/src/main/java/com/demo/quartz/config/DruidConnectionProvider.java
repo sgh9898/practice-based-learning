@@ -1,6 +1,7 @@
 package com.demo.quartz.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import com.demo.exception.BaseException;
 import lombok.Getter;
 import lombok.Setter;
 import org.quartz.utils.ConnectionProvider;
@@ -29,7 +30,7 @@ public class DruidConnectionProvider implements ConnectionProvider {
     /** 数据库驱动 */
     private String driver;
     /** 数据库 url */
-    private String URL;
+    private String url;
     /** 数据库用户名 */
     private String user;
     /** 数据库密码 */
@@ -57,13 +58,13 @@ public class DruidConnectionProvider implements ConnectionProvider {
     }
 
     @Override
-    public void shutdown() throws SQLException {
+    public void shutdown() {
         datasource.close();
     }
 
     @Override
     public void initialize() throws SQLException {
-        if (this.URL == null) {
+        if (this.url == null) {
             throw new SQLException("连接池创建失败: url 不能为空");
         }
         if (this.driver == null) {
@@ -77,10 +78,10 @@ public class DruidConnectionProvider implements ConnectionProvider {
         try {
             datasource.setDriverClassName(this.driver);
         } catch (Exception e) {
-            throw new RuntimeException("配置 driver 失败: " + e.getMessage(), e);
+            throw new BaseException("配置 driver 失败: " + e.getMessage(), e);
         }
 
-        datasource.setUrl(this.URL);
+        datasource.setUrl(this.url);
         datasource.setUsername(this.user);
         datasource.setPassword(this.password);
         datasource.setMaxActive(this.maxConnection);

@@ -20,7 +20,7 @@ import java.util.Objects;
 public class QuartzConfig {
 
     /** 配置文件路径, Resource 目录下 */
-    private static final String PROP_PATH = "/quartz.properties";
+    private static final String PROP_PATH = "quartz.properties";
 
     @Resource
     private QuartzJobFactory jobFactory;
