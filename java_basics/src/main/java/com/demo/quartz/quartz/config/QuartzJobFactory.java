@@ -1,4 +1,4 @@
-package com.demo.quartz.config;
+package com.demo.quartz.quartz.config;
 
 import org.quartz.spi.TriggerFiredBundle;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -11,7 +11,8 @@ import javax.annotation.Resource;
 /**
  * Quartz JobFactory 配置, 用于 Spring 注入 Job
  *
- * @author Song gh on 2023/12/11.
+ * @author Song gh
+ * @version 2024/01/24
  */
 @Component
 public class QuartzJobFactory extends AdaptableJobFactory {

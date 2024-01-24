@@ -1,7 +1,7 @@
 package com.demo.quartz.controller;
 
 import com.demo.quartz.dto.QuartzConfigDto;
-import com.demo.quartz.service.QuartzJobService;
+import com.demo.quartz.quartz.service.QuartzJobService;
 import com.demo.util.ApiResp;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

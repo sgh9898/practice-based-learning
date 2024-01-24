@@ -1,4 +1,4 @@
-package com.demo.quartz.config;
+package com.demo.quartz.quartz.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.demo.exception.BaseException;
@@ -13,7 +13,8 @@ import java.sql.SQLException;
 /**
  * Druid 数据库连接池配置
  *
- * @author Song gh on 2023/12/11.
+ * @author Song gh
+ * @version 2024/01/24
  */
 @Getter
 @Setter

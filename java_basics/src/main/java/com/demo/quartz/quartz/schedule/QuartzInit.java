@@ -1,6 +1,6 @@
-package com.demo.quartz.schedule;
+package com.demo.quartz.quartz.schedule;
 
-import com.demo.quartz.service.QuartzJobService;
+import com.demo.quartz.quartz.service.QuartzJobService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -11,7 +11,8 @@ import javax.annotation.Resource;
  * <br> 新任务激活方法: 1. 在 {@link #autoInitJob} 配置
  * <br>               2. 使用 {@link QuartzJobService} 手动添加)
  *
- * @author Song gh on 2023/12/11.
+ * @author Song gh
+ * @version 2024/01/24
  */
 @Service
 class QuartzInit {

@@ -1,6 +1,6 @@
-package com.demo.quartz.schedule;
+package com.demo.quartz.quartz.schedule;
 
-import com.demo.quartz.service.QuartzJobService;
+import com.demo.quartz.quartz.service.QuartzJobService;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
@@ -14,7 +14,8 @@ import java.util.Date;
  * <br>               2. 使用 {@link QuartzJobService} 手动添加)
  * <br> 禁止任务并发执行: 在当前 Class 上注解 {@link DisallowConcurrentExecution}
  *
- * @author Song gh on 2023/12/11.
+ * @author Song gh
+ * @version 2024/01/24
  */
 @Slf4j
 @DisallowConcurrentExecution

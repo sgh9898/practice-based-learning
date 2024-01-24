@@ -1,16 +1,18 @@
-package com.demo.quartz.service;
+package com.demo.quartz.quartz.service;
 
 import java.util.Map;
 
 /**
  * Quartz 定时任务
  *
- * @author Song gh on 2023/12/11.
+ * @author Song gh
+ * @version 2024/01/24
  */
 public interface QuartzJobService {
 
     /**
      * [新增/更新] 添加任务并启动(任务已存在时转为更新)
+     * <br> 任务严格遵照设定时间执行, 不会在启动时执行一次
      *
      * @param clazzName 定时任务 class 名称, 需要 implements {@link org.quartz.Job}
      * @param jobName   定时任务名
@@ -21,7 +23,8 @@ public interface QuartzJobService {
     void upsertJob(String clazzName, String jobName, String groupName, String cronExp, Map<String, Object> jobParams);
 
     /**
-     * [新增] 添加任务并启动(任务已存在时不执行)
+     * [新增] 添加任务并启动(任务已存在时不做任何操作)
+     * <br> 任务严格遵照设定时间执行, 不会在启动时额外执行一次
      *
      * @param clazzName 定时任务 class 名称, 需要 implements {@link org.quartz.Job}
      * @param jobName   定时任务名
@@ -33,6 +36,7 @@ public interface QuartzJobService {
 
     /**
      * [更新] 更新任务
+     * <br> 任务严格遵照设定时间执行, 不会在启动时额外执行一次
      *
      * @param jobName   定时任务名
      * @param groupName 定时任务组名

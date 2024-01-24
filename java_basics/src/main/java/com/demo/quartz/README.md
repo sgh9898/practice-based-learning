@@ -15,11 +15,11 @@
 
 ### 结构
 
-1. [Config](config) -- 默认配置, 一般不需要更改
-2. [Schedule](schedule) -- 实际执行的定时任务
-    * [QuartzInit](schedule/QuartzInit.java) -- 定时任务自动初始化, 一般需要将定时任务在此激活
-3. [Service](service) -- 功能类, 一般不需要更改
-4. [Sql](sql) -- Mysql 建表语句, 需要在数据库手动执行
+1. [Config](quartz/config) -- 默认配置, 一般不需要更改
+2. [Schedule](quartz/schedule) -- 实际执行的定时任务
+    * [QuartzInit](quartz/schedule/QuartzInit.java) -- 定时任务自动初始化, 一般需要将定时任务在此激活
+3. [Service](quartz/service) -- 功能类, 一般不需要更改
+4. [Sql](quartz/sql) -- Mysql 建表语句, 需要在数据库手动执行
 5. [Properties](quartz.properties) -- 自定义配置, 需要放在项目 Resource 目录下
 
 ---
@@ -51,6 +51,6 @@
 ### 使用步骤
 
 1. 配置 [Properties](quartz.properties), 置于项目 Resource 目录下
-2. 执行 [Sql](sql)
-3. 完成定时任务, 置于 [Schedule](schedule) 目录下
-4. 在 [QuartzInit](schedule/QuartzInit.java) 中激活指定的定时任务
+2. 执行 [Sql](quartz/sql)
+3. 完成定时任务, 置于 [Schedule](quartz/schedule) 目录下
+4. 在 [QuartzInit](quartz/schedule/QuartzInit.java) 中激活指定的定时任务

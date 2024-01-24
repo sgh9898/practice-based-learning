@@ -32,7 +32,7 @@ public class RedisController {
     @PostMapping("/redis/upsert")
     public Map<String, Object> upsertRedis(@RequestBody JSONObject json) {
         for (String key : json.keySet()) {
-            stringRedisTemplate.opsForValue().set(key, json.getString(key), 20, TimeUnit.SECONDS);
+            stringRedisTemplate.opsForValue().setIfAbsent(key, json.getString(key), 20, TimeUnit.SECONDS);
         }
         return ResultUtil.success();
     }

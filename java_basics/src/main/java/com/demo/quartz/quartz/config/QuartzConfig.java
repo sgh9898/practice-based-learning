@@ -1,4 +1,4 @@
-package com.demo.quartz.config;
+package com.demo.quartz.quartz.config;
 
 import org.quartz.Scheduler;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
@@ -14,7 +14,8 @@ import java.util.Objects;
 /**
  * Quartz 定时任务配置
  *
- * @author Song gh on 2023/12/11.
+ * @author Song gh
+ * @version 2024/01/24
  */
 @Configuration
 public class QuartzConfig {
