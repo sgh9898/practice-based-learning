@@ -1,7 +1,5 @@
 package com.demo.sharding.sharding;
 
-
-import com.demo.exception.BaseException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -19,7 +17,8 @@ import java.util.concurrent.ThreadLocalRandom;
  * 雪花ID生成
  * <br> 集群环境下通过 Redis 去重
  *
- * @author Song gh on 2024/1/12.
+ * @author Song gh
+ * @version 2024/1/12
  */
 @Component
 public class SnowIdUtils {
@@ -27,12 +26,17 @@ public class SnowIdUtils {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
-    private SnowIdUtils() {
-    }
-
     /** 获取雪花id */
     public static long uniqueLong() {
         return SnowFlake.SNOW_FLAKE.nextId();
+    }
+
+    /** [集群环境] 获取雪花id(并发时不出现重复) */
+    public static long clusterUniqueLong() {
+        return SnowFlake.SNOW_FLAKE.clusterNextId();
+    }
+
+    private SnowIdUtils() {
     }
 
     /** [集群环境] 允许静态类借助 redis 初始化 */
@@ -76,10 +80,15 @@ public class SnowIdUtils {
         /** 时间初始值, 2010-01-01, 设置更新的时间戳可以使用更长时间 */
         private static final long TW_EPOCH = 1262275201000L;
 
-        /** [redisKey 前缀] 用于机房id, 机器id去重 */
-        private static final String REDIS_PREFIX_UNIQUE_ID = "SNOWFLAKE_UTILS_UNIQUE_ID:";
-        /** [redisKey 有效期] */
-        private static final Duration SNOWFLAKE_REDIS_KEY_DURATION = Duration.ofHours(1);
+        /** [redisKey 前缀] 用于集群情况下去重 */
+        private static final String REDIS_PREFIX_SNOWFLAKE_ID = "SNOWFLAKE_CLUSTER_ID:";
+        /** [redisKey 有效期] {@link #REDIS_PREFIX_SNOWFLAKE_ID} */
+        private static final Duration REDIS_DURATION_SNOWFLAKE_ID = Duration.ofSeconds(5);
+
+        /** [redisKey 前缀] 用于初始化(机房id, 机器id去重) */
+        private static final String REDIS_PREFIX_UNIQUE_INIT_ID = "SNOWFLAKE_UNIQUE_INIT_ID:";
+        /** [redisKey 有效期] {@link #REDIS_PREFIX_UNIQUE_INIT_ID} */
+        private static final Duration REDIS_DURATION_UNIQUE_INIT_ID = Duration.ofHours(1);
 
         /** 机房id */
         private long datacenterId;
@@ -89,6 +98,8 @@ public class SnowIdUtils {
         private long sequence;
         /** 记录产生时间毫秒数, 判断是否是同1毫秒 */
         private long lastTimestamp = -1L;
+
+        private StringRedisTemplate redisTemplate;
 
         protected SnowFlake() {
             // 通过当前物理网卡地址获取 datacenterId
@@ -114,13 +125,13 @@ public class SnowIdUtils {
                         retryTimes++;
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        throw new BaseException("时钟回拨, 生成雪花id失败", e);
+                        throw new UnsupportedOperationException("时钟回拨, 生成雪花id失败", e);
                     }
                 }
 
                 // 等待后仍然存在回拨, 报错
                 if (offset > 0) {
-                    throw new BaseException(String.format("时钟回拨, %d 毫秒内无法生成雪花id", offset));
+                    throw new UnsupportedOperationException(String.format("时钟回拨, %d 毫秒内无法生成雪花id", offset));
                 }
             }
 
@@ -141,17 +152,31 @@ public class SnowIdUtils {
                     | sequence;
         }
 
-        /** [集群环境] 借助 redis 初始化, 项目未配置 redis 则不生效  */
+        /** [集群环境] 生成雪花id, 防止并发时出现重复id */
+        public synchronized long clusterNextId() {
+            long snowflakeId = nextId();
+            String redisKey = REDIS_PREFIX_SNOWFLAKE_ID + snowflakeId;
+            // 借助 redis 短暂锁定, 重复时重新生成 id
+            while (redisTemplate.opsForValue().setIfAbsent(redisKey, "1", REDIS_DURATION_SNOWFLAKE_ID) != Boolean.TRUE) {
+                snowflakeId = SnowIdUtils.uniqueLong();
+                redisKey = REDIS_PREFIX_SNOWFLAKE_ID + snowflakeId;
+            }
+            return snowflakeId;
+        }
+
+        /** [集群环境] 借助 redis 初始化, 项目未配置 redis 则不生效 */
         protected void clusterRedisInit(StringRedisTemplate stringRedisTemplate) {
             if (stringRedisTemplate == null) {
                 return;
+            } else {
+                this.redisTemplate = stringRedisTemplate;
             }
 
             // 从机器id开始查重, 不允许机房id与机器id同时重复
             for (int i = 0; i <= MAX_DATACENTER_ID; i++) {
                 boolean duplicated = true;
                 for (int j = 0; j <= MAX_WORKER_ID; j++) {
-                    String redisKeyUniqueId = REDIS_PREFIX_UNIQUE_ID + this.datacenterId + this.workerId;
+                    String redisKeyUniqueId = REDIS_PREFIX_UNIQUE_INIT_ID + this.datacenterId + this.workerId;
                     String uniqueId = stringRedisTemplate.opsForValue().get(redisKeyUniqueId);
 
                     if (StringUtils.isNotBlank(uniqueId)) {
@@ -159,7 +184,7 @@ public class SnowIdUtils {
                         this.workerId = (this.workerId + 1) % (MAX_WORKER_ID + 1);
                     } else {
                         // id未重复, 通过
-                        stringRedisTemplate.opsForValue().set(redisKeyUniqueId, "1", SNOWFLAKE_REDIS_KEY_DURATION);
+                        stringRedisTemplate.opsForValue().set(redisKeyUniqueId, "1", REDIS_DURATION_UNIQUE_INIT_ID);
                         duplicated = false;
                         break;
                     }

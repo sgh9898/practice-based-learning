@@ -1,6 +1,6 @@
 server:
   # 端口
-  port: 8081
+  port: 8080
   servlet:
     # 访问路径前缀
     context-path: /demo
@@ -14,14 +14,14 @@ canal:
   # canal deployer 使用的数据库用户名
   username: canal
   # canal deployer 使用的数据库密码
-  password: canal
+  password: RVsdbgjs~4921
 
   # canal 监听的表, 未配置时以 canal deployer 为准
   # 监听全表             .*\..*
   # 监听指定 schema      test\..*
   # 监听指定表            test.table1
   # 综合监听(逗号分隔)     test1\..*,test2.table1,test2.table2
-  subscribe: ds0\..*
+  subscribe: demo\..*
 
   # 扩展功能
   extension:
@@ -92,6 +92,7 @@ spring:
     uris: http://localhost:9200
     socket-timeout: 60000
     connection-timeout: 60000
+    password:
 
   # JPA
   jpa:

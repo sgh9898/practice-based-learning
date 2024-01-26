@@ -69,7 +69,7 @@ public class DemoApplication {
             }
             return InetAddress.getLocalHost().getHostAddress();
         } catch (SocketException | UnknownHostException e) {
-            throw new RuntimeException(e);
+            throw new UnsupportedOperationException(e);
         }
     }
 }

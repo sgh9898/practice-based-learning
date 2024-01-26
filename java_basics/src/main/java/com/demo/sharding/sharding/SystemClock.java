@@ -1,17 +1,16 @@
 package com.demo.sharding.sharding;
 
 
-import java.sql.Timestamp;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * @author zhaoliangliang
- * @date 2021/9/9
+ * 系统时间
  */
 public class SystemClock {
+
     private final long period;
     private final AtomicLong now;
 
@@ -21,16 +20,12 @@ public class SystemClock {
         this.scheduleClockUpdating();
     }
 
-    private static SystemClock instance() {
-        return InstanceHolder.INSTANCE;
-    }
-
     public static long now() {
         return instance().currentTimeMillis();
     }
 
-    public static String nowDate() {
-        return (new Timestamp(instance().currentTimeMillis())).toString();
+    private static SystemClock instance() {
+        return InstanceHolder.INSTANCE;
     }
 
     private void scheduleClockUpdating() {
@@ -39,9 +34,7 @@ public class SystemClock {
             thread.setDaemon(true);
             return thread;
         });
-        scheduler.scheduleAtFixedRate(() -> {
-            this.now.set(System.currentTimeMillis());
-        }, this.period, this.period, TimeUnit.MILLISECONDS);
+        scheduler.scheduleAtFixedRate(() -> this.now.set(System.currentTimeMillis()), this.period, this.period, TimeUnit.MILLISECONDS);
     }
 
     private long currentTimeMillis() {

@@ -53,7 +53,7 @@ public class CanalClient {
 
 // ------------------------------ 运行参数 ------------------------------
     /** 部署 canal 的 host, 默认为本机 localhost */
-    @Value("${canal.host:localhost}")
+    @Value("${canal.host:127.0.0.1}")
     private String canalHost;
     /** canal 所使用的端口(canal.properties 中 canal.port), 默认 11111 */
     @Value("${canal.port:11111}")
@@ -66,19 +66,22 @@ public class CanalClient {
 
 // ------------------------------ 业务参数 ------------------------------
     /** 备份表所属 schema */
-    @Value("${canal.extension.slave.schema:}")
-    private String BACKUP_SCHEMA;
+    @Value("${canal.extension.slave.schema:#{null}}")
+    private String backupSchema;
 
     /** 备份表统一前缀, 格式统一为下划线 _ 结尾 */
-    @Value("${canal.extension.slave.table-name-prefix:}")
-    private String BACKUP_PREFIX;
+    @Value("${canal.extension.slave.table-name-prefix:#{null}}")
+    private String backupPrefix;
 // ============================== 业务参数 End ==============================
 
     @Resource
     private JdbcTemplate jdbcTemplate;
 
-    /** Canal 总开关, 启用时注解 @PostConstruct */
-//    @PostConstruct
+    /**
+     * Canal 总开关
+     * <br> 推荐通过定时任务的方式启动, 以确保在意外中断时自动重连
+     */
+    @PostConstruct
     public void start() {
         log.info("canal 开始运行");
         // 链接数据库
@@ -87,6 +90,7 @@ public class CanalClient {
         connector.connect();
         // 订阅的数据库表, 未配置时以 canal deployer 为准
         if (StringUtils.isNotBlank(subscribeRegex)) {
+            subscribeRegex = subscribeRegex.replaceAll("\\s*", "");
             connector.subscribe(subscribeRegex);
         } else {
             connector.subscribe();
@@ -95,14 +99,14 @@ public class CanalClient {
         connector.rollback();
 
         // 处理从表信息
-        if (StringUtils.isNotBlank(BACKUP_SCHEMA) && !BACKUP_SCHEMA.endsWith(".")) {
-            BACKUP_SCHEMA += ".";
+        if (StringUtils.isNotBlank(backupSchema) && !backupSchema.endsWith(".")) {
+            backupSchema += ".";
         }
-        if (StringUtils.isNotBlank(BACKUP_PREFIX) && !BACKUP_PREFIX.endsWith("_")) {
-            BACKUP_PREFIX += "_";
+        if (StringUtils.isNotBlank(backupPrefix) && !backupPrefix.endsWith("_")) {
+            backupPrefix += "_";
         }
         // 进行数据监控
-        new Thread(() -> dataMonitoring(connector)).start();
+        dataMonitoring(connector);
     }
 
 // ------------------------------ 数据监控主方法 ------------------------------
@@ -114,6 +118,7 @@ public class CanalClient {
      * @param rowData 具体数据
      */
     private void afterEventDelete(Header header, RowData rowData) {
+        // 根据需求配置
     }
 
     /**
@@ -124,7 +129,7 @@ public class CanalClient {
      */
     private void afterEventInsert(Header header, RowData rowData) {
         // 生成 sql 语句
-        StringBuilder insertFields = new StringBuilder("insert into " + BACKUP_SCHEMA + BACKUP_PREFIX + header.getTableName() + " (");
+        StringBuilder insertFields = new StringBuilder("insert into " + backupSchema + backupPrefix + header.getTableName() + " (");
         StringBuilder insertValues = new StringBuilder("values (");
         buildUpSqlThenExecute(header, rowData, insertFields, insertValues);
     }
@@ -137,7 +142,7 @@ public class CanalClient {
      */
     private void afterEventUpdate(Header header, RowData rowData) {
         // 生成 sql 语句
-        StringBuilder insertFields = new StringBuilder("replace into " + BACKUP_SCHEMA + BACKUP_PREFIX + header.getTableName() + " (");
+        StringBuilder insertFields = new StringBuilder("replace into " + backupSchema + backupPrefix + header.getTableName() + " (");
         StringBuilder insertValues = new StringBuilder("values (");
         buildUpSqlThenExecute(header, rowData, insertFields, insertValues);
     }
@@ -166,7 +171,7 @@ public class CanalClient {
             jdbcTemplate.update(sql);
         } catch (BadSqlGrammarException sqlException) {
             // 表不存在时需要先创建
-            String sqlCopyTable = "create table " + BACKUP_SCHEMA + BACKUP_PREFIX + header.getTableName() + " like " + header.getSchemaName() + "." + header.getTableName();
+            String sqlCopyTable = "create table " + backupSchema + backupPrefix + header.getTableName() + " like " + header.getSchemaName() + "." + header.getTableName();
             try {
                 jdbcTemplate.update(sqlCopyTable);
                 jdbcTemplate.update(sql);
@@ -188,7 +193,7 @@ public class CanalClient {
                 int size = message.getEntries().size();
                 if (batchId == -1 || size == 0) {
                     emptyCount++;
-                    Thread.sleep(EMPTY_COUNT_DELAY * 1000);
+                    Thread.sleep(EMPTY_COUNT_DELAY * 1000L);
                 } else {
                     emptyCount = 0;
                     dealWithOneLineEntry(message.getEntries());
@@ -197,9 +202,14 @@ public class CanalClient {
                 connector.ack(batchId);
             }
             log.info("连续 {} 批次监听数据为空, 终止监听", MAX_EMPTY_COUNT);
-        } catch (Exception e) {
+        }
+//        catch (InterruptedException e) {
+//            log.error("Canal 线程中断", e);
+//            Thread.currentThread().interrupt();
+//        }
+        catch (Exception e) {
             log.error("监听数据报错", e);
-            throw new RuntimeException(e);
+            throw new UnsupportedOperationException(e);
         } finally {
             connector.disconnect();
         }
@@ -219,7 +229,7 @@ public class CanalClient {
                 rowChange = RowChange.parseFrom(entry.getStoreValue());
             } catch (Exception e) {
                 log.error("Canal 解析数据失败, data: {}", entry, e);
-                throw new RuntimeException("Canal 解析数据失败, data: " + entry, e);
+                throw new UnsupportedOperationException("Canal 解析数据失败, data: " + entry, e);
             }
 
             EventType eventType = rowChange.getEventType();

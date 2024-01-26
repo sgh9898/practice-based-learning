@@ -12,7 +12,6 @@ public class SnowFlakeIdGenerator implements IdentifierGenerator {
 
     @Override
     public Serializable generate(SharedSessionContractImplementor session, Object o) throws HibernateException {
-        System.out.println("get" + SnowIdUtils.uniqueLong());
         return SnowIdUtils.uniqueLong();
     }
 }
