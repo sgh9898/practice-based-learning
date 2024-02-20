@@ -21,7 +21,8 @@ import java.util.Map;
 /**
  * EasyExcel 功能测试
  *
- * @author Song gh on 2023/3/21.
+ * @author Song gh
+ * @version 2024/2/7
  */
 @Slf4j
 @RestController
@@ -46,13 +47,19 @@ public class EasyExcelController {
 
     @GetMapping("/exportData")
     @ApiOperation("导出数据")
-    public void exportExcel(HttpServletRequest request, HttpServletResponse response) {
+    public void exportData(HttpServletRequest request, HttpServletResponse response) {
         excelService.exportData(request, response);
     }
 
-    @GetMapping("/noModel/exportTemplate")
-    @ApiOperation("不指定 ExcelClass 导出模板")
-    public void noModelExportData(HttpServletRequest request, HttpServletResponse response) {
+    @GetMapping("/exportCustomizedTemplate")
+    @ApiOperation("导出自定义数据")
+    public void exportExcel(HttpServletRequest request, HttpServletResponse response) {
+        excelService.exportExcel(request, response);
+    }
+
+    @GetMapping("/noModel/export")
+    @ApiOperation("不指定 ExcelClass 导出")
+    public void noModelExport(HttpServletRequest request, HttpServletResponse response) {
         excelService.noModelExport(request, response);
     }
 
@@ -63,18 +70,18 @@ public class EasyExcelController {
         headMap.put("二级标题1", "title1");
         headMap.put("二级标题2", "title2");
         headMap.put("二级标题3", "title3");
-        return EasyExcelUtils.noModelImportExcel(file, request, response, headMap);
-    }
-
-    @PostMapping("/excelToDdl")
-    @ApiOperation("Excel 转 DDL ")
-    public String excelToDdl(MultipartFile file, HttpServletRequest request, HttpServletResponse response, String tableName) {
-        return excelService.generateDdl(file, request, response, tableName);
+        return EasyExcelUtils.noModelImportExcel(file, headMap);
     }
 
     @GetMapping("/excelToDdl/template")
     @ApiOperation("Excel 转 DDL 模板")
     public void excelToDdlTemplate(HttpServletRequest request, HttpServletResponse response) {
         EasyExcelUtils.exportTemplate(request, response, "Excel转DDL模板", ExcelToDdl.class, null);
+    }
+
+    @PostMapping("/excelToDdl")
+    @ApiOperation("Excel 转 DDL ")
+    public String excelToDdl(MultipartFile file, HttpServletRequest request, HttpServletResponse response, String tableName) {
+        return excelService.generateDdl(file, request, response, tableName);
     }
 }

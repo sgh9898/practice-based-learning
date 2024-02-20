@@ -2,26 +2,33 @@ package com.demo.excel.pojo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.demo.excel.easyexcel.EasyExcelClassTemplate;
-import com.demo.excel.easyexcel.ExcelDropDown;
-import lombok.Getter;
-import lombok.Setter;
+import com.demo.excel.easyexcel.annotation.ExcelDropDown;
+import io.swagger.annotations.ApiModel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import javax.validation.constraints.NotNull;
 
 /**
- * Sql 建表格式 (from Excel)
- * <br> 非必填项添加默认值, 防止出现 null
+ * Excel 转 sql 建表语句
  *
- * @author Song gh on 2022/3/25.
+ * @author Song gh
+ * @version 2024/2/7
  */
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ApiModel("Excel 转 sql 建表语句")
 public class ExcelToDdl extends EasyExcelClassTemplate {
 
+    @NotNull(message = "参数名称不可为空")
     @ExcelProperty("参数名称")
     private String name;
 
     @ExcelProperty("参数备注")
     private String comment = "";
 
+    @NotNull(message = "类型不可为空")
+    @ExcelDropDown(name = "动态head")
     @ExcelProperty("类型")
     private String type;
 

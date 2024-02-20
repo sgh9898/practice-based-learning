@@ -1,19 +1,16 @@
 package com.demo;
 
-import okhttp3.*;
+import com.demo.util.AesUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
-import org.joda.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.*;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Enumeration;
@@ -25,51 +22,16 @@ import java.util.Enumeration;
  */
 class GeneralTest {
 
-    /** bucket 匿名读取文件配置(允许前端通过 url 访问) */
-    private static final String READ_ONLY_RULES_TEMPLATE = "{\n" +
-            "    \"Version\": \"2012-10-17\",\n" +
-            "    \"Statement\": [\n" +
-            "        {\n" +
-            "            \"Effect\": \"Allow\",\n" +
-            "            \"Principal\": {\n" +
-            "                \"AWS\": [\n" +
-            "                    \"*\"\n" +
-            "                ]\n" +
-            "            },\n" +
-            "            \"Action\": [\n" +
-            "                \"s3:GetObject\"\n" +
-            "            ],\n" +
-            "            \"Resource\": [\n" +
-            "                \"arn:aws:s3:::%s/%s*\"\n" +
-            "            ]\n" +
-            "        }\n" +
-            "    ]\n" +
-            "}";
-    private String privateKey = "MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBAJC4BMkDUM5e2A5H96zbA4sfKMofzjb7/3IitFMGGVOXXYUi15YieiTUCphgL7tPYJVbwenwAIgrzEchCS7lyUdjwcJ06x0JIcsJIDLe3fMol+LSTH8vx78TrwfXvRm8dQtOnmXAYaULT17HK6lUFEGEmdib+vpIt7zADOaDXYJ9AgMBAAECgYAA7Wz6bM8Dw4/W55cqwGyRY627PeDwcUT90kMdlRhsdLfgtoxzJd1qhwFaYKNtq+COlHv1p9gZB07T1d5dMpPLotuO283SLCoPxybT3SomlW6z2iUrz0ykZL89kizV85PmwuiDqTylKippEIgqgQwqFH0T/SnJM2jwJ3YpUPz08QJBAMsGnfvp/WTXWlp1A3lVwRjKir0jtZ1Mzw577GeBVv3F3Y5gSMdisPxywgvC1loznEATIs+a70UIxoVDNd6wu4sCQQC2erS1iuPq2lKvhMaQMJPW8SHthq53Yr5pYnTI+drfsDDqIbphpbfUm0C6qM1cNoK8gYr8DiUawrt4xFbzvxsXAkBPPzT5eLsk2n51IomJmfR2ZdDDxSWF0c5ce/ip6i13fv1dLq4ZzacB0xV1G8cpjE2oIRAMcxCEJMnAiJyFYPzDAkAaFjapUV6931I8x1V/nYI1EynPhBaC+LnR5QJfDOEOY2jKv+GePgumuD8rsCATk7Ni8X4GBJunVLlqTV9E30gnAkBMdL0DNRnyPRmdEba0W5wP05cfnqf4ajxf2xFObpwu88+F2g41Ax3xgdYj/2ZXrAqo9vg2kJM/oKiBlFh/CqAK";
-    private String publicKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCQuATJA1DOXtgOR/es2wOLHyjKH842+/9yIrRTBhlTl12FIteWInok1AqYYC+7T2CVW8Hp8ACIK8xHIQku5clHY8HCdOsdCSHLCSAy3t3zKJfi0kx/L8e/E68H170ZvHULTp5lwGGlC09exyupVBRBhJnYm/r6SLe8wAzmg12CfQIDAQAB";
-
     @Test
-    void test() throws IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException, MalformedURLException {
-        String strOut = String.format(READ_ONLY_RULES_TEMPLATE, "ceshi", "");
-        System.out.println(strOut);
+    void writeFile() {
+        System.out.println(AesUtils.aesDecryptByKeyStrAndIvStr("W/iLblx71VN3TgJwSPK5KHUr/1h8er8N5+x83u5r6S8=", "PcWexLHEms67z5Rm", "y6vEtseyzIvMpMSv"));
     }
 
     @Test
     void test1() throws IOException {
-        OkHttpClient client = new OkHttpClient().newBuilder()
-                .build();
-        MediaType mediaType = MediaType.parse("application/json");
-        RequestBody body = RequestBody.create(mediaType, "{\n    \"orgCode\": \"LJTS\",\n    \"reportedNo\": \"IAL3fx8dGEHaaPzIPvE/Pg==\",\n    \"reportingNo\": \"1oJhxRyiT8crGlMQu8aJvQ==\"\n}");
-        Request request = new Request.Builder()
-                .url("https://caictdnc.caict.ac.cn:1064/dnc/v1/query")
-                .method("POST", body)
-                .addHeader("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Accept", "*/*")
-                .addHeader("Host", "caictdnc.caict.ac.cn:1064")
-                .addHeader("Connection", "keep-alive")
-                .build();
-        Response response = client.newCall(request).execute();
+        String str = "9a@_bc123";
+        String number = str.replaceAll(".*\\D", "");
+        System.out.println(number);
     }
 
     @Test

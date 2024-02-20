@@ -1,4 +1,4 @@
-package com.demo.excel.easyexcel;
+package com.demo.excel.easyexcel.handler;
 
 import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.metadata.style.WriteCellStyle;
@@ -7,6 +7,7 @@ import com.alibaba.excel.write.style.AbstractVerticalCellStyleStrategy;
 import lombok.Getter;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.springframework.lang.Nullable;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,15 +15,16 @@ import java.util.Set;
 /**
  * Excel 不指定对象时的样式, 与工具类 EasyExcelUtil 配合使用
  *
- * @author Song gh on 2022/9/27.
+ * @author Song gh
+ * @version 2024/1/30
  */
 @Getter
-class ZippedHandlerVerticalStyleNoModel extends AbstractVerticalCellStyleStrategy {
+public class ExcelNoModelVerticalStyleHandler extends AbstractVerticalCellStyleStrategy {
 
     /** 需要特殊处理的列名 */
     Set<String> specialHeadSet;
 
-    public ZippedHandlerVerticalStyleNoModel(Set<String> specialHeadSet) {
+    public ExcelNoModelVerticalStyleHandler(@Nullable Set<String> specialHeadSet) {
         this.specialHeadSet = specialHeadSet;
         if (this.specialHeadSet == null) {
             this.specialHeadSet = new HashSet<>();

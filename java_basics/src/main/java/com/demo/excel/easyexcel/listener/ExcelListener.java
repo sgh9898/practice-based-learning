@@ -1,14 +1,18 @@
-package com.demo.excel.easyexcel;
+package com.demo.excel.easyexcel.listener;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.metadata.data.ReadCellData;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ConverterUtils;
+import com.demo.excel.easyexcel.EasyExcelClassTemplate;
+import com.demo.excel.easyexcel.constants.ExcelConstants;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
+import org.springframework.util.ReflectionUtils;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -18,15 +22,17 @@ import java.util.*;
 
 /**
  * Excel Listener 模板
- * <br> 1. 用于导入数据, 绝大多数情况不需要更改; 仅当必须修改 Listener 时, 可以 extends 本类
- * <br> 2. 不能被 Spring 管理(@Resource 注解不生效), 用到 Spring 需要用构造方法传参
- * <br> 4. 导入完成的数据保存于 {@link #validList}
+ * <pre>
+ * 1. 用于导入数据, 绝大多数情况不需要更改; 仅当必须修改 Listener 时, 可以 extends 本类
+ * 2. 不能被 Spring 管理(@Resource 注解不生效), 用到 Spring 需要用构造方法传参
+ * 3. 导入完成的数据保存于 {@link #validList} </pre>
  *
- * @author Song gh on 2023/02/28.
+ * @author Song gh
+ * @version 2024/1/30
  */
 @Slf4j
 @Getter
-public class ZippedListener<T> implements ReadListener<T> {
+public class ExcelListener<T> implements ReadListener<T> {
 
 // ------------------------------ 常量 ------------------------------
     /** 校验 */
@@ -37,7 +43,7 @@ public class ZippedListener<T> implements ReadListener<T> {
     protected Integer currentInvalidHeadRowNum;
     /** 校准后 head 是否有效 */
     protected Boolean validHead;
-    /** head 校验规则, {@link ZippedEasyExcelConstants} */
+    /** head 校验规则, {@link ExcelConstants} */
     @Setter
     protected Integer headRules;
     /** 标准 head 行数 */
@@ -54,12 +60,12 @@ public class ZippedListener<T> implements ReadListener<T> {
 // ------------------------------ 构造 ------------------------------
 
     /** 构造: 默认 */
-    public ZippedListener(Class<T> excelClass) {
+    public ExcelListener(Class<T> excelClass) {
         // 常量
         this.maxInvalidHeadRowNum = 0;
         this.currentInvalidHeadRowNum = 0;
         this.validHead = false;
-        this.headRules = ZippedEasyExcelConstants.HEAD_RULES_CONTAINS;
+        this.headRules = ExcelConstants.HEAD_RULES_CONTAINS;
         this.headRowNum = null;
         // 变量
         this.validList = new LinkedList<>();
@@ -82,12 +88,8 @@ public class ZippedListener<T> implements ReadListener<T> {
                 ((EasyExcelClassTemplate) excelLine).setDefaultExcelErrorMessage(errorMessage);
             } else {
                 for (Field currField : excelLine.getClass().getDeclaredFields()) {
-                    if (currField.getName().equals(ZippedEasyExcelConstants.DEFAULT_ERROR_PARAM)) {
-                        try {
-                            currField.set(excelLine, errorMessage);
-                        } catch (IllegalAccessException e) {
-                            log.error("设置 Excel 导入错误信息失败", e);
-                        }
+                    if (currField.getName().equals(ExcelConstants.DEFAULT_ERROR_PARAM)) {
+                        ReflectionUtils.setField(currField, excelLine, errorMessage);
                     }
                 }
             }
@@ -114,8 +116,8 @@ public class ZippedListener<T> implements ReadListener<T> {
                     ((EasyExcelClassTemplate) tempExcel).setDefaultExcelErrorMessage("文件内容为空或列名不匹配");
                 } else {
                     for (Field currField : tempExcel.getClass().getDeclaredFields()) {
-                        if (currField.getName().equals(ZippedEasyExcelConstants.DEFAULT_ERROR_PARAM)) {
-                            currField.set(tempExcel, "文件内容为空或列名不匹配");
+                        if (currField.getName().equals(ExcelConstants.DEFAULT_ERROR_PARAM)) {
+                            ReflectionUtils.setField(currField, tempExcel, "文件内容为空或列名不匹配");
                         }
                     }
                 }
@@ -155,7 +157,7 @@ public class ZippedListener<T> implements ReadListener<T> {
         List<String> readHeadList = new ArrayList<>(readHeadMap.values());
         Set<String> validHeadNameSet = getHeadNameSet(excelClass);
         // 根据设定规则进行校验
-        if (Objects.equals(headRules, ZippedEasyExcelConstants.HEAD_RULES_CONTAINS)) {
+        if (Objects.equals(headRules, ExcelConstants.HEAD_RULES_CONTAINS)) {
             // 存在有效字段即可
             for (String currHead : readHeadList) {
                 // head 有效
@@ -164,21 +166,17 @@ public class ZippedListener<T> implements ReadListener<T> {
                     return;
                 }
             }
-        } else if (Objects.equals(headRules, ZippedEasyExcelConstants.HEAD_RULES_STRICTLY_CONTAINS)) {
+        } else if (Objects.equals(headRules, ExcelConstants.HEAD_RULES_STRICTLY_CONTAINS)) {
             // 存在有效字段, 且没有无效字段
-            boolean tempValid = false;
+            boolean tempValid = true;
             for (String currHead : readHeadList) {
-                if (validHeadNameSet.contains(currHead)) {
-                    tempValid = true;
-                } else {
+                if (!validHeadNameSet.contains(currHead)) {
                     tempValid = false;
                     break;
                 }
             }
-            if (tempValid) {
-                validHead = true;
-                return;
-            }
+            validHead = tempValid;
+            return;
         }
 
         // 当前行 head 无效
@@ -208,11 +206,13 @@ public class ZippedListener<T> implements ReadListener<T> {
     }
 
     /** 校验实体类: 通过返回 null, 未通过返回报错 */
+    @NonNull
     private static String validate(Object entity) {
         Set<ConstraintViolation<Object>> violationSet = validator.validate(entity);
+        StringBuilder errorMsg = new StringBuilder();
         for (ConstraintViolation<Object> violation : violationSet) {
-            return violation.getMessage();
+            errorMsg.append(violation.getMessage()).append(';');
         }
-        return null;
+        return errorMsg.toString();
     }
 }

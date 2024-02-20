@@ -32,7 +32,7 @@ public class AesUtils {
     private static final String DEFAULT_IV_STR = "kvJRbJz7x5ycy+4V";
 
     /** AES 加密/解密算法 */
-    private static final String AES_ALGORITHM = "AES/CBC/PKCS5Padding";
+    private static final String AES_ALGORITHM = "AES/CBC/NoPadding";
 
 //    /** 生成随机 Key 与 IV */
 //    public static void main(String[] args) {

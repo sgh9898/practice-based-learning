@@ -1,4 +1,4 @@
-package com.demo.excel.easyexcel;
+package com.demo.excel.easyexcel.handler;
 
 import com.alibaba.excel.enums.CellDataTypeEnum;
 import com.alibaba.excel.metadata.Head;
@@ -9,16 +9,18 @@ import com.alibaba.excel.write.style.column.AbstractColumnWidthStyleStrategy;
 import lombok.Getter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.poi.ss.usermodel.Cell;
+import org.springframework.lang.Nullable;
 
 import java.util.*;
 
 /**
  * Excel 自适应列宽, 与工具类 EasyExcelUtil 配合使用
  *
- * @author Song gh on 2022/9/27.
+ * @author Song gh
+ * @version 2024/1/30
  */
 @Getter
-class ZippedHandlerColumnWidth extends AbstractColumnWidthStyleStrategy {
+public class ExcelColumnWidthHandler extends AbstractColumnWidthStyleStrategy {
 
     /** 最小列宽 */
     private static final int MIN_COLUMN_WIDTH = 5;
@@ -36,30 +38,23 @@ class ZippedHandlerColumnWidth extends AbstractColumnWidthStyleStrategy {
      * 1. head 为准 --> 仅使用 head 宽度
      * 2. 内容为准 --> 仅使用内容宽度
      */
-    private final ZippedEnumsColWidth widthStrategy;
-
-    /** Constructor */
-    public ZippedHandlerColumnWidth() {
-        widthStrategy = ZippedEnumsColWidth.COL_WIDTH_DEFAULT;
-    }
+    private final ExcelColWidthStrategy widthStrategy;
 
     /** Constructor: 指定列宽选取方式 */
-    public ZippedHandlerColumnWidth(ZippedEnumsColWidth widthStrategy) {
-        if (widthStrategy == ZippedEnumsColWidth.COL_WIDTH_HEAD || widthStrategy == ZippedEnumsColWidth.COL_WIDTH_CONTENT
-                || widthStrategy == ZippedEnumsColWidth.COL_WIDTH_NONE) {
+    public ExcelColumnWidthHandler(@Nullable ExcelColWidthStrategy widthStrategy) {
+        if (widthStrategy == ExcelColWidthStrategy.COL_WIDTH_HEAD || widthStrategy == ExcelColWidthStrategy.COL_WIDTH_CONTENT) {
             this.widthStrategy = widthStrategy;
         } else {
-            this.widthStrategy = ZippedEnumsColWidth.COL_WIDTH_DEFAULT;
+            this.widthStrategy = ExcelColWidthStrategy.COL_WIDTH_DEFAULT;
         }
     }
 
     /** Constructor: 指定列宽选取方式, 部分固定列宽字段 */
-    public ZippedHandlerColumnWidth(ZippedEnumsColWidth widthStrategy, Set<String> doNotChangeWidth) {
-        if (widthStrategy == ZippedEnumsColWidth.COL_WIDTH_HEAD || widthStrategy == ZippedEnumsColWidth.COL_WIDTH_CONTENT
-                || widthStrategy == ZippedEnumsColWidth.COL_WIDTH_NONE) {
+    public ExcelColumnWidthHandler(@Nullable ExcelColWidthStrategy widthStrategy, Set<String> doNotChangeWidth) {
+        if (widthStrategy == ExcelColWidthStrategy.COL_WIDTH_HEAD || widthStrategy == ExcelColWidthStrategy.COL_WIDTH_CONTENT) {
             this.widthStrategy = widthStrategy;
         } else {
-            this.widthStrategy = ZippedEnumsColWidth.COL_WIDTH_DEFAULT;
+            this.widthStrategy = ExcelColWidthStrategy.COL_WIDTH_DEFAULT;
         }
         this.doNotChangeWidth.addAll(doNotChangeWidth);
     }
@@ -69,9 +64,7 @@ class ZippedHandlerColumnWidth extends AbstractColumnWidthStyleStrategy {
     protected void setColumnWidth(WriteSheetHolder writeSheetHolder, List<WriteCellData<?>> cellDataList, Cell cell,
                                   Head head, Integer relativeRowIndex, Boolean isHead) {
         // 排除手动设置列宽的列
-        if (widthStrategy == ZippedEnumsColWidth.COL_WIDTH_NONE) {
-            return;
-        } else if (this.doNotChangeWidth.contains(head.getFieldName())) {
+        if (this.doNotChangeWidth.contains(head.getFieldName())) {
             return;
         }
         // 排除不为标题且空置的单元格
@@ -87,52 +80,48 @@ class ZippedHandlerColumnWidth extends AbstractColumnWidthStyleStrategy {
         if (columnWidth < 0) {
             return;
         }
-        if (columnWidth < MIN_COLUMN_WIDTH) {
-            columnWidth = MIN_COLUMN_WIDTH;
-        }
-        if (columnWidth > MAX_COLUMN_WIDTH) {
-            columnWidth = MAX_COLUMN_WIDTH;
-        }
+        columnWidth = Math.max(MIN_COLUMN_WIDTH, columnWidth);
+        columnWidth = Math.min(MAX_COLUMN_WIDTH, columnWidth);
+
         // 获取当前列宽
         Integer maxColumnWidth = sheetColumnWidthMap.get(cell.getColumnIndex());
 
         // 更新列宽
-        // 使用 head 列宽
-        if (widthStrategy == ZippedEnumsColWidth.COL_WIDTH_HEAD) {
-            if (isHead) {
-                // 多行 head 仅使用最后一行校准
-                sheetColumnWidthMap.put(cell.getColumnIndex(), columnWidth);
-                writeSheetHolder.getSheet().setColumnWidth(cell.getColumnIndex(), columnWidth * 265);
-            }
-        }
-        // 使用内容列宽
-        else if (widthStrategy == ZippedEnumsColWidth.COL_WIDTH_CONTENT) {
-            if (!isHead) {
-                if (maxColumnWidth == null || columnWidth > maxColumnWidth) {
+        boolean headCells = Boolean.TRUE.equals(isHead);
+        boolean columnCells = Boolean.FALSE.equals(isHead) && (maxColumnWidth == null || columnWidth > maxColumnWidth);
+        switch (widthStrategy) {
+            // 使用 head 列宽
+            case COL_WIDTH_HEAD:
+                if (headCells) {
+                    // 多行 head 仅使用最后一行校准
+                    sheetColumnWidthMap.put(cell.getColumnIndex(), columnWidth);
+                    writeSheetHolder.getSheet().setColumnWidth(cell.getColumnIndex(), columnWidth * 265);
+                }
+                break;
+            // 使用内容列宽
+            case COL_WIDTH_CONTENT:
+                if (columnCells) {
                     sheetColumnWidthMap.put(cell.getColumnIndex(), columnWidth);
                     writeSheetHolder.getSheet().setColumnWidth(cell.getColumnIndex(), columnWidth * 256);
                 }
-            }
-        }
-        // 默认列宽
-        else {
-            if (isHead) {
-                // 多行 head 仅使用最后一行校准
-                sheetColumnWidthMap.put(cell.getColumnIndex(), columnWidth);
-                writeSheetHolder.getSheet().setColumnWidth(cell.getColumnIndex(), columnWidth * 265);
-            } else {
-                if (maxColumnWidth == null || columnWidth > maxColumnWidth) {
+                break;
+            // 默认列宽
+            default:
+                if (headCells) {
+                    // 多行 head 仅使用最后一行校准
+                    sheetColumnWidthMap.put(cell.getColumnIndex(), columnWidth);
+                    writeSheetHolder.getSheet().setColumnWidth(cell.getColumnIndex(), columnWidth * 265);
+                } else if (columnCells) {
                     sheetColumnWidthMap.put(cell.getColumnIndex(), columnWidth);
                     writeSheetHolder.getSheet().setColumnWidth(cell.getColumnIndex(), columnWidth * 256);
                 }
-            }
         }
     }
 
     /** 计算单元格数据宽度 */
     private Integer dataLength(List<WriteCellData<?>> cellDataList, Cell cell, Boolean isHead) {
         // 列名直接返回
-        if (isHead) {
+        if (Boolean.TRUE.equals(isHead)) {
             return cell.getStringCellValue().getBytes().length;
         }
 

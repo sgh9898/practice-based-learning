@@ -21,7 +21,7 @@
     - [x] 异常类处理
 7. [Kafka](src/main/java/excluded/kafka) √
     1. 配置文件
-    2. zippedListener
+    2. excelListener
     3. producer 工具类
 8. [MinIO](src/main/java/com/demo/minio)
 9. [Open Api](src/main/java/com/demo/swagger) (Swagger)
@@ -50,4 +50,4 @@
 > 以下功能需要本地启动对应服务, 为方便程序运行, 调整为需要手动启用
 
 1. [Elasticsearch](src/main/java/excluded/elasticsearch)
-2. [Kafka Listener](src/main/java/com/demo/excel/zippedListener/DemoKafkaListener.java)
+2. [Kafka Listener](src/main/java/com/demo/excel/excelListener/DemoKafkaListener.java)

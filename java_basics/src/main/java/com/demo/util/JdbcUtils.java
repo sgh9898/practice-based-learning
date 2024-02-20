@@ -1,111 +1,175 @@
 package com.demo.util;
 
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.jdbc.DatabaseDriver;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * JDBC 配置工具
+ * JDBC 配置工具, 单数据源下可自动配置
  *
- * @author Song gh on 2023/5/12.
+ * @author Song gh
+ * @version 2024/2/5
  */
+@Component
 public class JdbcUtils {
 
+    @Resource
+    protected ApplicationContext applicationContext;
+
+    @Getter
+    private JdbcTemplate jdbcTemplate;
+    @Getter
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    /** 自动配置数据源 */
+    @PostConstruct
+    public void init() {
+        DataSource dataSource = applicationContext.getBean(DataSource.class);
+        jdbcTemplate = new JdbcTemplate(dataSource);
+        namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+    }
+
     /**
-     * 自行配置数据源, 创建 JDBC template
+     * 创建 JDBC template
      *
-     * @param productOrDriverClassName {@link DatabaseDriver} productName 或 driverClassName
-     * @param url                      数据库url
-     * @param username                 用户名
-     * @param password                 密码
+     * @param url      数据库url
+     * @param username 用户名
+     * @param password 密码
      */
-    public static JdbcTemplate createJdbcTemplate(String productOrDriverClassName, String url, String username, String password) {
-        DriverManagerDataSource dataSource = getDataSource(productOrDriverClassName, url, username, password);
+    public static JdbcTemplate createJdbcTemplate(String url, String username, String password) {
+        DriverManagerDataSource dataSource = getDataSource(DatabaseDriver.MYSQL.getDriverClassName(), url, username, password);
         return new JdbcTemplate(dataSource);
     }
 
     /**
-     * 自行配置数据源, 创建 named JDBC template
+     * 创建 JDBC template
      *
-     * @param productOrDriverClassName {@link DatabaseDriver} productName 或 driverClassName
-     * @param url                      数据库url
-     * @param username                 用户名
-     * @param password                 密码
+     * @param driverClassName 数据库driver
+     * @param url             数据库url
+     * @param username        用户名
+     * @param password        密码
      */
-    public static NamedParameterJdbcTemplate createNamedJdbcTemplate(String productOrDriverClassName, String url, String username, String password) {
-        DriverManagerDataSource dataSource = getDataSource(productOrDriverClassName, url, username, password);
+    public static JdbcTemplate createJdbcTemplate(String driverClassName, String url, String username, String password) {
+        DriverManagerDataSource dataSource = getDataSource(driverClassName, url, username, password);
+        return new JdbcTemplate(dataSource);
+    }
+
+    /**
+     * 创建 named JDBC template
+     *
+     * @param url      数据库url
+     * @param username 用户名
+     * @param password 密码
+     */
+    public static NamedParameterJdbcTemplate createNamedJdbcTemplate(String url, String username, String password) {
+        DriverManagerDataSource dataSource = getDataSource(DatabaseDriver.MYSQL.getDriverClassName(), url, username, password);
         return new NamedParameterJdbcTemplate(dataSource);
     }
 
     /**
-     * Mysql 分页查询
+     * 创建 named JDBC template
      *
-     * @param sql         sql
-     * @param params      查询条件
-     * @param resultClass 查询结果对应的类
-     * @param pageable    分页参数
+     * @param driverClassName 数据库driver
+     * @param url             数据库url
+     * @param username        用户名
+     * @param password        密码
+     */
+    public static NamedParameterJdbcTemplate createNamedJdbcTemplate(String driverClassName, String url, String username, String password) {
+        DriverManagerDataSource dataSource = getDataSource(driverClassName, url, username, password);
+        return new NamedParameterJdbcTemplate(dataSource);
+    }
+
+    /**
+     * Mysql 分页查询, 指定返回的实体类
+     *
+     * @param sql         查询sql
+     * @param countSql    计数sql
+     * @param params      查询参数, sql 和 countSql 同时使用
+     * @param resultClass 查询结果对应的实体类
+     * @param page        当前页码(0 为首页)
+     * @param size        每页数据量
      */
     @Transactional
-    public <T> Page<T> queryForPageMysql(String sql, Map<String, Object> params, Class<T> resultClass, NamedParameterJdbcTemplate npJdbcTemplate, Pageable pageable) {
+    public <T> Page<T> queryForPage(NamedParameterJdbcTemplate npJdbcTemplate, String sql, @Nullable String countSql, Map<String, Object> params, Class<T> resultClass, int page, int size) {
         if (StringUtils.isBlank(sql)) {
             throw new IllegalArgumentException("sql 不能为空");
         }
-        if (pageable == null || pageable.getPageNumber() <= 0) {
-            pageable = PageRequest.of(1, 20);
+        if (page < 0) {
+            page = 0;
         }
-        String countSql = "select count(1) from (" + sql + ") t";
+        if (size <= 0) {
+            size = 10;
+        }
+        // 未配置计数sql时, 进行默认配置
+        if (StringUtils.isBlank(countSql)) {
+            countSql = "select count(1) from (" + sql + ") jdbc_utils_temp_count";
+        }
         Long total = npJdbcTemplate.queryForObject(countSql, params, Long.class);
         List<T> list = new ArrayList<>();
         if (total != null && total > 0) {
-            params.put("reservedStart", (pageable.getPageNumber() - 1) * pageable.getPageSize());
-            params.put("reservedLength", pageable.getPageSize());
+            params.put("reservedStart", (page * size));
+            params.put("reservedLength", size);
             String querySql = sql + " limit :reservedStart,:reservedLength";
             list = npJdbcTemplate.query(querySql, params, BeanPropertyRowMapper.newInstance(resultClass));
         } else {
             total = 0L;
         }
-        return new PageImpl<>(list, pageable, total);
+        return new PageImpl<>(list, PageRequest.of(page, size), total);
     }
 
     /**
      * Mysql 分页查询
      *
-     * @param sql      sql
-     * @param params   查询条件
-     * @param pageable 分页参数
+     * @param sql      查询sql
+     * @param countSql 计数sql
+     * @param params   查询参数, sql 和 countSql 同时使用
+     * @param page     当前页码(0 为首页)
+     * @param size     每页数据量
      */
     @Transactional
-    public Page<Map<String, Object>> queryForPageMysql(String sql, Map<String, Object> params, NamedParameterJdbcTemplate npJdbcTemplate, Pageable pageable) {
+    public Page<Map<String, Object>> queryForPage(NamedParameterJdbcTemplate npJdbcTemplate, String sql, @Nullable String countSql, Map<String, Object> params, int page, int size) {
         if (StringUtils.isBlank(sql)) {
             throw new IllegalArgumentException("sql 不能为空");
         }
-        if (pageable == null || pageable.getPageNumber() <= 0) {
-            pageable = PageRequest.of(1, 20);
+        if (size <= 0) {
+            size = 10;
         }
-        String countSql = "select count(1) from (" + sql + ") t";
+        if (page < 0) {
+            page = 0;
+        }
+        // 未配置计数sql时, 进行默认配置
+        if (StringUtils.isBlank(countSql)) {
+            countSql = "select count(1) from (" + sql + ") jdbc_utils_temp_count";
+        }
         Long total = npJdbcTemplate.queryForObject(countSql, params, Long.class);
         List<Map<String, Object>> list = new ArrayList<>();
         if (total != null && total > 0) {
-            params.put("reservedStart", (pageable.getPageNumber() - 1) * pageable.getPageSize());
-            params.put("reservedLength", pageable.getPageSize());
+            params.put("reservedStart", (page * size));
+            params.put("reservedLength", size);
             String querySql = sql + " limit :reservedStart,:reservedLength";
             list = npJdbcTemplate.queryForList(querySql, params);
         } else {
             total = 0L;
         }
-        return new PageImpl<>(list, pageable, total);
+        return new PageImpl<>(list, PageRequest.of(page, size), total);
     }
 
 // ------------------------------ Private ------------------------------
@@ -113,19 +177,17 @@ public class JdbcUtils {
     /**
      * 配置数据源
      *
-     * @param productOrDriverClassName {@link DatabaseDriver} productName 或 driverClassName
-     * @param url                      数据库url
-     * @param username                 用户名
-     * @param password                 密码
+     * @param driverClassName 数据库driver, 为空时默认使用 mysql
+     * @param url             数据库url
+     * @param username        用户名
+     * @param password        密码
      */
-    private static DriverManagerDataSource getDataSource(String productOrDriverClassName, String url, String username, String password) {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        // 配置 driverClass
-        if (DatabaseDriver.fromProductName(productOrDriverClassName) != DatabaseDriver.UNKNOWN) {
-            dataSource.setDriverClassName(DatabaseDriver.fromProductName(productOrDriverClassName).getDriverClassName());
-        } else {
-            dataSource.setDriverClassName(productOrDriverClassName);
+    private static DriverManagerDataSource getDataSource(@Nullable String driverClassName, String url, String username, String password) {
+        if (StringUtils.isBlank(driverClassName)) {
+            driverClassName = DatabaseDriver.MYSQL.getDriverClassName();
         }
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName(driverClassName);
         dataSource.setUrl(url);
         dataSource.setUsername(username);
         dataSource.setPassword(password);

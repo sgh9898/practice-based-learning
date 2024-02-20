@@ -4,6 +4,7 @@ import com.alibaba.otter.canal.client.CanalConnector;
 import com.alibaba.otter.canal.client.CanalConnectors;
 import com.alibaba.otter.canal.protocol.CanalEntry.*;
 import com.alibaba.otter.canal.protocol.Message;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ import java.util.List;
  */
 @Slf4j
 @Component
+@Getter
 public class CanalClient {
 
 // ------------------------------ 数据库参数 ------------------------------
@@ -66,11 +68,11 @@ public class CanalClient {
 
 // ------------------------------ 业务参数 ------------------------------
     /** 备份表所属 schema */
-    @Value("${canal.extension.slave.schema:#{null}}")
+    @Value("${canal.extension.slave.schema:canal_backup}")
     private String backupSchema;
 
     /** 备份表统一前缀, 格式统一为下划线 _ 结尾 */
-    @Value("${canal.extension.slave.table-name-prefix:#{null}}")
+    @Value("${canal.extension.slave.table-name-prefix:#{''}}")
     private String backupPrefix;
 // ============================== 业务参数 End ==============================
 
@@ -81,7 +83,6 @@ public class CanalClient {
      * Canal 总开关
      * <br> 推荐通过定时任务的方式启动, 以确保在意外中断时自动重连
      */
-    @PostConstruct
     public void start() {
         log.info("canal 开始运行");
         // 链接数据库

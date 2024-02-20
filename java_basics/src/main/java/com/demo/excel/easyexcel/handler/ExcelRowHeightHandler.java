@@ -1,4 +1,4 @@
-package com.demo.excel.easyexcel;
+package com.demo.excel.easyexcel.handler;
 
 import com.alibaba.excel.write.style.row.AbstractRowHeightStyleStrategy;
 import org.apache.poi.ss.usermodel.Cell;
@@ -10,17 +10,21 @@ import java.util.Iterator;
 /**
  * Excel 自适应行高, 与工具类 EasyExcelUtil 配合使用
  *
- * @author Song gh on 2022/10/18.
+ * @author Song gh
+ * @version 2024/1/30
  */
-class ZippedHandlerRowHeight extends AbstractRowHeightStyleStrategy {
+public class ExcelRowHeightHandler extends AbstractRowHeightStyleStrategy {
 
     /** string 单行高度 */
     private static final Integer LINE_HEIGHT = 370;
 
+    /** 配置 head 高度 */
     @Override
     protected void setHeadColumnHeight(Row row, int relativeRowIndex) {
+        // 需要时可自行配置
     }
 
+    /** 配置单元格高度 */
     @Override
     protected void setContentColumnHeight(Row row, int relativeRowIndex) {
         Iterator<Cell> cellIterator = row.cellIterator();

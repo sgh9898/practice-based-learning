@@ -1,4 +1,4 @@
-package com.demo.excel.easyexcel;
+package com.demo.excel.easyexcel.handler;
 
 import com.alibaba.excel.write.handler.SheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
@@ -13,12 +13,12 @@ import java.util.Map;
 
 /**
  * Excel 表单配置, 与工具类 EasyExcelUtil 配合使用
- * <br> 1.配置下拉框
- * <br> 2.冻结 head
+ * <br> 功能支持: 配置下拉框, 冻结 head
  *
- * @author Song gh on 2022/7/12.
+ * @author Song gh
+ * @version 2024/1/30
  */
-class ZippedSheetWriteHandler implements SheetWriteHandler {
+public class ExcelSheetWriteHandler implements SheetWriteHandler {
 
     /** head 行数(多层 head 取最下方) */
     private final Integer headRowNum;
@@ -26,15 +26,8 @@ class ZippedSheetWriteHandler implements SheetWriteHandler {
     /** 动态下拉框, Map(columnIndex, options) */
     private final Map<Integer, String[]> dropDownMap;
 
-    /** 构造: 默认 */
-    public ZippedSheetWriteHandler(Map<Integer, String[]> dropDownMap) {
-        this.dropDownMap = dropDownMap;
-        // head 不配置下拉框
-        this.headRowNum = 1;
-    }
-
     /** 构造: 配置下拉框时, 除 head 外额外跳过前 x 行 */
-    public ZippedSheetWriteHandler(Map<Integer, String[]> dropDownMap, Integer headRowNum) {
+    public ExcelSheetWriteHandler(Map<Integer, String[]> dropDownMap, Integer headRowNum) {
         this.dropDownMap = dropDownMap;
         // head 不配置下拉框
         this.headRowNum = 1 + headRowNum;

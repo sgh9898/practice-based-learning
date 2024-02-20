@@ -80,7 +80,7 @@ public class RegionServiceImpl implements RegionService {
     /** [导入] 区号 */
     @Override
     public void importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response) {
-        List<ExcelRegion> excelList = EasyExcelUtils.importData(file, request, response, ExcelRegion.class);
+        List<ExcelRegion> excelList = EasyExcelUtils.importExcel(file, request, response, ExcelRegion.class);
         List<Region> entityList = new LinkedList<>();
         if (excelList != null && !excelList.isEmpty()) {
             excelList.forEach(currExcel -> entityList.add(new Region(currExcel)));

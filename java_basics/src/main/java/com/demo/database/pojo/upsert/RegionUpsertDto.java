@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * [新增/更新 DTO] 区号
  *
- * @author Song gh on 2023/12/15.
+ * @author Song gh on 2024/02/07.
  */
 @Data
 @ApiModel("[新增/更新 DTO] 区号")
@@ -27,50 +27,49 @@ public class RegionUpsertDto {
 
     /** id */
     @ApiModelProperty(value = "id", notes = "新增数据时主键应为空")
-    @JsonAlias("id")
     private Integer id;
 
     /** 长途区号 */
     @NotBlank(message = "长途区号未填写")
-    @ApiModelProperty("长途区号")
     @JsonAlias("area_code")
+    @ApiModelProperty("长途区号")
     private String areaCode;
 
     /** 区号对应的省/直辖市/自治区行政区域编码 */
     @NotNull(message = "区号对应的省/直辖市/自治区行政区域编码未填写")
     @PositiveOrZero(message = "区号对应的省/直辖市/自治区行政区域编码超出范围")
-    @ApiModelProperty("区号对应的省/直辖市/自治区行政区域编码")
     @JsonAlias("province_code")
+    @ApiModelProperty("区号对应的省/直辖市/自治区行政区域编码")
     private Integer provinceCode;
 
     /** 区号对应的省/直辖市/自治区全称 */
     @NotBlank(message = "区号对应的省/直辖市/自治区全称未填写")
-    @ApiModelProperty("区号对应的省/直辖市/自治区全称")
     @JsonAlias("province_name")
+    @ApiModelProperty("区号对应的省/直辖市/自治区全称")
     private String provinceName;
 
     /** 区号对应的市级行政区域编码(多个用,隔开) */
     @NotBlank(message = "区号对应的市级行政区域编码(多个用,隔开)未填写")
-    @ApiModelProperty("区号对应的市级行政区域编码(多个用,隔开)")
     @JsonAlias("city_codes")
+    @ApiModelProperty("区号对应的市级行政区域编码(多个用,隔开)")
     private String cityCodes;
 
     /** 区号对应的行政区域编码(多个用,隔开) */
     @NotBlank(message = "区号对应的行政区域编码(多个用,隔开)未填写")
-    @ApiModelProperty("区号对应的行政区域编码(多个用,隔开)")
     @JsonAlias("district_codes")
+    @ApiModelProperty("区号对应的行政区域编码(多个用,隔开)")
     private String districtCodes;
 
     /** 区号对应的行政区域全称(多个用,隔开) */
     @NotBlank(message = "区号对应的行政区域全称(多个用,隔开)未填写")
-    @ApiModelProperty("区号对应的行政区域全称(多个用,隔开)")
     @JsonAlias("district_name")
+    @ApiModelProperty("区号对应的行政区域全称(多个用,隔开)")
     private String districtName;
 
     /** 区号对应的行政区域全称和描述 */
     @NotBlank(message = "区号对应的行政区域全称和描述未填写")
-    @ApiModelProperty("区号对应的行政区域全称和描述")
     @JsonAlias("district_name_des")
+    @ApiModelProperty("区号对应的行政区域全称和描述")
     private String districtNameDes;
 }
 
