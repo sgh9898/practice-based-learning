@@ -20,7 +20,10 @@ import java.util.UUID;
 
 /**
  * MinIO 文件管理功能
- *
+ * <pre>
+ * 1. 判断 bucket 是否存在: {@link #existBucket}
+ * 2. 创建 bucket : {@link #createBucketIfNotExist}
+ * 3. 允许通过 url 直接访问 bucket 之中的文件: {@link #allowsPublicReading} </pre>
  * @author Song gh on 2023/12/26.
  */
 @Component
@@ -65,12 +68,9 @@ public class MinioUtils {
      * 如果 bucket 不存在, 则新建 bucket
      *
      * @param bucketName bucket 名称, 不传时使用默认名称 {@link MinioConfig#getDefaultBucketName()}
-     * @return true: 成功创建, false: 已存在
      */
-    public boolean createBucketIfNotExist(String bucketName) {
-        if (existBucket(bucketName)) {
-            return false;
-        } else {
+    public void createBucketIfNotExist(String bucketName) {
+        if (!existBucket(bucketName)) {
             try {
                 // 新建 bucket, 未提供名称时使用默认名称
                 if (StringUtils.isBlank(bucketName)) {
@@ -81,7 +81,6 @@ public class MinioUtils {
                 throw new BaseException("创建 bucket 失败, 名称: " + bucketName, e);
             }
         }
-        return true;
     }
 
     /**

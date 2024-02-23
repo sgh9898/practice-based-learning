@@ -11,7 +11,7 @@ canal:
   # 监听指定 schema      test\..*
   # 监听指定表            test.table1
   # 综合监听(逗号分隔)     test1\..*,test2.table1,test2.table2
-  subscribe: ds0\..*
+  subscribe: test\..*
 
   # 扩展功能
   extension:

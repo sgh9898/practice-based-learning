@@ -177,17 +177,22 @@ public class JdbcUtils {
     /**
      * 配置数据源
      *
-     * @param driverClassName 数据库driver, 为空时默认使用 mysql
-     * @param url             数据库url
-     * @param username        用户名
-     * @param password        密码
+     * @param productOrDriverClassName {@link DatabaseDriver} productName 或 driverClassName
+     * @param url                      数据库url
+     * @param username                 用户名
+     * @param password                 密码
      */
-    private static DriverManagerDataSource getDataSource(@Nullable String driverClassName, String url, String username, String password) {
-        if (StringUtils.isBlank(driverClassName)) {
-            driverClassName = DatabaseDriver.MYSQL.getDriverClassName();
+    private static DriverManagerDataSource getDataSource(@Nullable String productOrDriverClassName, String url, String username, String password) {
+        if (StringUtils.isBlank(productOrDriverClassName)) {
+            productOrDriverClassName = DatabaseDriver.MYSQL.getDriverClassName();
         }
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(driverClassName);
+        // 配置 driverClass
+        if (DatabaseDriver.fromProductName(productOrDriverClassName) != DatabaseDriver.UNKNOWN) {
+            dataSource.setDriverClassName(DatabaseDriver.fromProductName(productOrDriverClassName).getDriverClassName());
+        } else {
+            dataSource.setDriverClassName(productOrDriverClassName);
+        }
         dataSource.setUrl(url);
         dataSource.setUsername(username);
         dataSource.setPassword(password);

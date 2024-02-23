@@ -5,6 +5,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -18,6 +20,7 @@ import java.util.Date;
  */
 public class DateUtils {
 
+// ------------------------------ 常量 ------------------------------
     /** [时间格式] 年月日时分秒 */
     public static final String DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
     /** [时间格式] 年月日 */
@@ -32,7 +35,7 @@ public class DateUtils {
     /** [时间格式] 时分秒(无间隔符) */
     public static final String COMPACT_TIME_PATTERN = "HHmmss";
 
-// ------------------------------↓ Method ↓------------------------------
+// ------------------------------ 格式转换 ------------------------------
 
     /**
      * Date 转 String, 手动指定格式
@@ -92,7 +95,7 @@ public class DateUtils {
      *
      * @return 日期, 格式为 yyyyMMddHHmmss
      */
-    public static String toCompactStrDateTime(Date date) {
+    public static String toStrCompactDateTime(Date date) {
         if (date == null) {
             return null;
         }
@@ -105,7 +108,7 @@ public class DateUtils {
      *
      * @return 日期, 格式为 yyyyMMdd
      */
-    public static String toCompactStrDate(Date date) {
+    public static String toStrCompactDate(Date date) {
         if (date == null) {
             return null;
         }
@@ -118,7 +121,7 @@ public class DateUtils {
      *
      * @return 日期, 格式为 HHmmss
      */
-    public static String toCompactStrTime(Date date) {
+    public static String toStrCompactTime(Date date) {
         if (date == null) {
             return null;
         }
@@ -170,23 +173,45 @@ public class DateUtils {
         return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
+// ------------------------------ 获取特定日期 ------------------------------
+
+    /** 获取日期当天的开始时间(零点) */
+    public static Date getDayStart(Date date) {
+        LocalDate localDate = LocalDate.from(toLocalDateTime(date));
+        return toDate(localDate.atStartOfDay());
+    }
+
+    /** 获取日期当周的开始时间(周一零点) */
+    public static Date getWeekStart(Date date) {
+        LocalDate localDate = LocalDate.from(toLocalDateTime(date));
+        return toDate(localDate.with(DayOfWeek.MONDAY).atStartOfDay());
+    }
+
+    /** 获取日期当月的开始时间 */
+    public static Date getMonthStart(Date date) {
+        LocalDate localDate = LocalDate.from(toLocalDateTime(date));
+        return toDate(localDate.withDayOfMonth(1).atStartOfDay());
+    }
+
+    /** 获取日期当年的开始时间 */
+    public static Date getYearStart(Date date) {
+        LocalDate localDate = LocalDate.from(toLocalDateTime(date));
+        return toDate(localDate.withDayOfYear(1).withDayOfMonth(1).atStartOfDay());
+    }
+
+// ------------------------------ 日期计算 ------------------------------
+
     /**
      * 获取日期时间, 根据指定日期时间加减
      *
      * @param date       原始日期时间
-     * @param num        加减值(正数为更晚时间, 负数为更早时间)
+     * @param num        加减值(正数为未来时间, 负数为以往时间)
      * @param chronoUnit 加减值对应的时间单位
      * @return 计算后的日期时间
      */
-    public static Date getDate(Date date, int num, ChronoUnit chronoUnit) {
+    public static Date getCalculatedDate(Date date, int num, ChronoUnit chronoUnit) {
         LocalDateTime localDateTime = toLocalDateTime(date);
         return toDate(localDateTime.plus(num, chronoUnit));
-    }
-
-    /** 获取本日初始时间 */
-    public static String getTodayStart() {
-        SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN);
-        return sdf.format(new Date()) + " 00:00:00";
     }
 
     /** 判断是否同一天 */

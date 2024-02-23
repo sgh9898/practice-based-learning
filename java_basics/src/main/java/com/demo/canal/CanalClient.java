@@ -4,28 +4,27 @@ import com.alibaba.otter.canal.client.CanalConnector;
 import com.alibaba.otter.canal.client.CanalConnectors;
 import com.alibaba.otter.canal.protocol.CanalEntry.*;
 import com.alibaba.otter.canal.protocol.Message;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.net.InetSocketAddress;
 import java.util.List;
 
 /**
  * Canal Client 功能
- * <br> 启用: 在 {@link #start()} 方法之上注解 {@link PostConstruct}
+ * <br> 启动监听功能: {@link #start}, 使用定时任务的方式启动可以在意外中断时自动重连
  *
- * @author Song gh on 2023/5/11.
+ * @author Song gh
+ * @version 2024/2/20
  */
 @Slf4j
 @Component
-@Getter
 public class CanalClient {
 
 // ------------------------------ 数据库参数 ------------------------------
@@ -68,11 +67,13 @@ public class CanalClient {
 
 // ------------------------------ 业务参数 ------------------------------
     /** 备份表所属 schema */
-    @Value("${canal.extension.slave.schema:canal_backup}")
+    @Value("${canal.extension.slave.schema:#{''}}")
+    @NonNull
     private String backupSchema;
 
     /** 备份表统一前缀, 格式统一为下划线 _ 结尾 */
     @Value("${canal.extension.slave.table-name-prefix:#{''}}")
+    @NonNull
     private String backupPrefix;
 // ============================== 业务参数 End ==============================
 
@@ -203,14 +204,9 @@ public class CanalClient {
                 connector.ack(batchId);
             }
             log.info("连续 {} 批次监听数据为空, 终止监听", MAX_EMPTY_COUNT);
-        }
-//        catch (InterruptedException e) {
-//            log.error("Canal 线程中断", e);
-//            Thread.currentThread().interrupt();
-//        }
-        catch (Exception e) {
-            log.error("监听数据报错", e);
-            throw new UnsupportedOperationException(e);
+        } catch (InterruptedException e) {
+            log.error("Canal 监听数据报错", e);
+            Thread.currentThread().interrupt();
         } finally {
             connector.disconnect();
         }

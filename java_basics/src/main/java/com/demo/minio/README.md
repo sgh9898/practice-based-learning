@@ -47,7 +47,7 @@ minio:
   endpoint: http://localhost:9000                       # 服务器地址
   accessKey: lGVSfahkzSI8W0GmH3ur                       # 访问密钥, 在服务器网页管理界面配置
   secretKey: 7L6KUYuOSKToU7DlCIicGO1tUfH62xvM8wHzhlAO   # 访问密钥的密码, 在服务器网页管理界面配置
-  bucketName: test_bucket                               # 默认 bucket 名称
+  defaultBucketName: test_bucket                               # 默认 bucket 名称
   fileUrlHost: http://172.16.30.35:9000/customized-minio/   # 手动指定的 MinIO 文件访问前缀, 用于 nginx 配置后
   
 # MinIO 文件管理(可选配置, 控制接口上传文件大小)
