@@ -3,15 +3,15 @@ package com.demo.exception;
 import com.demo.util.ResultStatus;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 /** 基础异常 */
-@Data
-@EqualsAndHashCode(callSuper = true)    // .equals() 对 parent 也进行比较
+@Getter
 public class BaseException extends RuntimeException {
 
     /** 默认错误代码为 1 */
     private int code = 1;
-    private String message;
+    private final String message;
 
     public BaseException(String message) {
         super(message);

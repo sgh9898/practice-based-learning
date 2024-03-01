@@ -51,7 +51,7 @@ public class EasyExcelController {
         excelService.exportData(request, response);
     }
 
-    @GetMapping("/exportCustomizedTemplate")
+    @GetMapping("/exportExcel")
     @ApiOperation("导出自定义数据")
     public void exportExcel(HttpServletRequest request, HttpServletResponse response) {
         excelService.exportExcel(request, response);
@@ -60,7 +60,7 @@ public class EasyExcelController {
     @GetMapping("/noModel/export")
     @ApiOperation("不指定 ExcelClass 导出")
     public void noModelExport(HttpServletRequest request, HttpServletResponse response) {
-        excelService.noModelExport(request, response);
+        excelService.noModelExportExcel(request, response);
     }
 
     @PostMapping("/noModel/importData")

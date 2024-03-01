@@ -28,7 +28,7 @@ import javax.validation.constraints.PositiveOrZero;
  *   2) 未配置 {@link ExcelProperty} 的列会自动忽略, 可用于控制导入/导出列
  * 2. 配置下拉框:
  *   1) 静态下拉框注解: {@link ExcelDropDown#value}
- *   2) 动态下拉框注解: {@link ExcelDropDown#name}, 需要配置 {@link EasyExcelExportDto#dynamicDropDownMap}
+ *   2) 动态下拉框注解: {@link ExcelDropDown#dynamicMenuName}, 需要配置 {@link EasyExcelExportDto#dynamicMenuMap}
  * 3. 自动校验:
  *   1) 常用注解(注解中 message 作为未通过校验的返回信息): {@link NotNull}, {@link NotBlank}, {@link PositiveOrZero} 等
  *   2) 校验类注解目录: {@link javax.validation.constraints} </pre>
@@ -63,8 +63,7 @@ public abstract class EasyExcelClassTemplate {
     /** 报错返回字段, 用于展示 Excel 当前行未通过校验的原因 */
     @Transient
     @JsonIgnore
-    @HeadStyle(fillForegroundColor = 29)
-    @HeadFontStyle(color = 26)
+    @HeadStyle(fillForegroundColor = 47)
     @ExcelProperty("错误信息")
     public String defaultExcelErrorMessage;
 }

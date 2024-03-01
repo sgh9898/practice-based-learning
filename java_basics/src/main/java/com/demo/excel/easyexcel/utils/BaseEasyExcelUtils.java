@@ -21,6 +21,7 @@ import com.demo.excel.easyexcel.listener.ExcelListener;
 import com.demo.excel.easyexcel.listener.ExcelNoModelListener;
 import com.demo.excel.easyexcel.pojo.EasyExcelExportDto;
 import com.demo.excel.easyexcel.pojo.EasyExcelNoModelExportDto;
+import com.demo.excel.easyexcel.pojo.ExcelCascadeOption;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -52,6 +53,7 @@ import java.util.*;
  * 3. Excel 自定义导出, 最后均需要手动调用 {@link #closeExcelWriter} 进行关闭:
  *   1) 写入指定 Sheet: {@link #baseWriteSheet}
  *   2) 不指定 ExcelClass, 写入指定 Sheet: {@link #noModelBaseWriteSheet} </pre>
+ *
  * @author Song gh
  * @version 2024/1/30
  */
@@ -181,7 +183,7 @@ public class BaseEasyExcelUtils {
      * @param request    http servlet request
      * @param response   http servlet response
      * @param excelClass 待转换的实体类
-     * @param exportDto  excel 导出参数
+     * @param exportDto  Excel 导出参数
      * @param dataList   表内数据, 不填充传 null 即可
      */
     public static void baseExportExcel(HttpServletRequest request, HttpServletResponse response, Class<?> excelClass,
@@ -202,7 +204,7 @@ public class BaseEasyExcelUtils {
      *
      * @param request   http servlet request
      * @param response  http servlet response
-     * @param exportDto excel 导出参数
+     * @param exportDto Excel 导出参数
      */
     public static void noModelBaseExportExcel(HttpServletRequest request, HttpServletResponse response, EasyExcelNoModelExportDto exportDto) {
         // 创建 excel writer
@@ -222,17 +224,30 @@ public class BaseEasyExcelUtils {
      * @param excelWriter excel 主体
      * @param excelClass  待转换的实体类
      * @param sheetIndex  表序号
-     * @param exportDto   excel 导出参数
+     * @param exportDto   Excel 导出参数
      * @param dataList    表内数据
      */
     public static void baseWriteSheet(ExcelWriter excelWriter, Class<?> excelClass, Integer sheetIndex, EasyExcelExportDto exportDto, @Nullable List<?> dataList) {
-        // 处理下拉框
-        Set<String> excludedCols = exportDto.getExcludedCols();
-        Map<String, String[]> dynamicDropDownMap = exportDto.getDynamicDropDownMap();
-        Map<Integer, String[]> indexedDropDownMap = generateColumnMap(excelClass, dynamicDropDownMap, excludedCols);
+        // 动态下拉框
+        Map<String, String[]> dynamicMenuMap = exportDto.getDynamicMenuMap();
+        Map<Integer, String[]> indexedDynamicMenuMap = new HashMap<>();
+        // 联动下拉框
+        Map<String, List<Integer>> cascadeMenuIndexMap = new HashMap<>();
+        setUpDropDownMenus(excelClass, exportDto, dynamicMenuMap, indexedDynamicMenuMap, cascadeMenuIndexMap);
+        Map<String, List<ExcelCascadeOption>> cascadeMenuMap = exportDto.getCascadeMenuMap();
+        // 仅存在一组联动下拉框, 进行默认配置
+        if (cascadeMenuMap.isEmpty()) {
+            if (cascadeMenuIndexMap.size() == 1) {
+                String cascadeGroupName = cascadeMenuIndexMap.keySet().iterator().next();
+                cascadeMenuMap.put(cascadeGroupName, exportDto.getCascadeMenu());
+            } else if (cascadeMenuIndexMap.size() > 1) {
+                throw new UnsupportedOperationException("存在多组联动下拉框, 请配置组名");
+            }
+        }
 
         // 排除指定的列, 自动忽略未使用 ExcelProperty 进行注解的列
         int validColumnNum = 0;  // 计数, 未被排除的列
+        Set<String> excludedCols = exportDto.getExcludedCols();
         List<String[]> originalHeadList = new ArrayList<>();  // 记录列名, 用于动态列名替换
         Set<String> doNotChangeWidth = new HashSet<>();       // 记录手动指定列宽的字段
         validColumnNum = setUpValidCols(excelClass, excludedCols, originalHeadList, validColumnNum, doNotChangeWidth);
@@ -261,9 +276,9 @@ public class BaseEasyExcelUtils {
             skipRowNum++;
         }
 
-        // 自适应列宽, 行高
+        // 表单设置: 列宽, 行高, 下拉框...
         ExcelColWidthStrategy widthStrategy = exportDto.getWidthStrategy();
-        sheetBuilder.registerWriteHandler(new ExcelSheetWriteHandler(indexedDropDownMap, skipRowNum));
+        sheetBuilder.registerWriteHandler(new ExcelSheetWriteHandler(skipRowNum, indexedDynamicMenuMap, cascadeMenuIndexMap, cascadeMenuMap));
         sheetBuilder.registerWriteHandler(new ExcelColumnWidthHandler(widthStrategy, doNotChangeWidth));
         sheetBuilder.registerWriteHandler(new ExcelRowHeightHandler());
 
@@ -314,11 +329,23 @@ public class BaseEasyExcelUtils {
         String finalSheetName = StringUtils.isBlank(sheetName) ? "sheet" + sheetIndex : sheetName;
         ExcelWriterSheetBuilder sheetBuilder = EasyExcelFactory.writerSheet(sheetIndex, finalSheetName);
 
-        // 配置列名与数据
+        // 配置列名, 联动下拉框, 数据
         List<List<String>> cnHeadList = new LinkedList<>();
         List<List<Object>> finalDataList = new LinkedList<>();
         List<String> orderedEnHead = new LinkedList<>();
         setHeadAndDataNoModel(exportDto, cnHeadList, finalDataList, orderedEnHead);
+
+        // 联动下拉框, 根据名称匹配下拉框所在列的序号
+        Map<String, Integer> colIndexMap = new HashMap<>();
+        for (int i = 0; i < orderedEnHead.size(); i++) {
+            colIndexMap.put(orderedEnHead.get(i), i);
+        }
+        Map<String, List<Integer>> cascadeMenuIndexMap = new HashMap<>();
+        for (Map.Entry<String, List<String>> cascadeGroup : exportDto.getCascadeColMap().entrySet()) {
+            List<Integer> indexList = new LinkedList<>();
+            cascadeGroup.getValue().forEach(colName -> indexList.add(colIndexMap.get(colName)));
+            cascadeMenuIndexMap.put(cascadeGroup.getKey(), indexList);
+        }
 
         // 调整下拉框位置
         Map<Integer, String[]> indexedDropDownMap = setUpIndexedDropDownMap(exportDto.getDropDownMap(), orderedEnHead);
@@ -341,8 +368,8 @@ public class BaseEasyExcelUtils {
             cnSpecialHeadSet.add(exportDto.getEnToCnHeadMap().getOrDefault(enSpecialHead, enSpecialHead));
         }
 
-        // 自适应列宽, 行高
-        sheetBuilder.registerWriteHandler(new ExcelSheetWriteHandler(indexedDropDownMap, skipRowNum));
+        // 表单设置: 列宽, 行高, 下拉框...
+        sheetBuilder.registerWriteHandler(new ExcelSheetWriteHandler(skipRowNum, indexedDropDownMap, cascadeMenuIndexMap, exportDto.getCascadeMenuMap()));
         sheetBuilder.registerWriteHandler(new ExcelNoModelVerticalStyleHandler(cnSpecialHeadSet));
         sheetBuilder.registerWriteHandler(new ExcelColumnWidthHandler(exportDto.getWidthStrategy()));
         sheetBuilder.registerWriteHandler(new ExcelRowHeightHandler());
@@ -528,51 +555,33 @@ public class BaseEasyExcelUtils {
     }
 
     /**
-     * 处理 @ExcelDropDown 注解
+     * 配置下拉框, 处理 {@link ExcelDropDown} 注解
      *
-     * @param targetClass        待转换的实体类
-     * @param dynamicDropDownMap 动态下拉框, Map(列名, 选项); 其中列名必须使用 {@link ExcelDropDown#name} 在 ExcelClass 进行定义
-     * @param excludedCols       导出时排除的列名
-     * @return Map(index, 下拉框内容)
+     * @param targetClass           Excel 实体类
+     * @param exportDto             Excel 导出参数
+     * @param dynamicMenuMap        动态下拉框, Map(列名, 选项); 其中列名必须使用 {@link ExcelDropDown#dynamicMenuName} 在 ExcelClass 进行定义
+     * @param indexedDynamicMenuMap 记录动态下拉框在 Excel 中的位置, Map(列, 选项)
+     * @param cascadeMenuIndexMap   记录联动下拉框在 Excel 中的位置, Map(组名, 列)
      */
-    private static Map<Integer, String[]> generateColumnMap(Class<?> targetClass, @NonNull Map<String, String[]> dynamicDropDownMap, @NonNull Set<String> excludedCols) {
-        // 获取 Class 所有字段
-        Field[] fieldArray = targetClass.getDeclaredFields();
-        Map<Integer, String[]> dropDownMap = new HashMap<>();
-        Field field;
+    private static void setUpDropDownMenus(Class<?> targetClass, EasyExcelExportDto exportDto,
+                                           @NonNull Map<String, String[]> dynamicMenuMap, @NonNull Map<Integer, String[]> indexedDynamicMenuMap,
+                                           @NonNull Map<String, List<Integer>> cascadeMenuIndexMap) {
 
+        // 遍历 Class 所有字段
+        Field[] fieldArray = targetClass.getDeclaredFields();
         // index 根据排除的列进行调整
+        Set<String> excludedCols = exportDto.getExcludedCols();
         int indexLeftShift = 0;
         // 查找有下拉框注解的字段, 填充相关数据
         for (int index = 0; index < fieldArray.length; index++) {
-            field = fieldArray[index];
+            Field field = fieldArray[index];
             // 排除的列, 跳过的同时后续 index 均需要调整
             if (excludedCols.contains(field.getName())) {
                 indexLeftShift++;
                 continue;
             }
-
-            // 检测到 @ExcelDropDown 注解, 进行下拉框配置
-            ExcelDropDown excelDropDown = field.getAnnotation(ExcelDropDown.class);
-            if (excelDropDown != null) {
-                // 使用排除指定列后的 index
-                int shiftedIndex = index - indexLeftShift;
-                String[] dynamicOptions = excelDropDown.value();
-
-                // 动态下拉框
-                String name = excelDropDown.name();
-                // 存在动态下拉框配置(@ExcelDropDown.name 与 dynamicDropDownMap.key 相同, 填充内容)
-                if (!StringUtils.isEmpty(name) && (dynamicDropDownMap.get(name) != null && dynamicDropDownMap.get(name).length > 0)) {
-                    dynamicOptions = dynamicDropDownMap.get(name);
-                }
-
-                // 仅记录有效的下拉框
-                if (dynamicOptions != null && dynamicOptions.length > 0) {
-                    dropDownMap.put(shiftedIndex, dynamicOptions);
-                }
-            }
+            dealWithExcelDropDown(dynamicMenuMap, indexedDynamicMenuMap, cascadeMenuIndexMap, field, index, indexLeftShift);
         }
-        return dropDownMap;
     }
 
     /**
@@ -583,7 +592,8 @@ public class BaseEasyExcelUtils {
      * @param finalDataList 整理后的数据
      * @param orderedEnHead 整理后的最底层英文列名
      */
-    private static void setHeadAndDataNoModel(EasyExcelNoModelExportDto exportDto, List<List<String>> cnHeadList, List<List<Object>> finalDataList, List<String> orderedEnHead) {
+    private static void setHeadAndDataNoModel(EasyExcelNoModelExportDto exportDto, List<List<String>> cnHeadList,
+                                              List<List<Object>> finalDataList, List<String> orderedEnHead) {
         // 不允许列名为空
         if (exportDto.getEnSimpleHeadList().isEmpty() && exportDto.getEnHeadList().isEmpty()) {
             log.error("Excel 列名为空");
@@ -665,5 +675,33 @@ public class BaseEasyExcelUtils {
             index++;
         }
         return indexedDropDownMap;
+    }
+
+    /** 处理 {@link ExcelDropDown} 注解 */
+    private static void dealWithExcelDropDown(Map<String, String[]> dynamicMenuMap, Map<Integer, String[]> indexedDynamicMenuMap, Map<String, List<Integer>> cascadeMenuIndexMap, Field field, int index, int indexLeftShift) {
+        // 检测到 @ExcelDropDown 注解, 进行下拉框配置
+        ExcelDropDown excelDropDown = field.getAnnotation(ExcelDropDown.class);
+        if (excelDropDown != null) {
+            // 使用排除指定列后的 index
+            int shiftedIndex = index - indexLeftShift;
+            String[] dynamicOptions = excelDropDown.value();
+
+            // 动态下拉框配置
+            String dynamicMenuName = excelDropDown.dynamicMenuName();
+            boolean hasDynamicOptions = !StringUtils.isEmpty(dynamicMenuName) && (dynamicMenuMap.get(dynamicMenuName) != null && dynamicMenuMap.get(dynamicMenuName).length > 0);
+            if (hasDynamicOptions) {
+                dynamicOptions = dynamicMenuMap.get(dynamicMenuName);
+            }
+            // 仅记录有效的下拉框
+            if (dynamicOptions != null && dynamicOptions.length > 0) {
+                indexedDynamicMenuMap.put(shiftedIndex, dynamicOptions);
+            }
+
+            // 联动下拉框配置
+            String cascadeGroupName = excelDropDown.cascadeGroupName();
+            if (StringUtils.isNotBlank(cascadeGroupName)) {
+                cascadeMenuIndexMap.computeIfAbsent(cascadeGroupName, k -> new LinkedList<>()).add(shiftedIndex);
+            }
+        }
     }
 }

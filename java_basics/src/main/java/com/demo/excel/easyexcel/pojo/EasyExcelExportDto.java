@@ -9,10 +9,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * EasyExcel 配合 ExcelClass 导出时的参数配置
@@ -44,9 +41,9 @@ public class EasyExcelExportDto {
     @Nullable
     private String note;
 
-    /** 动态下拉框, Map(列名, 选项); 其中列名必须使用 {@link ExcelDropDown#name} 在 ExcelClass 进行定义 */
+    /** 动态下拉框, Map(列名, 选项); 其中列名必须使用 {@link ExcelDropDown#dynamicMenuName} 在 ExcelClass 进行定义 */
     @NonNull
-    private Map<String, String[]> dynamicDropDownMap = new HashMap<>();
+    private Map<String, String[]> dynamicMenuMap = new HashMap<>();
 
     /** 需要替换的中文列名, Map(旧列名, 新列名); 其中旧列名必须使用 {@link ExcelProperty#value} 在 ExcelClass 进行定义 */
     @NonNull
@@ -65,7 +62,31 @@ public class EasyExcelExportDto {
     @NonNull
     private Boolean useExcel07 = false;
 
-    /** 仅导出指定列(字段英文名) */
+    /**
+     * 联动下拉框, 单组
+     * <pre>
+     * 1. 存在联动关系的下拉框属于同一组, 如: 省市区
+     * 2. 存在多组联动下拉框时, 需要使用 {@link #cascadeMenuMap} 进行配置
+     * 3. {@link #cascadeMenuMap} 会优先于本参数生效 </pre>
+     */
+    @NonNull
+    private List<ExcelCascadeOption> cascadeMenu = new LinkedList<>();
+
+    /**
+     * 联动下拉框, 多组, Map(组名, 选项)
+     * <pre>
+     * 1. 存在联动关系的下拉框属于同一组, 如: 省市区
+     * 2. 组名需要与 {@link ExcelDropDown#cascadeGroupName} 保持一致
+     * 3. 会覆盖 {@link #cascadeMenu} 的效果 </pre>
+     */
+    @NonNull
+    private Map<String, List<ExcelCascadeOption>> cascadeMenuMap = new HashMap<>();
+
+    /**
+     * 导出时仅保留指定列(ExcelClass 字段英文原名)
+     *
+     * @see #excludedCols
+     */
     public void setIncludedCols(Class<?> targetClass, Set<String> includedCols) {
         if (includedCols == null || includedCols.isEmpty()) {
             return;

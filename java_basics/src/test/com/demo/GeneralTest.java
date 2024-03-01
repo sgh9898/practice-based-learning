@@ -1,6 +1,6 @@
 package com.demo;
 
-import com.demo.util.AesUtils;
+import com.demo.util.DateUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.junit.jupiter.api.Test;
@@ -11,9 +11,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Enumeration;
+import java.util.*;
 
 /**
  * 普通测试
@@ -24,14 +22,10 @@ class GeneralTest {
 
     @Test
     void writeFile() {
-        System.out.println(AesUtils.aesDecryptByKeyStrAndIvStr("W/iLblx71VN3TgJwSPK5KHUr/1h8er8N5+x83u5r6S8=", "PcWexLHEms67z5Rm", "y6vEtseyzIvMpMSv"));
+        System.out.println(DateUtils.getWeekStart(new Date()));
     }
 
-    @Test
-    void test1() throws IOException {
-        String str = "9a@_bc123";
-        String number = str.replaceAll(".*\\D", "");
-        System.out.println(number);
+    public static void main(String[] args) {
     }
 
     @Test

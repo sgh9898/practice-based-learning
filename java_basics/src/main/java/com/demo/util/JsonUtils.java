@@ -1,6 +1,5 @@
 package com.demo.util;
 
-import com.demo.exception.BaseException;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -18,7 +17,8 @@ import java.util.Map;
  * Json 工具类
  * (基于 JacksonUtil 工具类优化)
  *
- * @author Song gh on 2023/11/21.
+ * @author Song gh
+ * @version 2023/11/21
  */
 public class JsonUtils {
     /** 默认 */
@@ -41,21 +41,21 @@ public class JsonUtils {
 
 // ------------------------------ Java对象 转换其他类型 ------------------------------
 
-    /** Java对象 --> Json string */
+    /** Java对象 --> Json String */
     public static String beanToJson(Object bean) {
         try {
             return MAPPER.writeValueAsString(bean);
         } catch (Exception e) {
-            throw new BaseException("转换 Java Bean 为 Json 错误", e);
+            throw new UnsupportedOperationException("转换 Java Bean 为 Json 错误", e);
         }
     }
 
-    /** Java对象 --> Json string; 忽略值为null的字段 */
+    /** Java对象 --> Json String; 忽略值为null的字段 */
     public static String beanToJsonIgnoreNull(Object bean) {
         try {
             return NON_NULL_MAPPER.writeValueAsString(bean);
         } catch (Exception e) {
-            throw new BaseException("转换 Java Bean 为 Json 错误", e);
+            throw new UnsupportedOperationException("转换 Java Bean 为 Json 错误", e);
         }
     }
 
@@ -67,32 +67,32 @@ public class JsonUtils {
 
 // ------------------------------ Json 转换其他类型 ------------------------------
 
-    /** Json string --> Map */
+    /** Json String --> Map */
     public static Map<String, Object> jsonToMap(String json) {
         try {
             return MAPPER.readValue(json, new TypeReference<HashMap<String, Object>>() {
             });
         } catch (JsonProcessingException e) {
-            throw new BaseException("转换 Json 为 Map 错误:" + json, e);
+            throw new UnsupportedOperationException("转换 Json 为 Map 错误:" + json, e);
         }
     }
 
-    /** Json string --> Java对象 */
+    /** Json String --> Java对象 */
     public static <T> T jsonToBean(String json, Class<T> beanType) {
         try {
             return MAPPER.readValue(json, beanType);
         } catch (Exception e) {
-            throw new BaseException("转换 Json 为 Java Bean 错误: " + json, e);
+            throw new UnsupportedOperationException("转换 Json 为 Java Bean 错误: " + json, e);
         }
     }
 
-    /** JsonArray string --> List(Java对象) */
+    /** JsonArray String --> List(Java对象) */
     public static <T> List<T> jsonToList(String json, Class<T> beanType) {
         try {
             CollectionType type = MAPPER.getTypeFactory().constructCollectionType(List.class, beanType);
             return MAPPER.readValue(json, type);
         } catch (Exception e) {
-            throw new BaseException("转换 Json 为 JavaList 错误: " + json, e);
+            throw new UnsupportedOperationException("转换 Json 为 JavaList 错误: " + json, e);
         }
     }
 
@@ -103,7 +103,7 @@ public class JsonUtils {
         try {
             return MAPPER.readTree(json);
         } catch (IOException e) {
-            throw new BaseException("转换 Json 为 JsonNode 错误: " + json, e);
+            throw new UnsupportedOperationException("转换 Json 为 JsonNode 错误: " + json, e);
         }
     }
 
@@ -116,5 +116,8 @@ public class JsonUtils {
     public static <T> T jsonNodeToBean(JsonNode jsonNode, Class<T> beanType, Class<?> subBeanType) {
         JavaType type = MAPPER.getTypeFactory().constructParametricType(beanType, subBeanType);
         return MAPPER.convertValue(jsonNode, type);
+    }
+
+    private JsonUtils() {
     }
 }

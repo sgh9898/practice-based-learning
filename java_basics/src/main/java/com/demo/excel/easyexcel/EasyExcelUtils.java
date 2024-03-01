@@ -190,7 +190,7 @@ public class EasyExcelUtils {
      * @param response      HttpServletResponse
      * @param excelClass    Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
      * @param excelDataList 数据, 格式需与 excelClass 保持一致
-     * @param exportDto     excel 导出参数
+     * @param exportDto     Excel 导出参数
      */
     public static <T> void exportExcel(HttpServletRequest request, HttpServletResponse response,
                                        Class<T> excelClass, @Nullable List<T> excelDataList, EasyExcelExportDto exportDto) {
@@ -247,7 +247,7 @@ public class EasyExcelUtils {
      * @param response      HttpServletResponse
      * @param excelClass    Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
      * @param excelDataList 数据, 格式需与 excelClass 保持一致
-     * @param exportDto     excel 导出参数
+     * @param exportDto     Excel 导出参数
      */
     public static <T> void exportErrorExcel(HttpServletRequest request, HttpServletResponse response,
                                             Class<T> excelClass, @Nullable List<T> excelDataList, EasyExcelExportDto exportDto) {
@@ -282,7 +282,7 @@ public class EasyExcelUtils {
      *
      * @param request   http servlet request
      * @param response  http servlet response
-     * @param exportDto excel 导出参数
+     * @param exportDto Excel 导出参数
      */
     public static void noModelExportExcel(HttpServletRequest request, HttpServletResponse response, EasyExcelNoModelExportDto exportDto) {
         BaseEasyExcelUtils.noModelBaseExportExcel(request, response, exportDto);
@@ -343,7 +343,7 @@ public class EasyExcelUtils {
      *
      * @param excelClass excel 实体类, 推荐 extends {@link EasyExcelClassTemplate}
      * @param dataList   表内数据
-     * @param exportDto  excel 导出参数
+     * @param exportDto  Excel 导出参数
      */
     public void writeSheet(Class<?> excelClass, List<?> dataList, EasyExcelExportDto exportDto) {
         // 默认排除"错误信息"列

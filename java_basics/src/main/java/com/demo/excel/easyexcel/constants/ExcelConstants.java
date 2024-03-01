@@ -20,6 +20,9 @@ public class ExcelConstants {
     /** [默认] 页名 */
     public static final String DEFAULT_SHEET_NAME = "sheet1";
 
+    /** [默认] 联动下拉框页名 */
+    public static final String DEFAULT_CASCADE_SHEET_NAME = "cascade_data";
+
     /**
      * [校验规则/严格] 当前行 head 中存在 @ExcelProperty 定义的有效字段, 且不存在未被定义的字段
      *

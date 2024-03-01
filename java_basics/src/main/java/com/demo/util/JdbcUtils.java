@@ -2,6 +2,7 @@ package com.demo.util;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.boot.jdbc.DatabaseDriver;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
@@ -107,8 +108,7 @@ public class JdbcUtils {
      * @param page        当前页码(0 为首页)
      * @param size        每页数据量
      */
-    @Transactional
-    public <T> Page<T> queryForPage(NamedParameterJdbcTemplate npJdbcTemplate, String sql, @Nullable String countSql, Map<String, Object> params, Class<T> resultClass, int page, int size) {
+    public static <T> Page<T> queryForPage(NamedParameterJdbcTemplate npJdbcTemplate, String sql, @Nullable String countSql, Map<String, Object> params, Class<T> resultClass, int page, int size) {
         if (StringUtils.isBlank(sql)) {
             throw new IllegalArgumentException("sql 不能为空");
         }
@@ -120,14 +120,14 @@ public class JdbcUtils {
         }
         // 未配置计数sql时, 进行默认配置
         if (StringUtils.isBlank(countSql)) {
-            countSql = "select count(1) from (" + sql + ") jdbc_utils_temp_count";
+            countSql = " select count(1) from (" + sql + ") jdbc_utils_temp_count ";
         }
         Long total = npJdbcTemplate.queryForObject(countSql, params, Long.class);
         List<T> list = new ArrayList<>();
         if (total != null && total > 0) {
             params.put("reservedStart", (page * size));
             params.put("reservedLength", size);
-            String querySql = sql + " limit :reservedStart,:reservedLength";
+            String querySql = sql + " limit :reservedStart, :reservedLength ";
             list = npJdbcTemplate.query(querySql, params, BeanPropertyRowMapper.newInstance(resultClass));
         } else {
             total = 0L;
@@ -144,8 +144,7 @@ public class JdbcUtils {
      * @param page     当前页码(0 为首页)
      * @param size     每页数据量
      */
-    @Transactional
-    public Page<Map<String, Object>> queryForPage(NamedParameterJdbcTemplate npJdbcTemplate, String sql, @Nullable String countSql, Map<String, Object> params, int page, int size) {
+    public static Page<Map<String, Object>> queryForPage(NamedParameterJdbcTemplate npJdbcTemplate, String sql, @Nullable String countSql, Map<String, Object> params, int page, int size) {
         if (StringUtils.isBlank(sql)) {
             throw new IllegalArgumentException("sql 不能为空");
         }
@@ -157,14 +156,14 @@ public class JdbcUtils {
         }
         // 未配置计数sql时, 进行默认配置
         if (StringUtils.isBlank(countSql)) {
-            countSql = "select count(1) from (" + sql + ") jdbc_utils_temp_count";
+            countSql = " select count(1) from (" + sql + ") jdbc_utils_temp_count ";
         }
         Long total = npJdbcTemplate.queryForObject(countSql, params, Long.class);
         List<Map<String, Object>> list = new ArrayList<>();
         if (total != null && total > 0) {
             params.put("reservedStart", (page * size));
             params.put("reservedLength", size);
-            String querySql = sql + " limit :reservedStart,:reservedLength";
+            String querySql = sql + " limit :reservedStart, :reservedLength ";
             list = npJdbcTemplate.queryForList(querySql, params);
         } else {
             total = 0L;

@@ -82,4 +82,22 @@ public class EasyExcelNoModelExportDto {
      */
     @NonNull
     private Boolean useExcel07 = false;
+
+    /**
+     * 联动下拉框位置, 支持多组, Map(组名, 英文列名)
+     * <pre>
+     * 1. 存在联动关系的下拉框属于同一组, 如: 省市区
+     * 2. 需要配合 {@link #cascadeMenuMap 联动下拉框选项} 使用 </pre>
+     */
+    @NonNull
+    private Map<String, List<String>> cascadeColMap = new HashMap<>();
+
+    /**
+     * 联动下拉框选项, 支持多组, Map(组名, 选项)
+     * <pre>
+     * 1. 存在联动关系的下拉框属于同一组, 如: 省市区
+     * 2. 需要配合 {@link #cascadeColMap 联动下拉框位置} 使用 </pre>
+     */
+    @NonNull
+    private Map<String, List<ExcelCascadeOption>> cascadeMenuMap = new HashMap<>();
 }

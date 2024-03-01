@@ -5,8 +5,11 @@ import com.demo.database.pojo.excel.ExcelRegion;
 import com.demo.excel.easyexcel.EasyExcelUtils;
 import com.demo.excel.easyexcel.pojo.EasyExcelExportDto;
 import com.demo.excel.easyexcel.pojo.EasyExcelNoModelExportDto;
+import com.demo.excel.easyexcel.pojo.ExcelCascadeOption;
+import com.demo.excel.pojo.EasyExcelTest;
 import com.demo.excel.pojo.ExcelToDdl;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,6 +17,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * EasyExcel 功能测试
@@ -49,18 +53,17 @@ public class ExcelService {
         exportDto.setNote("这是说明");
         exportDto.getExcludedCols().add("comment");
         exportDto.getReplaceHeadMap().put("类型", "新类型");
-        exportDto.getDynamicDropDownMap().put("动态head",
+        exportDto.getDynamicMenuMap().put("动态head",
                 new String[]{"类型1", "类型2"});
 
-        List<ExcelToDdl> dataList = new LinkedList<>();
-        ExcelToDdl excel = new ExcelToDdl();
-        excel.setName("测试名称");
-        dataList.add(excel);
-        EasyExcelUtils.exportExcel(request, response, ExcelToDdl.class, dataList, exportDto);
+        List<ExcelCascadeOption> nameCascadeList = getExcelCascadeOptions();
+        exportDto.setCascadeMenu(nameCascadeList);
+
+        EasyExcelUtils.exportErrorExcel(request, response, EasyExcelTest.class, null, exportDto);
     }
 
     /** 无模板导出 */
-    public void noModelExport(HttpServletRequest request, HttpServletResponse response) {
+    public void noModelExportExcel(HttpServletRequest request, HttpServletResponse response) {
         // 列名
         List<List<String>> outerHeadList = new LinkedList<>();
         List<String> headList1 = new ArrayList<>();
@@ -71,9 +74,12 @@ public class ExcelService {
         headList2.add("testHead3");
         List<String> headList3 = new ArrayList<>();
         headList3.add("testHead4");
+        List<String> headList4 = new ArrayList<>();
+        headList4.add("testHead5");
         outerHeadList.add(headList1);
         outerHeadList.add(headList2);
         outerHeadList.add(headList3);
+        outerHeadList.add(headList4);
 
         // 标红
         Set<String> importantSet = new HashSet<>();
@@ -89,6 +95,13 @@ public class ExcelService {
         exportDto.setEnHeadList(outerHeadList);
         exportDto.setSheetName("11111");
         exportDto.setImportantHeadSet(importantSet);
+        List<ExcelCascadeOption> nameCascadeList = getExcelCascadeOptions();
+        exportDto.getCascadeMenuMap().put("cascade", nameCascadeList);
+        List<String> cascadeColList = new LinkedList<>();
+        cascadeColList.add("testHead3");
+        cascadeColList.add("testHead4");
+        cascadeColList.add("testHead5");
+        exportDto.getCascadeColMap().put("cascade", cascadeColList);
         EasyExcelUtils.noModelExportExcel(request, response, exportDto);
     }
 
@@ -105,6 +118,47 @@ public class ExcelService {
         ddl.append(") comment '';");
 
         return ddl.toString();
+    }
+
+    /** 联动下拉框 */
+    @NotNull
+    private static List<ExcelCascadeOption> getExcelCascadeOptions() {
+        List<ExcelCascadeOption> nameCascadeList = new ArrayList<>();
+        ExcelCascadeOption excelCascadeOption = new ExcelCascadeOption("第一层1");
+
+        List<ExcelCascadeOption> nameCascadeList2 = new ArrayList<>();
+        ExcelCascadeOption excelCascadeOption2 = new ExcelCascadeOption("第二层11");
+        List<ExcelCascadeOption> nameCascadeList3 = new ArrayList<>();
+        IntStream.range(0, 10).forEach(i -> {
+            ExcelCascadeOption excelCascadeOption3 = new ExcelCascadeOption("第三层11" + i);
+            nameCascadeList3.add(excelCascadeOption3);
+        });
+        excelCascadeOption2.setChildList(nameCascadeList3);
+        nameCascadeList2.add(excelCascadeOption2);
+
+        excelCascadeOption2 = new ExcelCascadeOption("第二层12");
+        nameCascadeList2.add(excelCascadeOption2);
+
+        excelCascadeOption.setChildList(nameCascadeList2);
+        nameCascadeList.add(excelCascadeOption);
+
+        excelCascadeOption = new ExcelCascadeOption("第一层2");
+
+        nameCascadeList2 = new ArrayList<>();
+        excelCascadeOption2 = new ExcelCascadeOption("第二层21");
+        nameCascadeList2.add(excelCascadeOption2);
+
+        excelCascadeOption2 = new ExcelCascadeOption("第二层22");
+        nameCascadeList2.add(excelCascadeOption2);
+
+        excelCascadeOption.setChildList(nameCascadeList2);
+        nameCascadeList.add(excelCascadeOption);
+
+        IntStream.range(2, 11).forEach(i -> {
+            ExcelCascadeOption item = new ExcelCascadeOption("第一层" + i);
+            nameCascadeList.add(item);
+        });
+        return nameCascadeList;
     }
 
 // ------------------------------ Private ------------------------------
