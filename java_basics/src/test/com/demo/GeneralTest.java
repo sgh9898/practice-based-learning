@@ -1,6 +1,6 @@
 package com.demo;
 
-import com.demo.util.DateUtils;
+import com.demo.util.AesUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Enumeration;
 
 /**
  * 普通测试
@@ -20,9 +20,25 @@ import java.util.*;
  */
 class GeneralTest {
 
+    /** 十六位密钥(需要前端和后端保持一致), 更换项目时必须重新生成 */
+    private static final String DEFAULT_KEY_STR = "pcWGuS2nQF11Sf+y";
+    /** 十六位密钥偏移量(需要前端和后端保持一致), 更换项目时必须重新生成 */
+    private static final String DEFAULT_IV_STR = "kvJRbJz7x5ycy+4V";
+
     @Test
     void writeFile() {
-        System.out.println(DateUtils.getWeekStart(new Date()));
+        String encryptedStr = AesUtils.aesEncrypt("测试");
+        String decryptedStr = AesUtils.aesDecrypt(encryptedStr);
+        System.out.println(encryptedStr);
+        System.out.println(decryptedStr);
+        encryptedStr = AesUtils.aesEncryptByKeyStrAndIvStr("测试", DEFAULT_KEY_STR,DEFAULT_IV_STR);
+        decryptedStr = AesUtils.aesDecryptByKeyStrAndIvStr(encryptedStr,DEFAULT_KEY_STR,DEFAULT_IV_STR);
+        System.out.println(encryptedStr);
+        System.out.println(decryptedStr);
+        encryptedStr = AesUtils.aesEncryptByKeyStr("测试", DEFAULT_KEY_STR);
+        decryptedStr = AesUtils.aesDecryptByKeyStr(encryptedStr,DEFAULT_KEY_STR);
+        System.out.println(encryptedStr);
+        System.out.println(decryptedStr);
     }
 
     public static void main(String[] args) {

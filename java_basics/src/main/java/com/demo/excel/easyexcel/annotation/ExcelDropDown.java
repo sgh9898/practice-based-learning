@@ -23,7 +23,7 @@ public @interface ExcelDropDown {
      * 动态下拉框名称
      * <pre>
      * 1. 仅用于匹配动态下拉框, 不用于展示
-     * 2. 需要与 {@link EasyExcelExportDto#dynamicMenuMap 动态下拉框} 的 key 保持一致 </pre>
+     * 2. 需要与 {@link EasyExcelExportDto#getDynamicMenuMap() 动态下拉框} 的 key 保持一致 </pre>
      */
     String dynamicMenuName() default "";
 

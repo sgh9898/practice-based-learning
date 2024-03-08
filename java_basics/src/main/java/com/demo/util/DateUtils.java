@@ -1,6 +1,5 @@
 package com.demo.util;
 
-import com.demo.exception.BaseException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.ParseException;
@@ -159,7 +158,7 @@ public class DateUtils {
         try {
             return dateFormat.parse(strDate);
         } catch (ParseException e) {
-            throw new BaseException("解析 " + COMPACT_DATETIME_PATTERN + " 格式日期失败, 当前内容: " + strDate, e);
+            throw new IllegalArgumentException("解析 " + COMPACT_DATETIME_PATTERN + " 格式日期失败, 当前内容: " + strDate, e);
         }
     }
 
@@ -209,7 +208,7 @@ public class DateUtils {
      * @param chronoUnit 加减值对应的时间单位
      * @return 计算后的日期时间
      */
-    public static Date getCalculatedDate(Date date, int num, ChronoUnit chronoUnit) {
+    public static Date getDate(Date date, int num, ChronoUnit chronoUnit) {
         LocalDateTime localDateTime = toLocalDateTime(date);
         return toDate(localDateTime.plus(num, chronoUnit));
     }

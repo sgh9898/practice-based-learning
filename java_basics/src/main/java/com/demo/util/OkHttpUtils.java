@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  * 2. 出现 handshake_failure 时需要切换 TLS 协议版本
  *
  * @author Song gh
- * @version 2024.1.17
+ * @version 2024.3.6
  */
 public class OkHttpUtils {
 
@@ -102,6 +102,18 @@ public class OkHttpUtils {
         }
         RequestBody body = RequestBody.create(Objects.requireNonNull(encodeValue(params, "UTF-8")), APPLICATION_FORM_URLENCODED);
         Request request = new Request.Builder().url(url).post(body).build();
+        return getStrResponse(request, url);
+    }
+
+    /** post 访问, 提交 form (参数使用 UTF-8 编码), 自定义 Headers */
+    public static String postFormWithHeaders(String url, Map<String, Object> params, Map<String, String> headers) {
+        if (StringUtils.isBlank(url)) {
+            throw new IllegalArgumentException("url 不能为空");
+        }
+        RequestBody body = RequestBody.create(Objects.requireNonNull(encodeValue(params, "UTF-8")), APPLICATION_FORM_URLENCODED);
+        Request.Builder builder = new Request.Builder().url(url);
+        headers.forEach(builder::addHeader);
+        Request request = builder.post(body).build();
         return getStrResponse(request, url);
     }
 

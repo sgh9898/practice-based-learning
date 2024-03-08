@@ -63,7 +63,8 @@ public abstract class EasyExcelClassTemplate {
     /** 报错返回字段, 用于展示 Excel 当前行未通过校验的原因 */
     @Transient
     @JsonIgnore
-    @HeadStyle(fillForegroundColor = 47)
+    @HeadStyle(fillForegroundColor = 29)
+    @HeadFontStyle(color = 1)
     @ExcelProperty("错误信息")
     public String defaultExcelErrorMessage;
 }
