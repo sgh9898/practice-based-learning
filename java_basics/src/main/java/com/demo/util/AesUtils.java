@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import org.springframework.lang.NonNull;
 
 import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
@@ -211,7 +211,7 @@ public class AesUtils {
     }
 
     /** 生成加密/解密工具 */
-    @NotNull
+    @NonNull
     private static Cipher generateCipher(String keyStr, String ivStr, int encryptMode) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
         Cipher cipher = Cipher.getInstance(AES_ALGORITHM.getAlgorithms());
         // key

@@ -1,4 +1,4 @@
-package excluded.elasticsearch.kafka.config;
+package com.demo.kafka;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.TopicPartition;
@@ -11,7 +11,6 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConsumerAwareListenerErrorHandler;
-import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.MessageHeaders;
 
@@ -24,7 +23,8 @@ import java.util.Objects;
 /**
  * Kafka 配置
  *
- * @author Song gh on 2023/10/11.
+ * @author Song gh
+ * @version 2024/3/14
  */
 @EnableKafka
 @Configuration
@@ -35,29 +35,34 @@ public class KafkaConfig {
     private KafkaProperties kafkaProperties;
 
     /**
-     * 自动创建 Topic, 也可以用于修改已存在的同名 Topic (数据不会丢失)
-     * 多个 Topic 需要复制本方法并分别配置
+     * 自动创建 Topic
+     * <pr>
+     * 1. 主要用于指定 partition(分区) 与 replication factor(复制)
+     * 2. 也可以用于修改已存在的同名 topic (数据不会丢失)
+     * 3. 创建多个 topic 需要配置多个不同名的本方法
+     * </pr>
      */
     @Bean
     public NewTopic createTopic() {
-        return new NewTopic("new_topic_name", 10, (short) 1);
+        return new NewTopic("new_kafka_topic_name", 10, (short) 1);
+    }
+
+    @Bean
+    public NewTopic createTopic2() {
+        return new NewTopic("new_kafka_topic_name2", 9, (short) 1);
     }
 
     /**
-     * 自定义的 listener 配置 (通常并不需要使用自定义配置, 常规参数在配置文件中调整即可)
-     * <br>使用时在监听方法上标注 @KafkaListener(containerFactory = "customizedContainerFactory")
-     * <br>自定义方法多用于[强制锁定/动态修改]部分参数
+     * 默认的 Listener 配置 (常规参数在配置文件中调整即可)
      */
-    @Bean("customizedContainerFactory")
-    public ConcurrentKafkaListenerContainerFactory<?, ?> customizedContainerFactory(ConcurrentKafkaListenerContainerFactoryConfigurer configurer) {
-        // 读取 spring.kafka 配置
+    @Bean("kafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<?, ?> kafkaListenerContainerFactory(ConcurrentKafkaListenerContainerFactoryConfigurer configurer) {
+        // 读取 spring.kafka 配置, 可以在此修改 kafka 配置
         Map<String, Object> properties = kafkaProperties.buildConsumerProperties();
-        // 可以在此修改 kafka 配置 -- properties
 
-        // 读取 spring.kafka.consumer 配置
-        Map<String, Object> consumerProperties = kafkaProperties.getConsumer().buildProperties();
-        properties.putAll(consumerProperties);
-        // 可以在此修改 consumer 配置 -- consumerProperties
+        // 读取 spring.kafka.consumer 配置, 可以在此修改 consumer 配置
+        KafkaProperties.Consumer consumer = kafkaProperties.getConsumer();
+        properties.putAll(consumer.buildProperties());
 
         // 应用修改后的配置
         ConsumerFactory<Object, Object> kafkaConsumerFactory = new DefaultKafkaConsumerFactory<>(properties);
@@ -67,15 +72,27 @@ public class KafkaConfig {
     }
 
     /**
-     * 自定义的 listener 异常处理 (通常并不需要使用自定义配置)
-     * <br>使用时在监听方法上标注 @KafkaListener(errorHandler = "customizedListenerErrorHandler")
-     * <br>默认的异常处理器会在失败 9 次后自动提交 {@link DefaultErrorHandler}
+     * 默认的单条数据异常处理, 会将 offset 回退
+     */
+    @Bean(name = "singleKafkaListenerErrorHandler")
+    public ConsumerAwareListenerErrorHandler singleKafkaListenerErrorHandler() {
+        return (m, e, c) -> {
+            MessageHeaders headers = m.getHeaders();
+            c.seek(new org.apache.kafka.common.TopicPartition(
+                            headers.get(KafkaHeaders.RECEIVED_TOPIC, String.class),
+                            headers.get(KafkaHeaders.RECEIVED_PARTITION_ID, Integer.class)),
+                    headers.get(KafkaHeaders.OFFSET, Long.class));
+            return null;
+        };
+    }
+
+    /**
+     * 默认的批量数据异常处理, 会将 offset 回退
      */
     @SuppressWarnings("unchecked")
-    @Bean(name = "customizedListenerErrorHandler")
-    public ConsumerAwareListenerErrorHandler customizedListenerErrorHandler() {
+    @Bean(name = "batchKafkaListenerErrorHandler")
+    public ConsumerAwareListenerErrorHandler batchKafkaListenerErrorHandler() {
         return (m, e, c) -> {
-            // 获取信息
             MessageHeaders headers = m.getHeaders();
             List<String> topics = headers.get(KafkaHeaders.RECEIVED_TOPIC, List.class);
             List<Integer> partitions = headers.get(KafkaHeaders.RECEIVED_PARTITION_ID, List.class);

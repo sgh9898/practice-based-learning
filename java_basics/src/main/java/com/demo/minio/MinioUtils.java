@@ -24,6 +24,7 @@ import java.util.UUID;
  * 1. 判断 bucket 是否存在: {@link #existBucket}
  * 2. 创建 bucket : {@link #createBucketIfNotExist}
  * 3. 允许通过 url 直接访问 bucket 之中的文件: {@link #allowsPublicReading} </pre>
+ *
  * @author Song gh on 2023/12/26.
  */
 @Component

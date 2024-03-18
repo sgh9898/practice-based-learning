@@ -15,7 +15,7 @@ import java.util.Date;
  * 日期工具
  *
  * @author Song gh
- * @version 2024.1.17
+ * @version 2024.3.15
  */
 public class DateUtils {
 
@@ -34,13 +34,12 @@ public class DateUtils {
     /** [时间格式] 时分秒(无间隔符) */
     public static final String COMPACT_TIME_PATTERN = "HHmmss";
 
-// ------------------------------ 格式转换 ------------------------------
+// ------------------------------ 获取 String ------------------------------
 
     /**
      * Date 转 String, 手动指定格式
      *
-     * @param date    指定日期
-     * @param pattern 日期格式
+     * @param pattern 格式, 如 yyyy-MM-dd HH:mm:ss
      */
     public static String toStr(Date date, String pattern) {
         if (date == null) {
@@ -53,113 +52,111 @@ public class DateUtils {
     /**
      * Date 转 String, 取日期时间
      *
-     * @return 日期, 格式为 yyyy-MM-dd HH:mm:ss
+     * @return 格式为 yyyy-MM-dd HH:mm:ss
      */
     public static String toStrDateTime(Date date) {
-        if (date == null) {
-            return null;
-        }
-        SimpleDateFormat dateFormat = new SimpleDateFormat(DATETIME_PATTERN);
-        return dateFormat.format(date);
+        return toStr(date, DATETIME_PATTERN);
     }
 
     /**
      * Date 转 String, 只取日期
      *
-     * @return 日期, 格式为 yyyy-MM-dd
+     * @return 格式为 yyyy-MM-dd
      */
     public static String toStrDate(Date date) {
-        if (date == null) {
-            return null;
-        }
-        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN);
-        return dateFormat.format(date);
+        return toStr(date, DATE_PATTERN);
     }
 
     /**
      * Date 转 String, 只取时间
      *
-     * @return 日期, 格式为 yyyy-MM-dd
+     * @return 格式为 yyyy-MM-dd
      */
     public static String toStrTime(Date date) {
-        if (date == null) {
-            return null;
-        }
-        SimpleDateFormat dateFormat = new SimpleDateFormat(TIME_PATTERN);
-        return dateFormat.format(date);
+        return toStr(date, TIME_PATTERN);
     }
 
     /**
      * Date 转 String, 取日期时间(无间隔符)
      *
-     * @return 日期, 格式为 yyyyMMddHHmmss
+     * @return 格式为 yyyyMMddHHmmss
      */
     public static String toStrCompactDateTime(Date date) {
-        if (date == null) {
-            return null;
-        }
-        SimpleDateFormat dateFormat = new SimpleDateFormat(COMPACT_DATETIME_PATTERN);
-        return dateFormat.format(date);
+        return toStr(date, COMPACT_DATETIME_PATTERN);
     }
 
     /**
      * Date 转 String, 只取日期(无间隔符)
      *
-     * @return 日期, 格式为 yyyyMMdd
+     * @return 格式为 yyyyMMdd
      */
     public static String toStrCompactDate(Date date) {
-        if (date == null) {
-            return null;
-        }
-        SimpleDateFormat dateFormat = new SimpleDateFormat(COMPACT_DATE_PATTERN);
-        return dateFormat.format(date);
+        return toStr(date, COMPACT_DATE_PATTERN);
     }
 
     /**
      * Date 转 String, 只取时间(无间隔符)
      *
-     * @return 日期, 格式为 HHmmss
+     * @return 格式为 HHmmss
      */
     public static String toStrCompactTime(Date date) {
-        if (date == null) {
-            return null;
-        }
-        SimpleDateFormat dateFormat = new SimpleDateFormat(COMPACT_TIME_PATTERN);
-        return dateFormat.format(date);
+        return toStr(date, COMPACT_TIME_PATTERN);
     }
+
+// ------------------------------ 获取 Date ------------------------------
 
     /**
      * String 转 Date, 取日期时间
      *
-     * @param strDate 日期, 格式为 yyyy-MM-dd HH:mm:ss
+     * @param strDate 格式为 yyyy-MM-dd HH:mm:ss
      */
-    public static Date toDateTime(String strDate) {
-        if (StringUtils.isBlank(strDate)) {
-            return null;
-        }
-        SimpleDateFormat dateFormat = new SimpleDateFormat(DATETIME_PATTERN);
-        try {
-            return dateFormat.parse(strDate);
-        } catch (ParseException e) {
-            throw new IllegalArgumentException("解析 " + DATETIME_PATTERN + " 格式日期失败, 当前内容: " + strDate, e);
-        }
+    public static Date fromDateTime(String strDate) {
+        return from(strDate, DATETIME_PATTERN);
+    }
+
+    /**
+     * String 转 Date, 只取日期
+     *
+     * @param strDate 格式为 yyyy-MM-dd
+     */
+    public static Date fromDate(String strDate) {
+        return from(strDate, DATE_PATTERN);
+    }
+
+    /**
+     * String 转 Date, 只取时间
+     *
+     * @param strDate 格式为 HH:mm:ss
+     */
+    public static Date fromTime(String strDate) {
+        return from(strDate, TIME_PATTERN);
     }
 
     /**
      * String 转 Date, 取日期时间(无间隔符)
      *
-     * @param strDate 日期, 格式为 yyyyMMddHHmmss
+     * @param strDate 格式为 yyyyMMddHHmmss
      */
-    public static Date toCompactDateTime(String strDate) {
-        if (StringUtils.isBlank(strDate)) {
-            return null;
-        }
-        SimpleDateFormat dateFormat = new SimpleDateFormat(COMPACT_DATETIME_PATTERN);
-        try {
-            return dateFormat.parse(strDate);
-        } catch (ParseException e) {
-            throw new IllegalArgumentException("解析 " + COMPACT_DATETIME_PATTERN + " 格式日期失败, 当前内容: " + strDate, e);
-        }
+    public static Date fromCompactDateTime(String strDate) {
+        return from(strDate, COMPACT_DATETIME_PATTERN);
+    }
+
+    /**
+     * String 转 Date, 只取日期(无间隔符)
+     *
+     * @param strDate 格式为 yyyyMMdd
+     */
+    public static Date fromCompactDate(String strDate) {
+        return from(strDate, COMPACT_DATE_PATTERN);
+    }
+
+    /**
+     * String 转 Date, 只取时间(无间隔符)
+     *
+     * @param strDate 格式为 HHmmss
+     */
+    public static Date fromCompactTime(String strDate) {
+        return from(strDate, COMPACT_TIME_PATTERN);
     }
 
     /** Date 转 LocalDateTime */
@@ -168,50 +165,50 @@ public class DateUtils {
     }
 
     /** LocalDateTime 转 Date */
-    public static Date toDate(LocalDateTime localDateTime) {
+    public static Date fromLocalDateTime(LocalDateTime localDateTime) {
         return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
-
-// ------------------------------ 获取特定日期 ------------------------------
 
     /** 获取日期当天的开始时间(零点) */
     public static Date getDayStart(Date date) {
         LocalDate localDate = LocalDate.from(toLocalDateTime(date));
-        return toDate(localDate.atStartOfDay());
+        return fromLocalDateTime(localDate.atStartOfDay());
     }
+
+// ------------------------------ 获取特定日期 ------------------------------
 
     /** 获取日期当周的开始时间(周一零点) */
     public static Date getWeekStart(Date date) {
         LocalDate localDate = LocalDate.from(toLocalDateTime(date));
-        return toDate(localDate.with(DayOfWeek.MONDAY).atStartOfDay());
+        return fromLocalDateTime(localDate.with(DayOfWeek.MONDAY).atStartOfDay());
     }
 
     /** 获取日期当月的开始时间 */
     public static Date getMonthStart(Date date) {
         LocalDate localDate = LocalDate.from(toLocalDateTime(date));
-        return toDate(localDate.withDayOfMonth(1).atStartOfDay());
+        return fromLocalDateTime(localDate.withDayOfMonth(1).atStartOfDay());
     }
 
     /** 获取日期当年的开始时间 */
     public static Date getYearStart(Date date) {
         LocalDate localDate = LocalDate.from(toLocalDateTime(date));
-        return toDate(localDate.withDayOfYear(1).withDayOfMonth(1).atStartOfDay());
+        return fromLocalDateTime(localDate.withDayOfYear(1).withDayOfMonth(1).atStartOfDay());
     }
-
-// ------------------------------ 日期计算 ------------------------------
 
     /**
      * 获取日期时间, 根据指定日期时间加减
      *
      * @param date       原始日期时间
-     * @param num        加减值(正数为未来时间, 负数为以往时间)
+     * @param num        加减值(正数为未来时间, 负数为过去时间)
      * @param chronoUnit 加减值对应的时间单位
      * @return 计算后的日期时间
      */
     public static Date getDate(Date date, int num, ChronoUnit chronoUnit) {
         LocalDateTime localDateTime = toLocalDateTime(date);
-        return toDate(localDateTime.plus(num, chronoUnit));
+        return fromLocalDateTime(localDateTime.plus(num, chronoUnit));
     }
+
+// ------------------------------ 日期计算 ------------------------------
 
     /** 判断是否同一天 */
     public static boolean isSameDay(Date date1, Date date2) {
@@ -220,5 +217,22 @@ public class DateUtils {
     }
 
     private DateUtils() {
+    }
+
+    /**
+     * String 转 Date, 手动指定格式
+     *
+     * @param pattern 格式, 如: yyyyMMddHHmmss
+     */
+    private static Date from(String strDate, String pattern) {
+        if (StringUtils.isBlank(strDate)) {
+            return null;
+        }
+        SimpleDateFormat dateFormat = new SimpleDateFormat(pattern);
+        try {
+            return dateFormat.parse(strDate);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("解析 " + pattern + " 格式日期失败, 当前内容: " + strDate, e);
+        }
     }
 }

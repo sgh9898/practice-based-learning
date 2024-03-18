@@ -1,7 +1,6 @@
 package com.demo.util;
 
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,7 +12,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.file.Files;
 import java.security.AccessControlException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -310,7 +308,7 @@ public class OkHttpUtils {
 
         private final String version;
 
-        TLSVersion (String version) {
+        TLSVersion(String version) {
             this.version = version;
         }
     }

@@ -32,5 +32,6 @@ public class Base64Utils {
         return new String(Base64.getDecoder().decode(encodedStr), charset);
     }
 
-    private Base64Utils() {}
+    private Base64Utils() {
+    }
 }

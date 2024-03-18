@@ -4,7 +4,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.demo.exception.BaseException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 public class DemoInterceptor implements HandlerInterceptor {
 
     @Override
-    public boolean preHandle(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
         log.info("拦截器启动, uri: {}", request.getRequestURI());
 
         // 获取 parameter

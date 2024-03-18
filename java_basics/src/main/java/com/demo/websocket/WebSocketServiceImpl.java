@@ -1,7 +1,6 @@
 package com.demo.websocket;
 
 import com.demo.config.Constants;
-import com.demo.websocket.WebSocketService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 

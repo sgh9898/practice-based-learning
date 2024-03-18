@@ -3,12 +3,9 @@ package com.demo.exception.handler;
 import com.demo.exception.BaseException;
 import com.demo.exception.JsonException;
 import com.demo.util.ApiResp;
-import com.demo.util.ResultUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.Map;
 
 /**
  * 异常处理类

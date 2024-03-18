@@ -1,7 +1,7 @@
 package com.demo.excel.service;
 
-import com.demo.database.db.repository.RegionRepository;
-import com.demo.database.pojo.excel.ExcelRegion;
+import com.demo.database.pojo.excel.ExcelDemoEntity;
+import com.demo.database.db.repository.DemoEntityRepository;
 import com.demo.excel.easyexcel.EasyExcelUtils;
 import com.demo.excel.easyexcel.pojo.EasyExcelExportDto;
 import com.demo.excel.easyexcel.pojo.EasyExcelNoModelExportDto;
@@ -9,7 +9,7 @@ import com.demo.excel.easyexcel.pojo.ExcelCascadeOption;
 import com.demo.excel.pojo.EasyExcelTest;
 import com.demo.excel.pojo.ExcelToDdl;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
 public class ExcelService {
 
     @Resource
-    private RegionRepository regionRepository;
+    private DemoEntityRepository demoEntityRepository;
 
     /** 导入数据 */
     public Object importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response) {
@@ -42,8 +42,8 @@ public class ExcelService {
 
     /** 导出数据 */
     public void exportData(HttpServletRequest request, HttpServletResponse response) {
-        List<ExcelRegion> excelList = regionRepository.getExcelList();
-        EasyExcelUtils.exportData(request, response, "数据样例", ExcelRegion.class, excelList);
+        List<ExcelDemoEntity> excelList = demoEntityRepository.getExcelList();
+        EasyExcelUtils.exportData(request, response, "数据样例", ExcelDemoEntity.class, excelList);
     }
 
     /** 导出自定义数据 */
@@ -121,7 +121,7 @@ public class ExcelService {
     }
 
     /** 联动下拉框 */
-    @NotNull
+    @NonNull
     private static List<ExcelCascadeOption> getExcelCascadeOptions() {
         List<ExcelCascadeOption> nameCascadeList = new ArrayList<>();
         ExcelCascadeOption excelCascadeOption = new ExcelCascadeOption("第一层1");

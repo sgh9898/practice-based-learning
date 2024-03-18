@@ -1,8 +1,6 @@
 package com.demo.exception;
 
 import com.demo.util.ResultStatus;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /** 基础异常 */

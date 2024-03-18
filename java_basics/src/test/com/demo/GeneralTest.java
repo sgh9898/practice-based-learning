@@ -1,6 +1,5 @@
 package com.demo;
 
-import com.demo.util.AesUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.junit.jupiter.api.Test;
@@ -27,18 +26,7 @@ class GeneralTest {
 
     @Test
     void writeFile() {
-        String encryptedStr = AesUtils.aesEncrypt("测试");
-        String decryptedStr = AesUtils.aesDecrypt(encryptedStr);
-        System.out.println(encryptedStr);
-        System.out.println(decryptedStr);
-        encryptedStr = AesUtils.aesEncryptByKeyStrAndIvStr("测试", DEFAULT_KEY_STR,DEFAULT_IV_STR);
-        decryptedStr = AesUtils.aesDecryptByKeyStrAndIvStr(encryptedStr,DEFAULT_KEY_STR,DEFAULT_IV_STR);
-        System.out.println(encryptedStr);
-        System.out.println(decryptedStr);
-        encryptedStr = AesUtils.aesEncryptByKeyStr("测试", DEFAULT_KEY_STR);
-        decryptedStr = AesUtils.aesDecryptByKeyStr(encryptedStr,DEFAULT_KEY_STR);
-        System.out.println(encryptedStr);
-        System.out.println(decryptedStr);
+        System.out.println(Boolean.TRUE.toString());
     }
 
     public static void main(String[] args) {

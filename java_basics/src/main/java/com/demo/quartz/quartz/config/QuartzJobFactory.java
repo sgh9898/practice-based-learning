@@ -6,7 +6,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.scheduling.quartz.AdaptableJobFactory;
 import org.springframework.stereotype.Component;
 
-
 import javax.annotation.Resource;
 
 /**

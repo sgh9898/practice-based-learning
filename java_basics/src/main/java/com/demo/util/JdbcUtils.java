@@ -1,10 +1,7 @@
 package com.demo.util;
 
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.boot.jdbc.DatabaseDriver;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -13,41 +10,18 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * JDBC 配置工具, 单数据源下可自动配置
+ * JDBC 配置工具
  *
  * @author Song gh
- * @version 2024/2/5
+ * @version 2024/3/13
  */
-@Component
 public class JdbcUtils {
-
-    @Resource
-    protected ApplicationContext applicationContext;
-
-    @Getter
-    private JdbcTemplate jdbcTemplate;
-    @Getter
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-    /** 自动配置数据源 */
-    @PostConstruct
-    public void init() {
-        DataSource dataSource = applicationContext.getBean(DataSource.class);
-        jdbcTemplate = new JdbcTemplate(dataSource);
-        namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-    }
-
     /**
      * 创建 JDBC template
      *
@@ -63,7 +37,20 @@ public class JdbcUtils {
     /**
      * 创建 JDBC template
      *
-     * @param driverClassName 数据库driver
+     * @param driver   数据库driver
+     * @param url      数据库url
+     * @param username 用户名
+     * @param password 密码
+     */
+    public static JdbcTemplate createJdbcTemplate(DatabaseDriver driver, String url, String username, String password) {
+        DriverManagerDataSource dataSource = getDataSource(driver.getDriverClassName(), url, username, password);
+        return new JdbcTemplate(dataSource);
+    }
+
+    /**
+     * 创建 JDBC template
+     *
+     * @param driverClassName 数据库driver名称, {@link DatabaseDriver}
      * @param url             数据库url
      * @param username        用户名
      * @param password        密码
@@ -88,7 +75,20 @@ public class JdbcUtils {
     /**
      * 创建 named JDBC template
      *
-     * @param driverClassName 数据库driver
+     * @param driver   数据库driver
+     * @param url      数据库url
+     * @param username 用户名
+     * @param password 密码
+     */
+    public static NamedParameterJdbcTemplate createNamedJdbcTemplate(DatabaseDriver driver, String url, String username, String password) {
+        DriverManagerDataSource dataSource = getDataSource(driver.getDriverClassName(), url, username, password);
+        return new NamedParameterJdbcTemplate(dataSource);
+    }
+
+    /**
+     * 创建 named JDBC template
+     *
+     * @param driverClassName 数据库driver名称, {@link DatabaseDriver}
      * @param url             数据库url
      * @param username        用户名
      * @param password        密码
@@ -172,6 +172,9 @@ public class JdbcUtils {
     }
 
 // ------------------------------ Private ------------------------------
+
+    private JdbcUtils() {
+    }
 
     /**
      * 配置数据源

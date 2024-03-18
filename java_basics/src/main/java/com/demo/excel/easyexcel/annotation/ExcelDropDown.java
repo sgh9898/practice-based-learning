@@ -10,10 +10,10 @@ import java.lang.annotation.*;
  * @author Song gh
  * @version 2024/1/30
  */
+@Inherited
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-@Inherited
 public @interface ExcelDropDown {
 
     /** 静态下拉框内容 */

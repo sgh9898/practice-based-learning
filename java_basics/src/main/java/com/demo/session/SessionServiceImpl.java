@@ -1,6 +1,6 @@
 package com.demo.session;
 
-import com.demo.database.db.entity.Region;
+import com.demo.database.db.entity.DemoEntity;
 import com.demo.util.JsonUtils;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +20,8 @@ public class SessionServiceImpl implements SessionService {
     public String createSession(HttpServletRequest request) {
         HttpSession session = request.getSession();
         if (session.isNew()) {
-            Region entity = new Region();
-            entity.setDistrictNameDes("测试 session 功能");
+            DemoEntity entity = new DemoEntity();
+            entity.setName("测试 session 功能");
             session.setAttribute("demo", entity);
             session.setAttribute("demoMessage", "这是一条新建的 session 信息");
             session.setMaxInactiveInterval(60);
@@ -36,7 +36,7 @@ public class SessionServiceImpl implements SessionService {
     @Override
     public Object readSession(HttpServletRequest request) {
         HttpSession session = request.getSession();
-        Region entity = (Region) session.getAttribute("demo");
+        DemoEntity entity = (DemoEntity) session.getAttribute("demo");
         return JsonUtils.beanToJson(entity);
     }
 }
