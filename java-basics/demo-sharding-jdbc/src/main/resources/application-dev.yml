@@ -1,0 +1,50 @@
+# 服务端配置
+server:
+  # 端口
+  port: 8080
+  servlet:
+    # 访问路径前缀
+    context-path: /demo-sharding-jdbc
+    encoding:
+      # 使用当前配置文件进行编码, 可配合 charset: utf-8 使用
+      force: true
+
+# Spring 自动配置
+spring:
+  application:
+    name: demo-sharding-jdbc
+  main:
+    # 允许后覆盖相同名称的 bean, 防止项目集成后出现重复定义的冲突
+    allow-bean-definition-overriding: true
+
+  # 数据库使用 Sharding 分库分表
+  datasource:
+    driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
+    url: jdbc:shardingsphere:classpath:sharding-dev.yaml
+
+  # JPA
+  jpa:
+    show-sql: true
+    # true = 保持数据库连接直至 controller 执行完
+    open-in-view: false
+
+  # Swagger
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+# 日志
+logging:
+  level:
+    ROOT: info
+  # 输出格式: {时间} [线程名] 日志级别 日志所属类. 方法名-行号 - 错误信息及换行
+  pattern:
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %green(%logger{50}).%M-%L - %msg %n'
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %green(%logger{50}).%M-%L - %msg %n'
+  logback:
+    rolling policy:
+      # 最大保留时长(天)
+      max-history: 10
+      max-file-size: 100MB
+  file:
+    path: "demo-sharding-jdbc/logs"
