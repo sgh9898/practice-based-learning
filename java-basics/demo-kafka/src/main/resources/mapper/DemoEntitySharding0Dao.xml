@@ -15,8 +15,7 @@
 
     <!--查询单个-->
     <select id="queryById" resultMap="DemoEntitySharding0Map">
-        select
-idnamenumdatecommentis_deletedcreate_timeupdate_time
+        select idnamenumdatecommentis_deletedcreate_timeupdate_time
         from demo_entity_sharding0
         where id = #{id}
     </select>
@@ -24,7 +23,7 @@ idnamenumdatecommentis_deletedcreate_timeupdate_time
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="DemoEntitySharding0Map">
         select
-idnamenumdatecommentis_deletedcreate_timeupdate_time
+        idnamenumdatecommentis_deletedcreate_timeupdate_time
         from demo_entity_sharding0
         <where>
             <if test="id != null">
@@ -97,7 +96,7 @@ idnamenumdatecommentis_deletedcreate_timeupdate_time
         insert into demo_entity_sharding0(namenumdatecommentis_deletedcreate_timeupdate_time)
         values
         <foreach collection="entities" item="entity" separator=",">
-        (#{entity.name}#{entity.num}#{entity.date}#{entity.comment}#{entity.isDeleted}#{entity.createTime}#{entity.updateTime})
+            (#{entity.name}#{entity.num}#{entity.date}#{entity.comment}#{entity.isDeleted}#{entity.createTime}#{entity.updateTime})
         </foreach>
     </insert>
 
@@ -108,7 +107,8 @@ idnamenumdatecommentis_deletedcreate_timeupdate_time
             (#{entity.name}#{entity.num}#{entity.date}#{entity.comment}#{entity.isDeleted}#{entity.createTime}#{entity.updateTime})
         </foreach>
         on duplicate key update
-name = values(name)num = values(num)date = values(date)comment = values(comment)is_deleted = values(is_deleted)create_time = values(create_time)update_time = values(update_time)
+        name = values(name)num = values(num)date = values(date)comment = values(comment)is_deleted =
+        values(is_deleted)create_time = values(create_time)update_time = values(update_time)
     </insert>
 
     <!--通过主键修改数据-->
@@ -142,7 +142,9 @@ name = values(name)num = values(num)date = values(date)comment = values(comment)
 
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from demo_entity_sharding0 where id = #{id}
+        delete
+        from demo_entity_sharding0
+        where id = #{id}
     </delete>
 
 </mapper>

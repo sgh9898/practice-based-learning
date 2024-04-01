@@ -8,7 +8,6 @@ server:
     encoding:
       # 使用当前配置文件进行编码, 可配合 charset: utf-8 使用
       force: true
-
 # Spring 自动配置
 spring:
   application:
@@ -21,12 +20,19 @@ spring:
   datasource:
     driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
     url: jdbc:shardingsphere:classpath:sharding-dev.yaml
+    druid:
+      test-while-idle: true
+      validation-query: SELECT 1
 
   # JPA
   jpa:
     show-sql: true
     # true = 保持数据库连接直至 controller 执行完
     open-in-view: false
+
+  thymeleaf:
+    check-template: false
+    check-template-location: false
 
   # Swagger
   mvc:
@@ -48,3 +54,10 @@ logging:
       max-file-size: 100MB
   file:
     path: "demo-sharding-jdbc/logs"
+
+sharding:
+  createTable:
+    byDate:
+      dsUrl: jdbc:mysql://localhost:3306/sharding_ds_2?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
+      dsUsername: root
+      dsPassword: "RVsdbgjs~4921"

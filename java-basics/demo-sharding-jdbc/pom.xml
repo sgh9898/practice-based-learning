@@ -19,32 +19,41 @@
     <!-- Maven 仓库 -->
     <repositories>
         <repository>
-            <id>aliyunMavenPublic</id>
+            <id>aliMavenPublic</id>
             <name>阿里云公共仓库</name>
-            <url>https://maven.aliyun.com/repository/public</url>
-        </repository>
-        <repository>
-            <id>aliyunMavenSpring</id>
-            <name>阿里云 Spring 仓库</name>
-            <url>https://maven.aliyun.com/repository/spring</url>
+            <url>https://maven.ali.com/repository/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
     <!-- 配置 -->
     <properties>
-        <java.version>1.8</java.version>
+        <!-- Spring -->
+        <spring-boot.version>2.7.6</spring-boot.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <spring-boot.version>2.7.6</spring-boot.version>
 
         <!-- Maven -->
-        <maven.compiler.source>${java.version}}</maven.compiler.source>
-        <maven.compiler.target>${java.version}}</maven.compiler.target>
+        <java.version>1.8</java.version>
+        <resource.delimiter>@</resource.delimiter>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.test.skip>true</maven.test.skip>
     </properties>
 
     <!-- 依赖 -->
     <dependencies>
+        <!-- 项目内其他模块 -->
+        <dependency>
+            <groupId>com.collin.demo</groupId>
+            <artifactId>demo-common</artifactId>
+        </dependency>
+
         <!-- Sharding -->
         <dependency>
             <groupId>org.apache.shardingsphere</groupId>

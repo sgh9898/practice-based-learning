@@ -19,8 +19,10 @@
 
     <!-- 子模块 -->
     <modules>
-        <module>./demo-base</module>
+        <module>./demo-common</module>
+        <module>./demo-canal</module>
         <module>./demo-kafka</module>
+        <module>./demo-minio</module>
         <module>./demo-sharding-jdbc</module>
     </modules>
     <packaging>pom</packaging>
@@ -28,43 +30,56 @@
     <!-- Maven 仓库 -->
     <repositories>
         <repository>
-            <id>aliyunMavenPublic</id>
+            <id>aliMavenPublic</id>
             <name>阿里云公共仓库</name>
-            <url>https://maven.aliyun.com/repository/public</url>
-        </repository>
-        <repository>
-            <id>aliyunMavenSpring</id>
-            <name>阿里云 Spring 仓库</name>
-            <url>https://maven.aliyun.com/repository/spring</url>
+            <url>https://maven.ali.com/repository/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
     <!-- 配置 -->
     <properties>
-        <java.version>1.8</java.version>
+        <!-- Spring -->
+        <spring-boot.version>2.7.6</spring-boot.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <spring-boot.version>2.7.6</spring-boot.version>
 
         <!-- Maven -->
-        <maven.compiler.source>${java.version}}</maven.compiler.source>
-        <maven.compiler.target>${java.version}}</maven.compiler.target>
+        <java.version>1.8</java.version>
+        <resource.delimiter>@</resource.delimiter>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.test.skip>true</maven.test.skip>
+
+        <!-- 当前项目子模块 -->
+        <demo.version>0.0.1-SNAPSHOT</demo.version>
     </properties>
 
     <!-- 依赖版本控制 -->
     <dependencyManagement>
         <dependencies>
-<!--            &lt;!&ndash; DingDing&ndash;&gt;-->
-<!--            <dependency>-->
-<!--                <groupId>com.taobao.top</groupId>-->
-<!--                <artifactId>top-api-sdk-dev</artifactId>-->
-<!--                <version>dingtalk-SNAPSHOT</version>-->
-<!--                <scope>system</scope>-->
-<!--                <systemPath>${project.basedir}/lib/taobao-sdk-java-auto_1479188381469-20210207.jar</systemPath>-->
-<!--            </dependency>-->
+            <!-- 当前项目子模块 -->
             <dependency>
-                <groupId>com.aliyun</groupId>
+                <groupId>com.collin.demo</groupId>
+                <artifactId>demo-common</artifactId>
+                <version>${demo.version}</version>
+            </dependency>
+
+            <!--            &lt;!&ndash; DingDing&ndash;&gt;-->
+            <!--            <dependency>-->
+            <!--                <groupId>com.taobao.top</groupId>-->
+            <!--                <artifactId>top-api-sdk-dev</artifactId>-->
+            <!--                <version>dingtalk-SNAPSHOT</version>-->
+            <!--                <scope>system</scope>-->
+            <!--                <systemPath>${project.basedir}/lib/taobao-sdk-java-auto_1479188381469-20210207.jar</systemPath>-->
+            <!--            </dependency>-->
+            <dependency>
+                <groupId>com.ali</groupId>
                 <artifactId>dingtalk</artifactId>
                 <version>1.5.23</version>
             </dependency>
@@ -86,23 +101,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
-        </dependency>
-
-        <!-- Canal -->
-        <dependency>
-            <groupId>com.alibaba.otter</groupId>
-            <artifactId>canal.client</artifactId>
-            <version>1.1.7</version>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba.otter</groupId>
-            <artifactId>canal.common</artifactId>
-            <version>1.1.7</version>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba.otter</groupId>
-            <artifactId>canal.protocol</artifactId>
-            <version>1.1.7</version>
         </dependency>
 
         <!-- Database -->

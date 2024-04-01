@@ -3,8 +3,9 @@
 #   1. 集群模式下使用雪花算法定义 id 时, 低概率生成重复 id; 务必通过 redis/mysql 等方法, 确保 id 全局唯一
 #   2. 数据库表分片数变动时, 需要在分片算法处同步修改相关参数
 #   3. 使用 Sharding XA 事务时, 必须在主应用注解 @SpringBootApplication(exclude = JtaAutoConfiguration.class)
+#   4. 使用字段加密时, key 必须每个项目单独更换
 #
-# --Song gh on 2024/3/22
+# Song gh on 2024/3/22
 
 # ------------------------------ 目录 ------------------------------
 # mode          单机/集群模式配置
@@ -50,83 +51,108 @@ dataSources:
       maximum-pool-size: 30
       idle-timeout: 120000
 
-#  ds_2:
-#    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
-#    driverClassName: com.mysql.cj.jdbc.Driver   # 部分低版本数据库使用 com.mysql.jdbc.Driver
-#    url: jdbc:mysql://localhost:3306/sharding_ds_2?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
-#    username: root
-#    password: "RVsdbgjs~4921"
-#    hikari:
-#      minimum-idle: 3
-#      maximum-pool-size: 30
-#      idle-timeout: 120000
+  ds_2:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver   # 部分低版本数据库使用 com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/sharding_ds_2?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
+    username: root
+    password: "RVsdbgjs~4921"
+    hikari:
+      minimum-idle: 3
+      maximum-pool-size: 30
+      idle-timeout: 120000
 
 # ------------------------------↓ 规则配置 ↓------------------------------
 rules:
   # ------------------------------↓ 读写分离 ↓------------------------------
   - !READWRITE_SPLITTING
     dataSources:
-      # 自定义数据源名称
-      read_write_ds:
+      # 数据源1
+      read_write_ds1:
         staticStrategy:
-          writeDataSourceName: ds_1
-          readDataSourceNames:
+          writeDataSourceName: ds_1  # 写数据源
+          readDataSourceNames: # 读数据源, 允许多个
             - ds_1
-        loadBalancerName: random-robin
+        loadBalancerName: round-robin  # 负载均衡算法
 
+      # 数据源2
+      read_write_ds2:
+        staticStrategy:
+          writeDataSourceName: ds_2  # 写数据源
+          readDataSourceNames: # 读数据源, 允许多个
+            - ds_2
+        loadBalancerName: round-robin  # 负载均衡算法
+
+    # 负载均衡算法
     loadBalancers:
+      # 随机负载均衡
       random:
         type: RANDOM
         props:
           transaction-read-query-strategy: FIXED_PRIMARY
-      random-robin:
+
+      # 轮询负载均衡
+      round-robin:
         type: ROUND_ROBIN
         props:
           transaction-read-query-strategy: FIXED_PRIMARY
 
   # ------------------------------↓ 表配置 ↓------------------------------
-  # 不需要分片的表无需配置, sharding 可以自动读取
+  # 说明:
+  # 1. 不需要分片的表无需配置, sharding 可以自动读取
+  # 2. 逻辑表名不包含分表后缀, 如: table0 ~ table9 共 10 张表, 逻辑表名为 table
+  # 3. 实际表名(actualDataNodes)格式 = 数据源名称(见 ${rules.dataSources}).表名(含后缀), 如: read_write_ds1.demo_table${0..9} 表示分 10 张表, 表后缀为 0~9
+  # 4. 分片算法(shardingAlgorithmName), 需要在 ${rules.shardingAlgorithms} 进行定义
+  # 5. 主键生成策略(keyGeneratorName), 需要在 ${rules.keyGenerators} 进行定义
   - !SHARDING
     tables:
-      # 需要分片的表名(不含后缀)
       demo_entity_sharding:
-        # 实际表名, 格式 = 数据源名称(见 ${rules.dataSources}).表名(含后缀), 如: read_write_ds.demo_table${0..9} 表示分 10 张表, 表后缀为 0~9
-        actualDataNodes: read_write_ds.demo_entity_sharding${0..2}  # 表名后的 ${0..9} 表示分10张表
-        # 分片规则
+        actualDataNodes: read_write_ds1.demo_entity_sharding${0..2}  # 实际表名
         tableStrategy:
           standard:
-            # 分片时依据的字段(使用唯一性 id)
-            shardingColumn: id
-            # 分片使用的算法, 需要在 ${rules.shardingAlgorithms} 进行定义
-            shardingAlgorithmName: database_hash
-        # 主键自动生成值的规则
+            shardingColumn: id  # 分片依据字段
+            shardingAlgorithmName: database_hash  # 分片算法
         keyGenerateStrategy:
-          # 主键名称
-          column: id
-          # 生成策略, 需要在 ${rules.keyGenerators} 进行定义
-          keyGeneratorName: myKeyGenerators
+          column: id  # 主键名称
+          keyGeneratorName: snowflake # 主键生成策略
 
-      # 需要分片的表名(不含后缀)
       demo_entity_sharding_copy:
-        # 实际表名, 格式 = 数据源名称(见 ${rules.dataSources}).表名(含后缀), 如: read_write_ds.demo_table${0..9} 表示分 10 张表, 表后缀为 0~9
-        actualDataNodes: read_write_ds.demo_entity_sharding_copy${0..2}  # 表名后的 ${0..9} 表示分10张表
-        # 分片规则
+        actualDataNodes: read_write_ds1.demo_entity_sharding_copy${0..2}  # 实际表名
         tableStrategy:
           standard:
-            # 分片时依据的字段(使用唯一性 id)
-            shardingColumn: demo_entity_id
-            # 分片使用的算法, 需要在 ${rules.shardingAlgorithms} 进行定义
-            shardingAlgorithmName: database_hash
-        # 主键自动生成值的规则
+            shardingColumn: demo_entity_id  # 分片依据字段
+            shardingAlgorithmName: database_hash  # 分片算法
         keyGenerateStrategy:
-          # 主键名称
-          column: id
-          # 生成策略, 需要在 ${rules.keyGenerators} 进行定义
-          keyGeneratorName: myKeyGenerators
+          column: id  # 主键名称
+          keyGeneratorName: snowflake # 主键生成策略
 
-    # 绑定表(避免 join 产生笛卡尔积), 要求分片规则必须一致(字段名称可以不同)
+      demo_entity_sharding_extra_copy:
+        actualDataNodes: read_write_ds2.demo_entity_sharding_extra_copy${0..2}  # 实际表名
+        tableStrategy:
+          standard:
+            shardingColumn: demo_entity_id  # 分片依据字段
+            shardingAlgorithmName: database_hash  # 分片算法
+        keyGenerateStrategy:
+          column: id  # 主键名称
+          keyGeneratorName: snowflake # 主键生成策略
+
+      demo_entity_sharding_time:
+        actualDataNodes: read_write_ds2.demo_entity_sharding_time
+        tableStrategy:
+          standard:
+            shardingColumn: create_time  # 分片依据字段
+            shardingAlgorithmName: time_sharding  # 分片算法
+        keyGenerateStrategy:
+          column: id  # 主键名称
+          keyGeneratorName: snowflake # 主键生成策略
+
+    # 绑定表(避免 join 产生笛卡尔积), 要求分片规则一致(字段名称可以不同)
     bindingTables:
       - demo_entity_sharding, demo_entity_sharding_copy
+
+    # 广播表(在所有数据源下均有副本且全局同步, 一般为字典或基础配置)
+    broadcastTables:
+      - dict_data
 
     # ------------------------------↓ 默认分库分表规则 ↓------------------------------
     # ---- 需要注意的是, 默认规则仅对 ${rules.tables} 定义的表生效, 并不适用于未定义的表 ----
@@ -136,11 +162,9 @@ rules:
     # 默认分片策略
     defaultTableStrategy:
       standard:
-        # 分片时依据的字段(使用唯一性 id)
-        shardingColumn: id
-        # 分片使用的算法, 需要在 ${rules.shardingAlgorithms} 进行定义
-        shardingAlgorithmName: database_hash
-    # 默认分片依据的字段
+        shardingColumn: id  # 分片依据字段
+        shardingAlgorithmName: database_hash  # 分片算法
+    # 默认分片依据字段
     defaultShardingColumn: id
 
     # ------------------------------↓ 分片方法定义 ↓------------------------------
@@ -150,96 +174,152 @@ rules:
       database_hash:
         type: HASH_MOD
         props:
-          # 分片数(使用此方法分片的表, 分片数必须与此一致)
-          sharding-count: 3
+          sharding-count: 3  # 分片数(使用此方法分片的表, 分片数不得小于此数)
 
-    # 主键自动生成的规则
+      # 分片策略--根据时间动态管理(使用此方法时, actualDataNodes 表名需与逻辑表名相同且无分表后缀)
+      time_sharding:
+        type: CLASS_BASED
+        props:
+          strategy: STANDARD #标准分片类型
+          algorithmClassName: com.collin.demo.sharding.sharding.algorithm.table.TimeShardingAlgorithm
+
+    # 定义主键自动生成方法(非内置方法需要在代码中 implements KeyGenerateAlgorithm)
     keyGenerators:
-      # 规则名称
-      myKeyGenerators:
-        type: myId
-
-      # 内置雪花算法, 推荐使用自定义的雪花算法
+      # sharding 内置的雪花算法, 集群部署时推荐使用自定义的雪花算法
       snowflake:
         type: SNOWFLAKE
 
+      # 集群部署时使用的雪花算法, 通过 redis 防止 id 重复
+      cluster_snowflake:
+        type: clusterSnowflakeId
+
+    # ------------------------------↓ 分片审计 ↓------------------------------
+    ## 启用分片审计
+    #defaultAuditStrategy:
+    #  auditorNames:  # 启用的分片审计方法名称, 所有方法必须在 ${rules.auditors} 定义
+    #    - sharding_key_required_auditor
+    #  allowHintDisable: true
+
+    # 定义分片审计方法
     auditors:
-      sharding_key_required_auditor:
-        type: DML_SHARDING_CONDITIONS
+      sharding_key_required_auditor: # 默认的分片审计方法
+        type: DML_SHARDING_CONDITIONS  # where 语句必须包含分片键
+
   # ------------------------------↓ 事务 ↓------------------------------
   - !TRANSACTION
-    # 使用时必须在主应用注解 @SpringBootApplication(exclude = JtaAutoConfiguration.class), 以屏蔽 Spring 自动加载
-    defaultType: XA
+    defaultType: XA  # 使用时必须在主应用注解 @SpringBootApplication(exclude = JtaAutoConfiguration.class), 以屏蔽 Spring 自动加载
     providerType: Atomikos
 
-  # ------------------------------↓ 数据库加密 ↓------------------------------
-  # Encrypt-加密规则
-  #  - !ENCRYPT
-  #    tables:
-  #      # 需要加密的表
-  #      base_user:
-  #        # 需要加密的列
-  #        columns:
-  #          name:
-  #            cipherColumn: name
-  #            encryptorName: aes_encryptor
-  #          username:
-  #            cipherColumn: username
-  #            encryptorName: aes_encryptor
-  #          mobile:
-  #            cipherColumn: mobile
-  #            encryptorName: aes_encryptor
-  #          idcard_no:
-  #            cipherColumn: idcard_no
-  #            encryptorName: aes_encryptor
-  #        queryWithCipherColumn: true
-  #    encryptors:
-  #      aes_encryptor:
-  #        type: AES
-  #        props:
-  #          aes-key-value: xc0528WM1ST1SGH3
-  #      md5_encryptor:
-  #        type: MD5
-  #      like_encryptor:
-  #        type: CHAR_DIGEST_LIKE
+  # ------------------------------↓ 字段加密 ↓------------------------------
+  # 说明:
+  # 1. 表名使用逻辑表名, 不要包含分片后缀
+  # 2. 配置加密字段时, 所用到的加密方法需要在 ${rules.encryptors} 进行定义
+  # 3. 与原字段名称不同的密文/明文所在列会被默认配置, 不要在实体类中重复声明(重复声明需要标记为 @Transient)
+  - !ENCRYPT
+    tables:
+      demo_entity_sharding:
+        columns:
+          aes_name:
+            cipherColumn: aes_name  # 加密数据所在列, 可以与当前列相同
+            plainColumn: plain_name  # 明文数据所在列
+            encryptorName: aes_encryptor  # 加密方法
+            queryWithCipherColumn: false  # true = 使用密文查询, false = 保持明文查询
+      demo_entity_sharding_copy:
+        columns:
+          md5name:
+            cipherColumn: md5name  # 加密数据所在列, 可以与当前列相同
+            plainColumn: plain_name  # 明文数据所在列
+            encryptorName: md5_encryptor  # 加密方法
+            queryWithCipherColumn: false  # true = 使用密文查询, false = 保持明文查询
 
-  # ------------------------------↓ 数据库脱敏 ↓------------------------------
-#  - !MASK
-#    tables:
-#      base_user:
-#        columns:
-#          #          name:
-#          #            maskAlgorithm: mask_before_special_chars_mask
-#          mobile:
-#            maskAlgorithm: keep_first_3_last_4_mask
-#          idcard_no:
-#            maskAlgorithm: keep_first_4_last_4_mask
-#      base_identity:
-#        columns:
-#          idcard_no:
-#            maskAlgorithm: keep_first_4_last_4_mask
-#    maskAlgorithms:
-#      md5_mask:
-#        type: MD5
-#      mask_before_special_chars_mask:
-#        type: MASK_BEFORE_SPECIAL_CHARS
-#        props:
-#          special-chars: '@'
-#          replace-char: '*'
-#      keep_first_3_last_4_mask:
-#        type: KEEP_FIRST_N_LAST_M
-#        props:
-#          first-n: 3
-#          last-m: 4
-#          replace-char: '*'
-#      keep_first_4_last_4_mask:
-#        type: KEEP_FIRST_N_LAST_M
-#        props:
-#          first-n: 4
-#          last-m: 4
-#          replace-char: '*'
+    # 定义加密方法
+    encryptors:
+      # AES 加密
+      aes_encryptor:
+        type: AES
+        props:
+          aes-key-value: xqXOssWFxZTIhcKg  # AES Key, 每个项目需要单独更换
+
+      # MD5 加密
+      md5_encryptor:
+        type: MD5
+
+  # ------------------------------↓ 字段脱敏 ↓------------------------------
+  # 说明:
+  # 1. 表名使用逻辑表名, 不要包含分片后缀
+  # 2. 配置脱敏字段时, 所用到的脱敏方法需要在 ${rules.maskAlgorithms} 进行定义
+  # 3. 脱敏仅在查询时生效, 数据库字段不会被改动
+  - !MASK
+    tables:
+      demo_entity_sharding:
+        columns:
+          masked_name:
+            maskAlgorithm: generic_table_random_replace
+    #      demo_entity_sharding_copy:
+    #        columns:
+    #          idcard_no:
+    #            maskAlgorithm: keep_first_4_last_4_mask
+
+    # 定义脱敏方法
+    maskAlgorithms:
+      # MD5 加密字段
+      md5_mask:
+        type: MD5
+
+      # 遮盖首个指定字符前所有内容
+      mask_before_special_chars_mask:
+        type: MASK_BEFORE_SPECIAL_CHARS
+        props:
+          special-chars: '@'  # 出现的特殊字符
+          replace-char: '*'  # 遮盖内容使用的字符
+
+      # 遮盖首个指定字符后所有内容
+      mask_after_special_chars_mask:
+        type: MASK_AFTER_SPECIAL_CHARS
+        props:
+          special-chars: '@'  # 出现的特殊字符
+          replace-char: '*'  # 遮盖内容使用的字符
+
+      # 保留 x 至 y 位字符(从 0 开始), 遮盖其余内容
+      keep_from_x_to_y:
+        type: KEEP_FROM_X_TO_Y
+        props:
+          from-x: 1  # 起始位置(从 0 开始)
+          to-y: 2  # 结束位置(从 0 开始)
+          replace-char: '*'
+
+      # 遮盖 x 至 y 位字符(从 0 开始)
+      mask_from_x_to_y:
+        type: MASK_FROM_X_TO_Y
+        props:
+          from-x: 1  # 起始位置(从 0 开始)
+          to-y: 2  # 结束位置(从 0 开始)
+          replace-char: '*'
+
+      # 保留前 n 后 m 位字符, 遮盖其余内容
+      keep_first_3_last_4_mask:
+        type: KEEP_FIRST_N_LAST_M
+        props:
+          first-n: 3  # 保持前 n 位字符不变
+          last-m: 4  # 保持后 m 位字符不变
+          replace-char: '*'  # 遮盖内容使用的字符
+      keep_first_4_last_4_mask:
+        type: KEEP_FIRST_N_LAST_M
+        props:
+          first-n: 4  # 保持前 n 位字符不变
+          last-m: 4  # 保持后 m 位字符不变
+          replace-char: '*'  # 遮盖内容使用的字符
+
+      # 根据字符类型替换
+      generic_table_random_replace:
+        type: GENERIC_TABLE_RANDOM_REPLACE
+        props:
+          uppercase-letter-codes: 'U'  # 替换大写字母的字符
+          lowercase-letter-codes: 'l'  # 替换小写字母的字符
+          digital-codes: 'd'  # 替换数字的字符
+          special-codes: 'Z'  # 替换特殊符号(包括中文)的字符,
 
 # ------------------------------↓ 其他 ↓------------------------------
 props:
-  sql-show: true
-  proxy-hint-enabled: true
+  sql-show: true  # 是否日志中打印实际的 sql
+  proxy-hint-enabled: false    # 是否允许在 ShardingSphere-Proxy 中使用 Hint
