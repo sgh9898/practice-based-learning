@@ -7,12 +7,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.env.Environment;
 
 /**
- * 主应用启动
+ * Demo 应用, 包含通用功能或演示
  *
  * @author Song gh
  * @version 2024/3/21
  */
-@Slf4j
 @SpringBootApplication
 public class DemoCanalApplication {
 

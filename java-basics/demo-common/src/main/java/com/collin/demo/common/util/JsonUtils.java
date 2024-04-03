@@ -96,6 +96,11 @@ public class JsonUtils {
         }
     }
 
+    /** Java对象 --> Map */
+    public static <T> T mapToBean(Object bean, Class<T> tClass) {
+        return MAPPER.convertValue(bean, tClass);
+    }
+
 // ------------------------------ JsonNode 转换其他类型 ------------------------------
 
     /** Json String --> JsonNode */

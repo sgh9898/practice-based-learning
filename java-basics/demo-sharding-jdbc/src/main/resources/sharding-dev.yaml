@@ -1,9 +1,9 @@
 # Sharding 分库分表配置
+# !!! 重要: 1. 使用字段加密时, AES Key 必须每个项目单独更换 (rules[!ENCRYPT].encryptors.aes_encryptor.props.aes-key-value)
+#
 # 注意事项:
 #   1. 集群模式下使用雪花算法定义 id 时, 低概率生成重复 id; 务必通过 redis/mysql 等方法, 确保 id 全局唯一
-#   2. 数据库表分片数变动时, 需要在分片算法处同步修改相关参数
-#   3. 使用 Sharding XA 事务时, 必须在主应用注解 @SpringBootApplication(exclude = JtaAutoConfiguration.class)
-#   4. 使用字段加密时, key 必须每个项目单独更换
+#   2. 使用 Sharding XA 事务时, 必须在主应用注解 @SpringBootApplication(exclude = JtaAutoConfiguration.class)
 #
 # Song gh on 2024/3/22
 
@@ -67,23 +67,33 @@ rules:
   # ------------------------------↓ 读写分离 ↓------------------------------
   - !READWRITE_SPLITTING
     dataSources:
+      # ------------------------------↓ [样例] 读写分离配置 ↓------------------------------
+      #demo_read_write_ds:  # 数据源名称
+      #  staticStrategy:
+      #    writeDataSourceName: ds_1   # 写数据源
+      #    readDataSourceNames:        # 读数据源, 允许配置多个
+      #      - ds_1
+      #      - ds_2
+      #  loadBalancerName: round-robin # 负载均衡算法, 所使用的算法必须在 ${rules[!READWRITE_SPLITTING].loadBalancers} 进行定义
+      # ==============================↑ [样例] 数据库表配置 ↑==============================
+
       # 数据源1
       read_write_ds1:
         staticStrategy:
-          writeDataSourceName: ds_1  # 写数据源
-          readDataSourceNames: # 读数据源, 允许多个
+          writeDataSourceName: ds_1
+          readDataSourceNames:
             - ds_1
-        loadBalancerName: round-robin  # 负载均衡算法
+        loadBalancerName: round-robin
 
       # 数据源2
       read_write_ds2:
         staticStrategy:
-          writeDataSourceName: ds_2  # 写数据源
-          readDataSourceNames: # 读数据源, 允许多个
+          writeDataSourceName: ds_2
+          readDataSourceNames:
             - ds_2
-        loadBalancerName: round-robin  # 负载均衡算法
+        loadBalancerName: round-robin
 
-    # 负载均衡算法
+    # ------------------------------↓ 负载均衡算法定义 ↓------------------------------
     loadBalancers:
       # 随机负载均衡
       random:
@@ -97,65 +107,76 @@ rules:
         props:
           transaction-read-query-strategy: FIXED_PRIMARY
 
-  # ------------------------------↓ 表配置 ↓------------------------------
+  # ------------------------------↓ 数据库表配置 ↓------------------------------
   # 说明:
   # 1. 不需要分片的表无需配置, sharding 可以自动读取
-  # 2. 逻辑表名不包含分表后缀, 如: table0 ~ table9 共 10 张表, 逻辑表名为 table
-  # 3. 实际表名(actualDataNodes)格式 = 数据源名称(见 ${rules.dataSources}).表名(含后缀), 如: read_write_ds1.demo_table${0..9} 表示分 10 张表, 表后缀为 0~9
-  # 4. 分片算法(shardingAlgorithmName), 需要在 ${rules.shardingAlgorithms} 进行定义
-  # 5. 主键生成策略(keyGeneratorName), 需要在 ${rules.keyGenerators} 进行定义
   - !SHARDING
     tables:
+      ## ------------------------------↓ [样例] 数据库表配置 ↓------------------------------
+      #demo_table:  # 逻辑表名, 即代码中使用的表名
+      #  actualDataNodes: demo_read_write_ds.demo_table${0..9}  # 实际表名 = 数据源名.逻辑表名 + 分表后缀, 其中 ${0..9} 表示分 10 张表, 表后缀为 0~9; 使用动态分表时不加后缀
+      #  tableStrategy:
+      #    standard:
+      #      shardingColumn: id  # 分片依据字段, 经常关联查询的表推荐使用相同字段分片; 不为主键时需要在实体类标注 @Column(updatable = false)
+      #      shardingAlgorithmName: database_hash  # 分片算法, 所使用的算法必须在 ${rules[!SHARDING].shardingAlgorithms} 进行定义
+      #  # 主键自动生成, 不需要自动生成可跳过
+      #  keyGenerateStrategy:
+      #    column: id  # 主键名称
+      #    keyGeneratorName: snowflake  # 主键自动生成算法, 所使用的算法必须在 ${rules[!SHARDING].keyGenerators} 进行定义
+      ## ==============================↑ [样例] 数据库表配置 ↑==============================
+
       demo_entity_sharding:
-        actualDataNodes: read_write_ds1.demo_entity_sharding${0..2}  # 实际表名
+        actualDataNodes: read_write_ds1.demo_entity_sharding${0..2}
         tableStrategy:
           standard:
-            shardingColumn: id  # 分片依据字段
-            shardingAlgorithmName: database_hash  # 分片算法
+            shardingColumn: id
+            shardingAlgorithmName: database_hash
         keyGenerateStrategy:
-          column: id  # 主键名称
-          keyGeneratorName: snowflake # 主键生成策略
+          column: id
+          keyGeneratorName: snowflake
 
       demo_entity_sharding_copy:
-        actualDataNodes: read_write_ds1.demo_entity_sharding_copy${0..2}  # 实际表名
+        actualDataNodes: read_write_ds1.demo_entity_sharding_copy${0..2}
         tableStrategy:
           standard:
-            shardingColumn: demo_entity_id  # 分片依据字段
-            shardingAlgorithmName: database_hash  # 分片算法
+            shardingColumn: demo_entity_id
+            shardingAlgorithmName: database_hash
         keyGenerateStrategy:
-          column: id  # 主键名称
-          keyGeneratorName: snowflake # 主键生成策略
+          column: id
+          keyGeneratorName: snowflake
 
       demo_entity_sharding_extra_copy:
-        actualDataNodes: read_write_ds2.demo_entity_sharding_extra_copy${0..2}  # 实际表名
+        actualDataNodes: read_write_ds2.demo_entity_sharding_extra_copy${0..2}
         tableStrategy:
           standard:
-            shardingColumn: demo_entity_id  # 分片依据字段
-            shardingAlgorithmName: database_hash  # 分片算法
+            shardingColumn: demo_entity_id
+            shardingAlgorithmName: database_hash
         keyGenerateStrategy:
-          column: id  # 主键名称
-          keyGeneratorName: snowflake # 主键生成策略
+          column: id
+          keyGeneratorName: snowflake
 
       demo_entity_sharding_time:
         actualDataNodes: read_write_ds2.demo_entity_sharding_time
         tableStrategy:
           standard:
-            shardingColumn: create_time  # 分片依据字段
-            shardingAlgorithmName: time_sharding  # 分片算法
+            shardingColumn: create_time
+            shardingAlgorithmName: time_sharding
         keyGenerateStrategy:
-          column: id  # 主键名称
-          keyGeneratorName: snowflake # 主键生成策略
+          column: id
+          keyGeneratorName: snowflake
 
-    # 绑定表(避免 join 产生笛卡尔积), 要求分片规则一致(字段名称可以不同)
+    # ------------------------------↓ 绑定表 ↓------------------------------
+    # 绑定的表之间 join 可以避免产生笛卡尔积, 要求分片规则一致(字段名称可以不同)
     bindingTables:
       - demo_entity_sharding, demo_entity_sharding_copy
 
-    # 广播表(在所有数据源下均有副本且全局同步, 一般为字典或基础配置)
+    # ------------------------------↓ 广播表 ↓------------------------------
+    # 广播表在所有数据源下均有副本且全局同步, 一般为字典或基础配置
     broadcastTables:
       - dict_data
 
     # ------------------------------↓ 默认分库分表规则 ↓------------------------------
-    # ---- 需要注意的是, 默认规则仅对 ${rules.tables} 定义的表生效, 并不适用于未定义的表 ----
+    # ---- 默认规则仅对 ${rules.tables} 定义的表生效, 并不适用于未定义的表 ----
     # 默认分库策略
     defaultDatabaseStrategy:
       none:
@@ -167,8 +188,7 @@ rules:
     # 默认分片依据字段
     defaultShardingColumn: id
 
-    # ------------------------------↓ 分片方法定义 ↓------------------------------
-    # 所有分片方法必须在此定义
+    # ------------------------------↓ 分片算法定义 ↓------------------------------
     shardingAlgorithms:
       # 分片策略--根据 Hash + 取模
       database_hash:
@@ -180,10 +200,11 @@ rules:
       time_sharding:
         type: CLASS_BASED
         props:
-          strategy: STANDARD #标准分片类型
-          algorithmClassName: com.collin.demo.sharding.sharding.algorithm.table.TimeShardingAlgorithm
+          strategy: STANDARD  # 标准分片类型
+          algorithmClassName: com.collin.demo.sharding.sharding.algorithm.table.TimeShardingAlgorithm  # 算法路径
 
-    # 定义主键自动生成方法(非内置方法需要在代码中 implements KeyGenerateAlgorithm)
+    # ------------------------------↓ 主键自动生成算法定义 ↓------------------------------
+    # ---- 非内置方法需要在代码中 implements KeyGenerateAlgorithm ----
     keyGenerators:
       # sharding 内置的雪花算法, 集群部署时推荐使用自定义的雪花算法
       snowflake:
@@ -202,21 +223,30 @@ rules:
 
     # 定义分片审计方法
     auditors:
-      sharding_key_required_auditor: # 默认的分片审计方法
-        type: DML_SHARDING_CONDITIONS  # where 语句必须包含分片键
+      # 默认的分片审计方法, 要求 where 语句必须包含分片键
+      sharding_key_required_auditor:
+        type: DML_SHARDING_CONDITIONS
 
   # ------------------------------↓ 事务 ↓------------------------------
   - !TRANSACTION
-    defaultType: XA  # 使用时必须在主应用注解 @SpringBootApplication(exclude = JtaAutoConfiguration.class), 以屏蔽 Spring 自动加载
+    # 使用时必须在主应用注解 @SpringBootApplication(exclude = JtaAutoConfiguration.class), 以屏蔽 Spring 自动加载
+    defaultType: XA
     providerType: Atomikos
 
   # ------------------------------↓ 字段加密 ↓------------------------------
-  # 说明:
-  # 1. 表名使用逻辑表名, 不要包含分片后缀
-  # 2. 配置加密字段时, 所用到的加密方法需要在 ${rules.encryptors} 进行定义
-  # 3. 与原字段名称不同的密文/明文所在列会被默认配置, 不要在实体类中重复声明(重复声明需要标记为 @Transient)
   - !ENCRYPT
     tables:
+      ## ------------------------------↓ [样例] 字段加密 ↓------------------------------
+      #demo_table:   # 逻辑表名, 即代码中使用的表名
+      #  columns:
+      #    aes_name: # 逻辑字段名, 即代码中使用的字段名
+      #      cipherColumn: aes_name        # 密文数据所在字段, 通常与逻辑字段列相同
+      #      plainColumn: plain_name       # 明文数据所在字段, 对应的实体类字段需要标记 @Transient 防止重复解析; 不使用明文可跳过
+      #      encryptorName: aes_encryptor  # 加密算法, 所使用的算法必须在 ${rules[!ENCRYPT].encryptors} 进行定义
+      #      queryWithCipherColumn: false  # true = 使用密文字段(cipherColumn)查询, 不支持 like; false = 使用明文字段(plainColumn)查询
+      #  # queryWithCipherColumn 也可配置在 columns 同级, 对当前表所有加密字段生效; 也可配置在 tables 同级, 对所有表所有加密字段生效
+      ## ==============================↑ [样例] 字段加密 ↑==============================
+
       demo_entity_sharding:
         columns:
           aes_name:
@@ -224,6 +254,7 @@ rules:
             plainColumn: plain_name  # 明文数据所在列
             encryptorName: aes_encryptor  # 加密方法
             queryWithCipherColumn: false  # true = 使用密文查询, false = 保持明文查询
+
       demo_entity_sharding_copy:
         columns:
           md5name:
@@ -232,13 +263,15 @@ rules:
             encryptorName: md5_encryptor  # 加密方法
             queryWithCipherColumn: false  # true = 使用密文查询, false = 保持明文查询
 
-    # 定义加密方法
+    # ------------------------------↓ 加密算法定义 ↓------------------------------
     encryptors:
       # AES 加密
       aes_encryptor:
         type: AES
         props:
-          aes-key-value: xqXOssWFxZTIhcKg  # AES Key, 每个项目需要单独更换
+          # ---------------!!! [重要] AES Key, 每个项目必须单独更换 !!!---------------
+          aes-key-value: xqXOssWFxZTIhcKg
+          # ===============!!! [重要] AES Key, 每个项目必须单独更换 !!!===============
 
       # MD5 加密
       md5_encryptor:
@@ -246,23 +279,24 @@ rules:
 
   # ------------------------------↓ 字段脱敏 ↓------------------------------
   # 说明:
-  # 1. 表名使用逻辑表名, 不要包含分片后缀
-  # 2. 配置脱敏字段时, 所用到的脱敏方法需要在 ${rules.maskAlgorithms} 进行定义
-  # 3. 脱敏仅在查询时生效, 数据库字段不会被改动
+  # 1. 脱敏仅在查询时生效, 数据库字段不会被改动
   - !MASK
     tables:
+      ## ------------------------------↓ [样例] 字段脱敏 ↓------------------------------
+      #demo_table:  # 逻辑表名, 即代码中使用的表名
+      #  columns:
+      #    masked_name:  # 逻辑字段名, 即代码中使用的字段名
+      #      maskAlgorithm: generic_table_random_replace  # 脱敏算法, 所使用的算法必须在 ${rules[!MASK].maskAlgorithms} 进行定义
+      ## ==============================↑ [样例] 字段脱敏 ↑==============================
+
       demo_entity_sharding:
         columns:
           masked_name:
-            maskAlgorithm: generic_table_random_replace
-    #      demo_entity_sharding_copy:
-    #        columns:
-    #          idcard_no:
-    #            maskAlgorithm: keep_first_4_last_4_mask
+            maskAlgorithm: keep_first_3_last_4_mask
 
-    # 定义脱敏方法
+    # ------------------------------↓ 脱敏算法定义 ↓------------------------------
     maskAlgorithms:
-      # MD5 加密字段
+      # MD5 脱敏
       md5_mask:
         type: MD5
 
@@ -317,9 +351,9 @@ rules:
           uppercase-letter-codes: 'U'  # 替换大写字母的字符
           lowercase-letter-codes: 'l'  # 替换小写字母的字符
           digital-codes: 'd'  # 替换数字的字符
-          special-codes: 'Z'  # 替换特殊符号(包括中文)的字符,
+          special-codes: 'Z'  # 替换特殊符号(包括中文)的字符
 
 # ------------------------------↓ 其他 ↓------------------------------
 props:
-  sql-show: true  # 是否日志中打印实际的 sql
+  sql-show: true  # 是否在日志中打印实际的 sql
   proxy-hint-enabled: false    # 是否允许在 ShardingSphere-Proxy 中使用 Hint

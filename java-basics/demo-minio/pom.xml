@@ -48,6 +48,12 @@
 
     <!-- 依赖 -->
     <dependencies>
+        <!-- 项目内其他模块 -->
+        <dependency>
+            <groupId>com.collin.demo</groupId>
+            <artifactId>demo-common</artifactId>
+        </dependency>
+
         <!-- MinIO 文件管理 -->
         <dependency>
             <groupId>io.minio</groupId>

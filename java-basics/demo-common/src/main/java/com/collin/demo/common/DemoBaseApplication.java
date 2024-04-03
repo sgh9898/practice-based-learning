@@ -14,7 +14,8 @@ import java.util.Objects;
 /**
  * Demo 应用, 包含通用功能或演示
  *
- * @author Song gh on 2022/1/24.
+ * @author Song gh
+ * @version 2024/3/21
  */
 @Slf4j
 @EnableAsync
@@ -26,26 +27,6 @@ public class DemoBaseApplication {
 
     public static void main(String[] args) {
         Environment env = SpringApplication.run(DemoBaseApplication.class, args).getEnvironment();
-        // 仅在开发环境展示 swagger
-        if (Objects.equals(env.getActiveProfiles()[0], "dev")) {
-            String ip = IpUtils.getRealIp();
-            log.info("\n--------------------------------------------------\n" +
-                            "  Swagger(local):   http://localhost:{}{}/swagger-ui.html\n" +
-                            "  Swagger(network): http://{}:{}{}/swagger-ui.html\n" +
-                            "  Active Profiles:  {}\n" +
-                            "--------------------------------------------------",
-                    env.getProperty("server.port"),
-                    env.getProperty("server.servlet.context-path"),
-
-                    ip,
-                    env.getProperty("server.port"),
-                    env.getProperty("server.servlet.context-path"),
-
-                    env.getActiveProfiles());
-        } else {
-            log.info("\n--------------------------------------------------" +
-                    "\n                    启动成功" +
-                    "\n--------------------------------------------------");
-        }
+        IpUtils.printAtStart(env);
     }
 }

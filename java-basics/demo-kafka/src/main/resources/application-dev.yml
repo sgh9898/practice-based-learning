@@ -1,0 +1,79 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /demo-kafka
+    encoding:
+      force: true   # true = 使用当前配置文件进行编码, 可配合 charset: utf-8 使用
+
+# Spring 配置
+spring:
+  application:
+    name: demo-kafka
+  main:
+    allow-bean-definition-overriding: true # true = 允许后覆盖相同名称的 bean, 防止项目集成后出现重复定义的冲突
+
+  # 数据库
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/data?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
+    username: root
+    password: "RVsdbgjs~4921"
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      minimum-idle: 3
+      maximum-pool-size: 10
+    druid:
+      test-while-idle: true
+      validation-query: SELECT 1
+
+  # JPA
+  jpa:
+    show-sql: true        # log 中打印 sql 语句, 便于排查错误
+    open-in-view: false   # true = 保持数据库连接直至 controller 执行完
+
+  # Kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+    template:
+      default-topic: demo-topic
+    consumer:
+      group-id: demo-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest # 没有 offset 时的重置规则
+      enable-auto-commit: false   # 是否允许自动提交
+      max-poll-records: 1000      # 拉取数据时, 每批次最大数据量
+      fetch-max-wait: 3s
+      properties:
+        isolation.level: read_committed
+    listener:
+      type: batch  # single = 单条监听; batch = 批量监听
+      ack-mode: manual_immediate  # 提交模式
+      idle-event-interval: 10s
+      concurrency: 4
+      missing-topics-fatal: false
+    producer:
+      acks: 1  # 消息处理成功的条件: 0 不返回, 1 leader 收到返回成功, all/-1 全员收到返回成功
+
+  # Swagger
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  # Thymeleaf
+  thymeleaf:
+    check-template-location: false
+
+# 日志
+logging:
+  level:
+    ROOT: info  # 最低展示级别 (error > warn > info > debug)
+  pattern:
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %green(%logger{50}).%M-%L - %msg %n'
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %green(%logger{50}).%M-%L - %msg %n'
+  logback:
+    rolling policy:
+      max-history: 10 # 最大保留时长(天)
+      max-file-size: 100MB
+  file:
+    path: "demo-kafka/logs"

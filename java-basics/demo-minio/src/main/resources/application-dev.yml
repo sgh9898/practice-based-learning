@@ -1,0 +1,65 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /demo-minio
+    encoding:
+      force: true   # true = 使用当前配置文件进行编码, 可配合 charset: utf-8 使用
+
+# Minio 文件管理配置
+minio:
+  endpoint: http://localhost:9000                       # 服务器地址
+  accessKey: 24YOeseUQgU5eGuFiqbG                       # 访问密钥, 在 minio 网页管理界面配置
+  secretKey: ZRLe3LO4IeyKiHcvtcp0Ee93hNUkM1yM5YGF15yI   # 访问密钥的密码, 在 minio 网页管理界面配置
+  defaultBucketName: minio_default_bucket               # 默认 bucket 名称
+  fileUrlHost: http://172.16.30.35:9000/nginx-host      # 手动指定的 host, 用于 nginx 后通过 url 访问文件
+
+# Spring 配置
+spring:
+  application:
+    name: demo-minio
+  main:
+    allow-bean-definition-overriding: true # true = 允许后覆盖相同名称的 bean, 防止项目集成后出现重复定义的冲突
+
+  # 数据库
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/data?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
+    username: root
+    password: "RVsdbgjs~4921"
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      minimum-idle: 3
+      maximum-pool-size: 10
+    druid:
+      test-while-idle: true
+      validation-query: SELECT 1
+
+  # JPA
+  jpa:
+    show-sql: true        # log 中打印 sql 语句, 便于排查错误
+    open-in-view: false   # true = 保持数据库连接直至 controller 执行完
+
+  # 文件大小限制
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+  # Swagger
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+# 日志
+logging:
+  level:
+    ROOT: info  # 最低展示级别 (error > warn > info > debug)
+  pattern:
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %green(%logger{50}).%M-%L - %msg %n'
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %green(%logger{50}).%M-%L - %msg %n'
+  logback:
+    rolling policy:
+      max-history: 10 # 最大保留时长(天)
+      max-file-size: 100MB
+  file:
+    path: "demo-minio/logs"
