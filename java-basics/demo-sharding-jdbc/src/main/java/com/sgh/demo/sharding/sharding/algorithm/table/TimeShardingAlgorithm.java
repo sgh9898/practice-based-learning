@@ -46,7 +46,7 @@ public class TimeShardingAlgorithm implements StandardShardingAlgorithm<Date> {
 
         // 不存在则创建表
         if (!availableTargetNames.contains(actualTableName)) {
-            ShardingJdbcUtils.createTable(actualTableName, logicTableName);
+            ShardingJdbcUtils.createActualTable(actualTableName, logicTableName);
             availableTargetNames.add(actualTableName);
         }
         return actualTableName;

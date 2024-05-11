@@ -70,14 +70,6 @@
                 <version>${demo.version}</version>
             </dependency>
 
-            <!--            &lt;!&ndash; DingDing&ndash;&gt;-->
-            <!--            <dependency>-->
-            <!--                <groupId>com.taobao.top</groupId>-->
-            <!--                <artifactId>top-api-sdk-dev</artifactId>-->
-            <!--                <version>dingtalk-SNAPSHOT</version>-->
-            <!--                <scope>system</scope>-->
-            <!--                <systemPath>${project.basedir}/lib/taobao-sdk-java-auto_1479188381469-20210207.jar</systemPath>-->
-            <!--            </dependency>-->
             <dependency>
                 <groupId>com.ali</groupId>
                 <artifactId>dingtalk</artifactId>
@@ -318,6 +310,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+<!--                <configuration> &lt;!&ndash; 允许读取本地依赖&ndash;&gt;-->
+<!--                    <includeSystemScope>true</includeSystemScope>-->
+<!--                </configuration>-->
             </plugin>
             <!-- 跳过 Test -->
             <plugin>

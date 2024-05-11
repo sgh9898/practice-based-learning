@@ -1,6 +1,6 @@
 package com.sgh.demo.minio.controller;
 
-import com.collin.demo.common.util.ApiResp;
+import com.sgh.demo.common.util.ApiResp;
 import com.sgh.demo.minio.db.entity.DemoMinio;
 import com.sgh.demo.minio.pojo.query.DemoMinioQueryDto;
 import com.sgh.demo.minio.pojo.upsert.DemoMinioUpsertDto;

@@ -1,6 +1,6 @@
 package com.sgh.demo.sharding.database.controller;
 
-import com.collin.demo.common.util.ApiResp;
+import com.sgh.demo.common.util.ApiResp;
 import com.sgh.demo.sharding.database.db.entity.DemoEntityShardingTime;
 import com.sgh.demo.sharding.database.pojo.query.DemoEntityShardingTimeQueryDto;
 import com.sgh.demo.sharding.database.pojo.upsert.DemoEntityShardingTimeUpsertDto;

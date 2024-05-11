@@ -46,12 +46,12 @@ public class ShardingJdbcUtils {
     }
 
     /**
-     * 创建表
+     * 创建实际表
      *
      * @param actualTableName 新建的表名
      * @param logicTableName  逻辑表名(同时作为建表模板)
      */
-    public static void createTable(String actualTableName, String logicTableName) {
+    public static void createActualTable(String actualTableName, String logicTableName) {
         synchronized (actualTableName.intern()) {
             try {
                 JdbcTemplate jdbcTemplate = createJdbcTemplate(dsUrl, dsUsername, dsPassword);

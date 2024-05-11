@@ -7,15 +7,15 @@ server:
 
 # Canal 数据监听配置
 canal:
-  username: canal         # canal deployer 用户名
-  password: RVsdbgjs~4921 # canal deployer 密码
+  username: canal                 # canal deployer 用户名
+  password: canpiH-garzy2-nacbyk  # canal deployer 密码
 
   # canal 监听的表, 未配置时以 canal deployer 为准
   # 监听全表             .*\..*
   # 监听指定 schema      test\..*
   # 监听指定表            test.table1
   # 综合监听(逗号分隔)     test1\..*,test2.table1,test2.table2
-  subscribe: demo\..*
+  subscribe: data\..*
 
   # canal 扩展功能
   extension:
@@ -62,6 +62,10 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+
+  # Thymeleaf
+  thymeleaf:
+    check-template-location: false
 
 # 日志
 logging:

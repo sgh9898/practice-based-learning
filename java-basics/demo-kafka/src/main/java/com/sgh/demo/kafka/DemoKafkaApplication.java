@@ -1,6 +1,6 @@
 package com.sgh.demo.kafka;
 
-import com.collin.demo.common.util.IpUtils;
+import com.sgh.demo.common.util.IpUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.env.Environment;

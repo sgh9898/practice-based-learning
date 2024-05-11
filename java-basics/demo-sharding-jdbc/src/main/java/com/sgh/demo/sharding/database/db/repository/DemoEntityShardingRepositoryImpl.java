@@ -1,6 +1,6 @@
 package com.sgh.demo.sharding.database.db.repository;
 
-import com.collin.demo.common.util.JdbcUtils;
+import com.sgh.demo.common.util.JdbcUtils;
 import com.sgh.demo.sharding.database.pojo.query.DemoEntityShardingQueryDto;
 import org.springframework.data.domain.Page;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;

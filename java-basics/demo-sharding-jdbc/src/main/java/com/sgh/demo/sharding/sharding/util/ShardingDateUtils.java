@@ -1,5 +1,7 @@
 package com.sgh.demo.sharding.sharding.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -17,16 +19,17 @@ import java.util.Date;
  * 日期工具
  *
  * @author Song gh
- * @version 2024/3/18
+ * @version 2024/4/11
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ShardingDateUtils {
 
 // ------------------------------ 常量 ------------------------------
-    /** [时间格式] 年月日时分秒 */
+    /** [时间格式] 年-月-日 时:分:秒 */
     public static final String DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
-    /** [时间格式] 年月日 */
+    /** [时间格式] 年-月-日 */
     public static final String DATE_PATTERN = "yyyy-MM-dd";
-    /** [时间格式] 时分秒 */
+    /** [时间格式] 时:分:秒 */
     public static final String TIME_PATTERN = "HH:mm:ss";
 
     /** [时间格式] 年月日时分秒(无间隔符) */
@@ -39,75 +42,76 @@ public class ShardingDateUtils {
 // ------------------------------ 获取 String ------------------------------
 
     /**
-     * Date 转 String, 手动指定格式
+     * Date 转为 String, 手动指定格式
      *
-     * @param pattern 格式, 如 yyyy-MM-dd HH:mm:ss
+     * @param pattern 日期格式, 如 yyyy-MM-dd HH:mm:ss
+     * @return 指定格式的 string, 日期为 null 则返回 ""(空白 string)
      */
-    @Nullable
+    @NonNull
     public static String toStr(Date date, String pattern) {
         if (date == null) {
-            return null;
+            return "";
         }
         SimpleDateFormat dateFormat = new SimpleDateFormat(pattern);
         return dateFormat.format(date);
     }
 
     /**
-     * Date 转 String, 取日期时间
+     * Date 转为 String, 取日期 + 时间
      *
-     * @return 格式为 yyyy-MM-dd HH:mm:ss
+     * @return 格式为 yyyy-MM-dd HH:mm:ss 的 string, 日期为 null 则返回 ""(空白 string)
      */
-    @Nullable
+    @NonNull
     public static String toStrDateTime(Date date) {
         return toStr(date, DATETIME_PATTERN);
     }
 
     /**
-     * Date 转 String, 只取日期
+     * Date 转为 String, 只取日期
      *
-     * @return 格式为 yyyy-MM-dd
+     * @return 格式为 yyyy-MM-dd 的 string, 日期为 null 则返回 ""(空白 string)
      */
-    @Nullable
+    @NonNull
     public static String toStrDate(Date date) {
         return toStr(date, DATE_PATTERN);
     }
 
     /**
-     * Date 转 String, 只取时间
+     * Date 转为 String, 只取时间
      *
-     * @return 格式为 yyyy-MM-dd
+     * @return 格式为 HH:mm:ss 的 string, 日期为 null 则返回 ""(空白 string)
      */
-    @Nullable
+    @NonNull
     public static String toStrTime(Date date) {
         return toStr(date, TIME_PATTERN);
     }
 
     /**
-     * Date 转 String, 取日期时间(无间隔符)
+     * Date 转为 String, 取日期 + 时间(无间隔符)
      *
-     * @return 格式为 yyyyMMddHHmmss
+     * @return 格式为 yyyyMMddHHmmss 的 string, 日期为 null 则返回 ""(空白 string)
      */
-    @Nullable
+    @NonNull
     public static String toStrCompactDateTime(Date date) {
         return toStr(date, COMPACT_DATETIME_PATTERN);
     }
 
     /**
-     * Date 转 String, 只取日期(无间隔符)
+     * Date 转为 String, 只取日期(无间隔符)
      *
-     * @return 格式为 yyyyMMdd
+     * @return 格式为 yyyyMMdd 的 string, 日期为 null 则返回 ""(空白 string)
      */
-    @Nullable
+    @NonNull
     public static String toStrCompactDate(Date date) {
         return toStr(date, COMPACT_DATE_PATTERN);
     }
 
     /**
-     * Date 转 String, 只取时间(无间隔符)
+     * Date 转为 String, 只取时间(无间隔符)
      *
-     * @return 格式为 HHmmss
+     * @return 格式为 HHmmss 的 string, 日期为 null 则返回 ""(空白 string)
      */
-    @Nullable
+    @NonNull
     public static String toStrCompactTime(Date date) {
         return toStr(date, COMPACT_TIME_PATTERN);
     }
@@ -115,25 +119,25 @@ public class ShardingDateUtils {
 // ------------------------------ 获取 Date ------------------------------
 
     /**
-     * String 转 Date, 手动指定格式
+     * String 转为 Date, 手动指定格式
      *
-     * @param pattern 格式, 如: yyyyMMddHHmmss
+     * @param pattern 日期格式, 如 yyyy-MM-dd HH:mm:ss
+     * @return 解析得到的日期, strDate 为空时会返回 null
      */
     @Nullable
     public static Date from(String strDate, String pattern) {
         if (StringUtils.isBlank(strDate)) {
             return null;
         }
-        SimpleDateFormat dateFormat = new SimpleDateFormat(pattern);
         try {
-            return dateFormat.parse(strDate);
+            return new SimpleDateFormat(pattern).parse(strDate);
         } catch (ParseException e) {
             throw new IllegalArgumentException("解析 " + pattern + " 格式日期失败, 当前内容: " + strDate, e);
         }
     }
 
     /**
-     * String 转 Date, 取日期时间
+     * String 转为 Date, 取日期 + 时间
      *
      * @param strDate 格式为 yyyy-MM-dd HH:mm:ss
      */
@@ -143,7 +147,7 @@ public class ShardingDateUtils {
     }
 
     /**
-     * String 转 Date, 只取日期
+     * String 转为 Date, 只取日期
      *
      * @param strDate 格式为 yyyy-MM-dd
      */
@@ -153,7 +157,7 @@ public class ShardingDateUtils {
     }
 
     /**
-     * String 转 Date, 只取时间
+     * String 转为 Date, 只取时间
      *
      * @param strDate 格式为 HH:mm:ss
      */
@@ -163,7 +167,7 @@ public class ShardingDateUtils {
     }
 
     /**
-     * String 转 Date, 取日期时间(无间隔符)
+     * String 转为 Date, 取日期 + 时间(无间隔符)
      *
      * @param strDate 格式为 yyyyMMddHHmmss
      */
@@ -173,7 +177,7 @@ public class ShardingDateUtils {
     }
 
     /**
-     * String 转 Date, 只取日期(无间隔符)
+     * String 转为 Date, 只取日期(无间隔符)
      *
      * @param strDate 格式为 yyyyMMdd
      */
@@ -183,7 +187,7 @@ public class ShardingDateUtils {
     }
 
     /**
-     * String 转 Date, 只取时间(无间隔符)
+     * String 转为 Date, 只取时间(无间隔符)
      *
      * @param strDate 格式为 HHmmss
      */
@@ -191,6 +195,8 @@ public class ShardingDateUtils {
     public static Date fromCompactTime(String strDate) {
         return from(strDate, COMPACT_TIME_PATTERN);
     }
+
+// ------------------------------ LocalDateTime 转换 ------------------------------
 
     /** Date 转 LocalDateTime */
     @NonNull
@@ -204,14 +210,14 @@ public class ShardingDateUtils {
         return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
+// ------------------------------ 获取特定日期 ------------------------------
+
     /** 获取日期当天的开始时间(零点) */
     @NonNull
     public static Date getDayStart(Date date) {
         LocalDate localDate = LocalDate.from(toLocalDateTime(date));
         return fromLocalDateTime(localDate.atStartOfDay());
     }
-
-// ------------------------------ 获取特定日期 ------------------------------
 
     /** 获取日期当周的开始时间(周一零点) */
     @NonNull
@@ -234,6 +240,8 @@ public class ShardingDateUtils {
         return fromLocalDateTime(localDate.withDayOfYear(1).withDayOfMonth(1).atStartOfDay());
     }
 
+// ------------------------------ 日期计算 ------------------------------
+
     /**
      * 获取日期时间, 根据指定日期时间加减
      *
@@ -248,14 +256,9 @@ public class ShardingDateUtils {
         return fromLocalDateTime(localDateTime.plus(num, chronoUnit));
     }
 
-// ------------------------------ 日期计算 ------------------------------
-
     /** 判断是否同一天 */
     public static boolean isSameDay(Date date1, Date date2) {
         SimpleDateFormat fmt = new SimpleDateFormat(COMPACT_DATE_PATTERN);
         return fmt.format(date1).equals(fmt.format(date2));
-    }
-
-    private ShardingDateUtils() {
     }
 }

@@ -5,29 +5,6 @@ server:
     encoding:
       force: true   # true = 使用当前配置文件进行编码, 可配合 charset: utf-8 使用
 
-# Canal 参数
-canal:
-  # canal deployer 使用的数据库用户名
-  username: canal
-  # canal deployer 使用的数据库密码
-  password: RVsdbgjs~4921
-
-  # canal 监听的表, 未配置时以 canal deployer 为准
-  # 监听全表             .*\..*
-  # 监听指定 schema      test\..*
-  # 监听指定表            test.table1
-  # 综合监听(逗号分隔)     test1\..*,test2.table1,test2.table2
-  subscribe: demo\..*
-
-  # 扩展功能
-  extension:
-    # 从表相关
-    slave:
-      # 从表所属 schema
-      schema: backup
-      # 从表表名前缀
-#      table-name-prefix: backup_
-
 # Spring 配置
 spring:
   application:
@@ -43,7 +20,7 @@ spring:
   # 数据库
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/data?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/mental_health?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
     username: root
     password: "RVsdbgjs~4921"
     type: com.zaxxer.hikari.HikariDataSource
@@ -129,6 +106,7 @@ spring:
   redis:
     host: localhost
     port: 6379
+    password: "xembec-1rasDi-paztoq"
     # 需要时间单位
     timeout: 10s
     lettuce:

@@ -1,7 +1,7 @@
 package com.sgh.demo.kafka.kafka;
 
-import com.collin.demo.common.database.db.entity.DemoEntity;
-import com.collin.demo.common.util.JsonUtils;
+import com.sgh.demo.common.database.db.entity.DemoEntity;
+import com.sgh.demo.common.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;

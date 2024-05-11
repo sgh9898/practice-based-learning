@@ -4,6 +4,7 @@ import com.alibaba.otter.canal.client.CanalConnector;
 import com.alibaba.otter.canal.client.CanalConnectors;
 import com.alibaba.otter.canal.protocol.CanalEntry.*;
 import com.alibaba.otter.canal.protocol.Message;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,7 +57,7 @@ public class CanalClient {
     private String canalPassword;
 
     /** 部署 canal 的 host, 默认为本机 localhost */
-    @Value("${canal.host:127.0.0.1}")
+    @Value("${canal.host:localhost}")
     private String canalHost;
 
     /** canal 所使用的端口(canal.properties 中 canal.port), 默认 11111 */
@@ -74,7 +75,7 @@ public class CanalClient {
      * 监听指定表            test.table1
      * 综合监听(逗号分隔)     test1\..*,test2.table1,test2.table2
      */
-    @Value("${canal.subscribe:.*\\..*}")
+    @Value("${canal.subscribe:#{'.*\\..*'}}")
     private String subscribeRegex;
 
 // ------------------------------ 业务参数 ------------------------------
