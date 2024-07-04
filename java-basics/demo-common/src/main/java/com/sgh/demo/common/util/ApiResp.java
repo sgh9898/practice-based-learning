@@ -18,7 +18,7 @@ import java.util.Map;
  * <br> 4. 实体类(列表数据), 返回格式 {@link ListEntity}
  * <br> 5. 实体类(分页数据), 返回格式 {@link PageEntity}
  *
- * @author Song gh on 2023/11/24.
+ * @author Song gh on 2023/11/24
  */
 @Getter
 @JsonPropertyOrder({"code", "message"})
@@ -26,12 +26,16 @@ public class ApiResp {
 
 // ------------------------------ 参数 ------------------------------
     /** 状态码, {@link ResultStatus#getCode()} */
-    private final int code;
+    private Integer code;
 
     /** 返回信息 or 报错描述, {@link ResultStatus#getMessage()} */
-    private final String message;
+    private String message;
 
 // ------------------------------ 构造 ------------------------------
+
+    /** [构造] */
+    protected ApiResp() {
+    }
 
     /** [构造] 自定义 code, message */
     protected ApiResp(int code, String message) {
@@ -83,7 +87,10 @@ public class ApiResp {
     public static class Data extends ApiResp {
 
         /** 返回数据, 格式不限 */
-        private final Object data;
+        private Object data;
+
+        public Data() {
+        }
 
         public Data(Object data) {
             super(ResultStatus.SUCCESS);

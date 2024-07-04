@@ -87,7 +87,7 @@ or register at http://www.atomikos.com/Main/RegisterYourDownload to disable this
 2024-04-03 14:17:48.053 [main] [34mINFO [0;39m [32mo.s.scheduling.quartz.SchedulerFactoryBean[0;39m.startScheduler-729 - Starting Quartz Scheduler now 
 2024-04-03 14:17:48.053 [main] [34mINFO [0;39m [32morg.quartz.core.QuartzScheduler[0;39m.start-547 - Scheduler quartzScheduler_$_NON_CLUSTERED started. 
 2024-04-03 14:17:48.066 [main] [34mINFO [0;39m [32mcom.sgh.demo.minio.DemoMinioApplication[0;39m.logStarted-61 - Started DemoMinioApplication in 7.666 seconds (JVM running for 8.484) 
-2024-04-03 14:17:48.071 [main] [34mINFO [0;39m [32mcom.collin.demo.common.util.IpUtils[0;39m.printAtStart-29 - 
+2024-04-03 14:17:48.071 [main] [34mINFO [0;39m [32mcom.sgh.demo.common.util.IpUtils[0;39m.printAtStart-29 -
 --------------------------------------------------
   Swagger(local):   http://localhost:8080/demo-minio/swagger-ui.html
   Swagger(network): http://172.16.30.35:8080/demo-minio/swagger-ui.html
@@ -192,7 +192,7 @@ or register at http://www.atomikos.com/Main/RegisterYourDownload to disable this
 2024-04-03 14:46:15.666 [main] [34mINFO [0;39m [32mo.s.scheduling.quartz.SchedulerFactoryBean[0;39m.startScheduler-729 - Starting Quartz Scheduler now 
 2024-04-03 14:46:15.667 [main] [34mINFO [0;39m [32morg.quartz.core.QuartzScheduler[0;39m.start-547 - Scheduler quartzScheduler_$_NON_CLUSTERED started. 
 2024-04-03 14:46:15.681 [main] [34mINFO [0;39m [32mcom.sgh.demo.minio.DemoMinioApplication[0;39m.logStarted-61 - Started DemoMinioApplication in 8.802 seconds (JVM running for 9.917) 
-2024-04-03 14:46:15.688 [main] [34mINFO [0;39m [32mcom.collin.demo.common.util.IpUtils[0;39m.printAtStart-29 - 
+2024-04-03 14:46:15.688 [main] [34mINFO [0;39m [32mcom.sgh.demo.common.util.IpUtils[0;39m.printAtStart-29 -
 --------------------------------------------------
   Swagger(local):   http://localhost:8080/demo-minio/swagger-ui.html
   Swagger(network): http://172.16.30.35:8080/demo-minio/swagger-ui.html
@@ -304,7 +304,7 @@ or register at http://www.atomikos.com/Main/RegisterYourDownload to disable this
 2024-04-03 14:51:40.587 [main] [34mINFO [0;39m [32mo.s.scheduling.quartz.SchedulerFactoryBean[0;39m.startScheduler-729 - Starting Quartz Scheduler now 
 2024-04-03 14:51:40.587 [main] [34mINFO [0;39m [32morg.quartz.core.QuartzScheduler[0;39m.start-547 - Scheduler quartzScheduler_$_NON_CLUSTERED started. 
 2024-04-03 14:51:40.606 [main] [34mINFO [0;39m [32mcom.sgh.demo.minio.DemoMinioApplication[0;39m.logStarted-61 - Started DemoMinioApplication in 8.661 seconds (JVM running for 9.725) 
-2024-04-03 14:51:40.612 [main] [34mINFO [0;39m [32mcom.collin.demo.common.util.IpUtils[0;39m.printAtStart-29 - 
+2024-04-03 14:51:40.612 [main] [34mINFO [0;39m [32mcom.sgh.demo.common.util.IpUtils[0;39m.printAtStart-29 -
 --------------------------------------------------
   Swagger(local):   http://localhost:8080/demo-minio/swagger-ui.html
   Swagger(network): http://172.16.30.35:8080/demo-minio/swagger-ui.html
@@ -413,7 +413,7 @@ or register at http://www.atomikos.com/Main/RegisterYourDownload to disable this
 2024-04-03 14:53:43.130 [main] [34mINFO [0;39m [32mo.s.scheduling.quartz.SchedulerFactoryBean[0;39m.startScheduler-729 - Starting Quartz Scheduler now 
 2024-04-03 14:53:43.131 [main] [34mINFO [0;39m [32morg.quartz.core.QuartzScheduler[0;39m.start-547 - Scheduler quartzScheduler_$_NON_CLUSTERED started. 
 2024-04-03 14:53:43.149 [main] [34mINFO [0;39m [32mcom.sgh.demo.minio.DemoMinioApplication[0;39m.logStarted-61 - Started DemoMinioApplication in 9.006 seconds (JVM running for 9.82) 
-2024-04-03 14:53:43.157 [main] [34mINFO [0;39m [32mcom.collin.demo.common.util.IpUtils[0;39m.printAtStart-29 - 
+2024-04-03 14:53:43.157 [main] [34mINFO [0;39m [32mcom.sgh.demo.common.util.IpUtils[0;39m.printAtStart-29 -
 --------------------------------------------------
   Swagger(local):   http://localhost:8080/demo-minio/swagger-ui.html
   Swagger(network): http://172.16.30.35:8080/demo-minio/swagger-ui.html
@@ -656,7 +656,7 @@ or register at http://www.atomikos.com/Main/RegisterYourDownload to disable this
 2024-04-03 14:56:03.694 [main] [34mINFO [0;39m [32mo.s.scheduling.quartz.SchedulerFactoryBean[0;39m.startScheduler-729 - Starting Quartz Scheduler now 
 2024-04-03 14:56:03.695 [main] [34mINFO [0;39m [32morg.quartz.core.QuartzScheduler[0;39m.start-547 - Scheduler quartzScheduler_$_NON_CLUSTERED started. 
 2024-04-03 14:56:03.712 [main] [34mINFO [0;39m [32mcom.sgh.demo.minio.DemoMinioApplication[0;39m.logStarted-61 - Started DemoMinioApplication in 8.259 seconds (JVM running for 9.176) 
-2024-04-03 14:56:03.719 [main] [34mINFO [0;39m [32mcom.collin.demo.common.util.IpUtils[0;39m.printAtStart-29 - 
+2024-04-03 14:56:03.719 [main] [34mINFO [0;39m [32mcom.sgh.demo.common.util.IpUtils[0;39m.printAtStart-29 -
 --------------------------------------------------
   Swagger(local):   http://localhost:8080/demo-minio/swagger-ui.html
   Swagger(network): http://172.16.30.35:8080/demo-minio/swagger-ui.html
@@ -768,7 +768,7 @@ or register at http://www.atomikos.com/Main/RegisterYourDownload to disable this
 2024-04-03 14:58:17.181 [main] [34mINFO [0;39m [32mo.s.scheduling.quartz.SchedulerFactoryBean[0;39m.startScheduler-729 - Starting Quartz Scheduler now 
 2024-04-03 14:58:17.181 [main] [34mINFO [0;39m [32morg.quartz.core.QuartzScheduler[0;39m.start-547 - Scheduler quartzScheduler_$_NON_CLUSTERED started. 
 2024-04-03 14:58:17.198 [main] [34mINFO [0;39m [32mcom.sgh.demo.minio.DemoMinioApplication[0;39m.logStarted-61 - Started DemoMinioApplication in 9.446 seconds (JVM running for 10.36) 
-2024-04-03 14:58:17.204 [main] [34mINFO [0;39m [32mcom.collin.demo.common.util.IpUtils[0;39m.printAtStart-29 - 
+2024-04-03 14:58:17.204 [main] [34mINFO [0;39m [32mcom.sgh.demo.common.util.IpUtils[0;39m.printAtStart-29 -
 --------------------------------------------------
   Swagger(local):   http://localhost:8080/demo-minio/swagger-ui.html
   Swagger(network): http://172.16.30.35:8080/demo-minio/swagger-ui.html
@@ -881,7 +881,7 @@ or register at http://www.atomikos.com/Main/RegisterYourDownload to disable this
 2024-04-03 15:00:19.346 [main] [34mINFO [0;39m [32mo.s.scheduling.quartz.SchedulerFactoryBean[0;39m.startScheduler-729 - Starting Quartz Scheduler now 
 2024-04-03 15:00:19.346 [main] [34mINFO [0;39m [32morg.quartz.core.QuartzScheduler[0;39m.start-547 - Scheduler quartzScheduler_$_NON_CLUSTERED started. 
 2024-04-03 15:00:19.362 [main] [34mINFO [0;39m [32mcom.sgh.demo.minio.DemoMinioApplication[0;39m.logStarted-61 - Started DemoMinioApplication in 8.805 seconds (JVM running for 9.626) 
-2024-04-03 15:00:19.369 [main] [34mINFO [0;39m [32mcom.collin.demo.common.util.IpUtils[0;39m.printAtStart-29 - 
+2024-04-03 15:00:19.369 [main] [34mINFO [0;39m [32mcom.sgh.demo.common.util.IpUtils[0;39m.printAtStart-29 -
 --------------------------------------------------
   Swagger(local):   http://localhost:8080/demo-minio/swagger-ui.html
   Swagger(network): http://172.16.30.35:8080/demo-minio/swagger-ui.html
@@ -1117,7 +1117,7 @@ or register at http://www.atomikos.com/Main/RegisterYourDownload to disable this
 2024-04-03 15:02:22.686 [main] [34mINFO [0;39m [32mo.s.scheduling.quartz.SchedulerFactoryBean[0;39m.startScheduler-729 - Starting Quartz Scheduler now 
 2024-04-03 15:02:22.687 [main] [34mINFO [0;39m [32morg.quartz.core.QuartzScheduler[0;39m.start-547 - Scheduler quartzScheduler_$_NON_CLUSTERED started. 
 2024-04-03 15:02:22.702 [main] [34mINFO [0;39m [32mcom.sgh.demo.minio.DemoMinioApplication[0;39m.logStarted-61 - Started DemoMinioApplication in 8.626 seconds (JVM running for 9.817) 
-2024-04-03 15:02:22.711 [main] [34mINFO [0;39m [32mcom.collin.demo.common.util.IpUtils[0;39m.printAtStart-29 - 
+2024-04-03 15:02:22.711 [main] [34mINFO [0;39m [32mcom.sgh.demo.common.util.IpUtils[0;39m.printAtStart-29 -
 --------------------------------------------------
   Swagger(local):   http://localhost:8080/demo-minio/swagger-ui.html
   Swagger(network): http://172.16.30.35:8080/demo-minio/swagger-ui.html

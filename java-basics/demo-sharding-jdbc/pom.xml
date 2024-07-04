@@ -11,25 +11,10 @@
 
     <!-- 上级项目 -->
     <parent>
-        <groupId>com.collin.demo</groupId>
+        <groupId>com.sgh.demo</groupId>
         <artifactId>java-basics</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-
-    <!-- Maven 仓库 -->
-    <repositories>
-        <repository>
-            <id>aliMavenPublic</id>
-            <name>阿里云公共仓库</name>
-            <url>https://maven.ali.com/repository/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 
     <!-- 配置 -->
     <properties>
@@ -50,7 +35,7 @@
     <dependencies>
         <!-- 项目内其他模块 -->
         <dependency>
-            <groupId>com.collin.demo</groupId>
+            <groupId>com.sgh.demo</groupId>
             <artifactId>demo-common</artifactId>
         </dependency>
 

@@ -1,5 +1,8 @@
 package com.sgh.demo.common.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -11,6 +14,7 @@ import java.util.Set;
  * @author Song gh
  * @version 2022/9/28
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ValidationUtils {
 
     private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
@@ -41,8 +45,5 @@ public class ValidationUtils {
             return violationSet.iterator().next().getMessage();
         }
         return null;
-    }
-
-    private ValidationUtils() {
     }
 }

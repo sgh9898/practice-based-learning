@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class DemoExceptionHandler {
 
     /** 基础异常处理 */
-    @ExceptionHandler(value = BaseException.class)
+    @ExceptionHandler(BaseException.class)
     public ApiResp handleControllerException(BaseException e) {
         return ApiResp.error(e.getMessage());
     }
 
     /** Json 异常处理 */
-    @ExceptionHandler(value = JsonException.class)
+    @ExceptionHandler(JsonException.class)
     public ApiResp jsonExceptionHandler(JsonException jsonException) {
         log.error("[Json 异常]: {}", jsonException.getMessage());
         return ApiResp.error("Json 出现异常");
