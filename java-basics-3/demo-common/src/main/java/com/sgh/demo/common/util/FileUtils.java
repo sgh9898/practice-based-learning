@@ -2,16 +2,22 @@ package com.sgh.demo.common.util;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.springframework.mock.web.MockMultipartFile;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -93,18 +99,6 @@ public class FileUtils {
         return destDir;
     }
 
-    /** 转换 File 为 MultipartFile */
-    public static MultipartFile convertFileToMultipart(File file) {
-        MultipartFile multipartFile;
-        try {
-            FileInputStream fileInputStream = new FileInputStream(file);
-            multipartFile = new MockMultipartFile("file", file.getName(), APPLICATION_OCTET_STREAM, fileInputStream);
-        } catch (IOException e) {
-            throw new UnsupportedOperationException("转换 File 为 MultipartFile 失败");
-        }
-        return multipartFile;
-    }
-
     /** 转换 MultipartFile 为 File */
     public static File convertMultipartToFile(MultipartFile multipartFile, String filePath) {
         File file = new File(filePath);
@@ -114,5 +108,22 @@ public class FileUtils {
             throw new UnsupportedOperationException("转换 MultipartFile 为 File 失败");
         }
         return file;
+    }
+
+    /**
+     * 校验文件后缀是否合规
+     *
+     * @param originalFileName 文件全名
+     * @param suffixSet        允许的文件后缀
+     */
+    public static void checkSuffix(@Nullable String originalFileName, Collection<String> suffixSet) {
+        if (StringUtils.isBlank(originalFileName) || suffixSet == null) {
+            throw new IllegalArgumentException("文件名为空或未配置后缀校验规则");
+        }
+        String suffix = Objects.requireNonNull(originalFileName.substring(originalFileName.lastIndexOf(".")));
+        if (StringUtils.isBlank(suffix) || !suffixSet.contains(suffix)) {
+            String type = StringUtils.join(suffix, ", ");
+            throw new IllegalArgumentException("仅允许 " + type + " 类型的文件, 请重新上传");
+        }
     }
 }

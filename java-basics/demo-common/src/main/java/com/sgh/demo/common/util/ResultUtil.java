@@ -1,5 +1,6 @@
 package com.sgh.demo.common.util;
 
+import com.sgh.demo.common.constant.ResultStatus;
 import com.sgh.demo.common.exception.BaseException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,14 @@ import org.slf4j.LoggerFactory;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Web 请求的统一返回结果 (Controller 返回格式) */
+/**
+ * [弃用] API 返回格式
+ *
+ * @version 2024/7/11
+ * @see ApiResp
+ * @deprecated 尽量不要使用 map 作为接口返回, 不利于维护; 推荐返回数据使用实体类或继承自实体类
+ */
+@Deprecated
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ResultUtil {
 

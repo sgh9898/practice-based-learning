@@ -20,10 +20,10 @@ import java.io.Serializable;
  * {@code
  *         while (true) {
  *             try {
- *                 aiModelRepository.save(aiModel);
+ *                 xxxRepository.save(xxxEntity);
  *                 break;
  *             } catch (DataIntegrityViolationException e) {
- *                 aiModel.setId(null);
+ *                 xxxEntity.setId(null);
  *             }
  *         }
  * } </pre>
@@ -35,6 +35,6 @@ public class SnowIdGenerator implements IdentifierGenerator {
 
     @Override
     public Serializable generate(SharedSessionContractImplementor sharedSessionContractImplementor, Object o) throws HibernateException {
-        return SnowIdGenerator.uniqueLong();
+        return SnowIdUtils.uniqueLong();
     }
 }

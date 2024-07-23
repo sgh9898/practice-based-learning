@@ -20,6 +20,7 @@
     <!-- 子模块 -->
     <modules>
         <module>./demo-common</module>
+        <module>./demo-general</module>
         <module>./demo-canal</module>
         <module>./demo-kafka</module>
         <module>./demo-minio</module>

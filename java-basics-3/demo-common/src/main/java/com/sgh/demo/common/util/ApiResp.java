@@ -76,6 +76,11 @@ public class ApiResp {
         return new ApiResp(ResultStatus.ERROR.getCode(), message);
     }
 
+    /** 失败: 附带自定义 message */
+    public static ApiResp error(Integer code, String message) {
+        return new ApiResp(code, message);
+    }
+
     /** 自定义返回: 手动设置 code, message */
     public static ApiResp info(Integer code, String message) {
         return new ApiResp(code, message);

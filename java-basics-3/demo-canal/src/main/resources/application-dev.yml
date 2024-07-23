@@ -79,4 +79,4 @@ logging:
       max-history: 10 # 最大保留时长(天)
       max-file-size: 100MB
   file:
-    path: "demo-canal/logs"
+    path: "logs"

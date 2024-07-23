@@ -13,9 +13,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 中文相关的 String 工具类
+ * 中文工具类
  *
- * @author Song gh on 2023/11/15.
+ * @author Song gh
+ * @version 2024/7/11
  */
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -93,8 +94,8 @@ public class CnStrUtils {
                 || ub == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS;
     }
 
-    /** 获取中文首字母 */
-    public static String getHeadLetters(String cnStr) {
+    /** 获取大写中文首字母(过滤特殊字符) */
+    public static String getFirstLettersUpper(String cnStr) {
         try {
             StringBuilder pyStrBd = new StringBuilder();
             for (char c : cnStr.toCharArray()) {
@@ -107,8 +108,8 @@ public class CnStrUtils {
         return "";
     }
 
-    /** 获取中文首字母, 小写 */
-    public static String getHeadLettersLowerCase(String cnStr) {
+    /** 获取小写中文首字母(过滤特殊字符) */
+    public static String getFirstLettersLower(String cnStr) {
         try {
             StringBuilder pyStrBd = new StringBuilder();
             for (char c : cnStr.toCharArray()) {
@@ -116,7 +117,7 @@ public class CnStrUtils {
             }
             return standardFilter(pyStrBd.toString().replaceAll("\\s*", "").toLowerCase());
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            log.error("获取小写中文首字母失败", e);
         }
         return "";
     }

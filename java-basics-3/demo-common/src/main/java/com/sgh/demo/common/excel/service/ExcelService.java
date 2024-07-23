@@ -176,7 +176,7 @@ public class ExcelService {
         }
 
         if (StringUtils.isBlank(excelToDdl.getName()) && (StringUtils.isNotBlank(excelToDdl.getComment()))) {
-            excelToDdl.setName(CnStrUtils.getHeadLettersLowerCase(excelToDdl.getComment()));
+            excelToDdl.setName(CnStrUtils.getFirstLettersLower(excelToDdl.getComment()));
         }
 
         // name, 转为下划线格式

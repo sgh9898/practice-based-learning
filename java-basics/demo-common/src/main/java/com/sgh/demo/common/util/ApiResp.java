@@ -1,6 +1,7 @@
 package com.sgh.demo.common.util;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.sgh.demo.common.constant.ResultStatus;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
 
@@ -73,6 +74,11 @@ public class ApiResp {
     /** 失败: 附带自定义 message */
     public static ApiResp error(String message) {
         return new ApiResp(ResultStatus.ERROR.getCode(), message);
+    }
+
+    /** 失败: 附带自定义 message */
+    public static ApiResp error(Integer code, String message) {
+        return new ApiResp(code, message);
     }
 
     /** 自定义返回: 手动设置 code, message */

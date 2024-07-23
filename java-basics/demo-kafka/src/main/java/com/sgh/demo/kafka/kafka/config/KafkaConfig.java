@@ -52,9 +52,7 @@ public class KafkaConfig {
         return new NewTopic("new_kafka_topic_name2", 9, (short) 1);
     }
 
-    /**
-     * 默认的 Listener 配置 (常规参数在配置文件中调整即可)
-     */
+    /** 默认的 Listener 配置 (常规参数在配置文件中调整即可 */
     @Bean("kafkaListenerContainerFactory")
     public ConcurrentKafkaListenerContainerFactory<?, ?> kafkaListenerContainerFactory(ConcurrentKafkaListenerContainerFactoryConfigurer configurer) {
         // 读取 spring.kafka 配置, 可以在此修改 kafka 配置
@@ -71,9 +69,7 @@ public class KafkaConfig {
         return factory;
     }
 
-    /**
-     * 默认的单条数据异常处理, 会将 offset 回退
-     */
+    /** 默认的单条数据异常处理, 会将 offset 回退 */
     @Bean(name = "singleKafkaListenerErrorHandler")
     public ConsumerAwareListenerErrorHandler singleKafkaListenerErrorHandler() {
         return (m, e, c) -> {
@@ -86,9 +82,7 @@ public class KafkaConfig {
         };
     }
 
-    /**
-     * 默认的批量数据异常处理, 会将 offset 回退
-     */
+    /** 默认的批量数据异常处理, 会将 offset 回退 */
     @SuppressWarnings("unchecked")
     @Bean(name = "batchKafkaListenerErrorHandler")
     public ConsumerAwareListenerErrorHandler batchKafkaListenerErrorHandler() {

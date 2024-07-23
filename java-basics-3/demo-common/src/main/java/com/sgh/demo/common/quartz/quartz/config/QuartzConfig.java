@@ -2,6 +2,7 @@ package com.sgh.demo.common.quartz.quartz.config;
 
 import jakarta.annotation.Resource;
 import org.quartz.Scheduler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +22,8 @@ import java.util.Objects;
 public class QuartzConfig {
 
     /** 配置文件路径, Resource 目录下 */
-    private static final String PROP_PATH = "quartz.properties";
+    @Value("${quartz.prop-path:/quartz.properties}")
+    private String propPath;
 
     @Resource
     private QuartzJobFactory jobFactory;
@@ -30,7 +32,7 @@ public class QuartzConfig {
     public SchedulerFactoryBean schedulerFactoryBean() throws IOException {
         // 获取配置属性
         PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
-        propertiesFactoryBean.setLocation(new ClassPathResource(PROP_PATH));
+        propertiesFactoryBean.setLocation(new ClassPathResource(propPath));
         // 在 quartz.properties 中的属性被读取并注入后再初始化对象
         propertiesFactoryBean.afterPropertiesSet();
 
