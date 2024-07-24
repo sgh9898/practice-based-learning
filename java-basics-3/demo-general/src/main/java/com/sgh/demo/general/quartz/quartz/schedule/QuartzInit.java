@@ -26,6 +26,6 @@ class QuartzInit {
      */
     @PostConstruct
     private void autoInitJob() {
-        quartzJobService.upsertJob(QuartzTaskTemplate.class.getName(), "demoTask", "quartzDemoGroup", "0 0/10 * * * ?", null);
+        quartzJobService.upsertJob(com.sgh.demo.common.quartz.quartz.schedule.QuartzTaskTemplate.class.getName(), "demoTask", "quartzDemoGroup", "0 0/10 * * * ?", null);
     }
 }

@@ -1,9 +1,9 @@
-package com.sgh.demo.common.excel.pojo;
+package com.sgh.demo.general.excel.pojo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.DateTimeFormat;
-import com.sgh.demo.common.excel.easyexcel.EasyExcelClassTemplate;
-import com.sgh.demo.common.excel.easyexcel.annotation.ExcelDropDown;
+import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
+import com.sgh.demo.general.excel.easyexcel.annotation.ExcelDropDown;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;

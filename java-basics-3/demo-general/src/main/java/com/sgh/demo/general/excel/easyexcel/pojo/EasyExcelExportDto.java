@@ -1,9 +1,9 @@
-package com.sgh.demo.common.excel.easyexcel.pojo;
+package com.sgh.demo.general.excel.easyexcel.pojo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.sgh.demo.common.excel.easyexcel.EasyExcelClassTemplate;
-import com.sgh.demo.common.excel.easyexcel.annotation.ExcelDropDown;
-import com.sgh.demo.common.excel.easyexcel.handler.ExcelColWidthStrategy;
+import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
+import com.sgh.demo.general.excel.easyexcel.annotation.ExcelDropDown;
+import com.sgh.demo.general.excel.easyexcel.handler.ExcelColWidthStrategy;
 import lombok.Data;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -70,7 +70,7 @@ public class EasyExcelExportDto {
      * 3. {@link #cascadeMenuMap} 会优先于本参数生效 </pre>
      */
     @NonNull
-    private List<ExcelCascadeOption> cascadeMenu = new LinkedList<>();
+    private List<com.sgh.demo.general.excel.easyexcel.pojo.ExcelCascadeOption> cascadeMenu = new LinkedList<>();
 
     /**
      * 联动下拉框, 多组, Map(组名, 选项)
@@ -80,7 +80,7 @@ public class EasyExcelExportDto {
      * 3. 会覆盖 {@link #cascadeMenu} 的效果 </pre>
      */
     @NonNull
-    private Map<String, List<ExcelCascadeOption>> cascadeMenuMap = new HashMap<>();
+    private Map<String, List<com.sgh.demo.general.excel.easyexcel.pojo.ExcelCascadeOption>> cascadeMenuMap = new HashMap<>();
 
     /**
      * 导出时仅保留指定列(ExcelClass 字段英文原名)

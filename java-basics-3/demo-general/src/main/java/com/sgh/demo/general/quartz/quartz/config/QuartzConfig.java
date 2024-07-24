@@ -24,7 +24,7 @@ public class QuartzConfig {
     private static final String PROP_PATH = "quartz.properties";
 
     @Resource
-    private QuartzJobFactory jobFactory;
+    private com.sgh.demo.common.quartz.quartz.config.QuartzJobFactory jobFactory;
 
     @Bean
     public SchedulerFactoryBean schedulerFactoryBean() throws IOException {

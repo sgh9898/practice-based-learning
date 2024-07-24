@@ -1,10 +1,10 @@
-package com.sgh.demo.common.aop;
+package com.sgh.demo.general.aop;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.sgh.demo.common.exception.JsonException;
 import com.sgh.demo.common.util.ApiResp;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.json.JsonException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 切面功能, 见 {@link LogAspect}
+ * 切面功能, 见 {@link com.sgh.demo.common.aop.LogAspect}
  *
  * @author Song gh on 2022/3/28.
  */

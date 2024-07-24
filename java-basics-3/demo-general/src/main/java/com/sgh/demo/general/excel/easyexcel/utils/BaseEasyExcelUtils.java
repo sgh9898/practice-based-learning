@@ -1,4 +1,4 @@
-package com.sgh.demo.common.excel.easyexcel.utils;
+package com.sgh.demo.general.excel.easyexcel.utils;
 
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.ExcelWriter;
@@ -14,14 +14,14 @@ import com.alibaba.excel.write.metadata.WriteTable;
 import com.alibaba.excel.write.metadata.style.WriteCellStyle;
 import com.alibaba.excel.write.metadata.style.WriteFont;
 import com.alibaba.excel.write.style.HorizontalCellStyleStrategy;
-import com.sgh.demo.common.excel.easyexcel.EasyExcelClassTemplate;
-import com.sgh.demo.common.excel.easyexcel.annotation.ExcelDropDown;
-import com.sgh.demo.common.excel.easyexcel.handler.*;
-import com.sgh.demo.common.excel.easyexcel.listener.ExcelListener;
-import com.sgh.demo.common.excel.easyexcel.listener.ExcelNoModelListener;
-import com.sgh.demo.common.excel.easyexcel.pojo.EasyExcelExportDto;
-import com.sgh.demo.common.excel.easyexcel.pojo.EasyExcelNoModelExportDto;
-import com.sgh.demo.common.excel.easyexcel.pojo.ExcelCascadeOption;
+import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
+import com.sgh.demo.general.excel.easyexcel.annotation.ExcelDropDown;
+import com.sgh.demo.general.excel.easyexcel.handler.*;
+import com.sgh.demo.general.excel.easyexcel.listener.ExcelListener;
+import com.sgh.demo.general.excel.easyexcel.listener.ExcelNoModelListener;
+import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelExportDto;
+import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelNoModelExportDto;
+import com.sgh.demo.general.excel.easyexcel.pojo.ExcelCascadeOption;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;

@@ -1,7 +1,5 @@
 package com.sgh.demo.common.schedule;
 
-import com.sgh.demo.common.util.OkHttpUtils;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;

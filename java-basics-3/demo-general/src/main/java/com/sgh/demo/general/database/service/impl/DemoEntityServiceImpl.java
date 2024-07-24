@@ -6,7 +6,7 @@ import com.sgh.demo.common.database.pojo.excel.ExcelDemoEntity;
 import com.sgh.demo.common.database.pojo.query.DemoEntityQueryDto;
 import com.sgh.demo.common.database.pojo.upsert.DemoEntityUpsertDto;
 import com.sgh.demo.common.database.service.DemoEntityService;
-import com.sgh.demo.common.excel.easyexcel.EasyExcelUtils;
+import com.sgh.demo.general.excel.easyexcel.EasyExcelUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

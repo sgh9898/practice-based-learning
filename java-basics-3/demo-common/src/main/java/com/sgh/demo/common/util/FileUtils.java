@@ -1,15 +1,14 @@
 package com.sgh.demo.common.util;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
@@ -17,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -30,6 +28,8 @@ import java.util.zip.ZipInputStream;
 public class FileUtils {
 
     private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
+
+    private static final String CONTENT_DISPOSITION = "Content-Disposition";
 
     /** 锁定并写入文件(防止并发), 无内容时则仅创建文件 */
     public static void lockThenWriteToFile(String fileName, List<String> contentList) {
@@ -111,6 +111,34 @@ public class FileUtils {
     }
 
     /**
+     * 文件下载
+     *
+     * @param filePath 完整的文件路径
+     */
+    public static void downloadFile(HttpServletResponse response, String filePath) {
+        // 读取文件
+        InputStream inStream;
+        try {
+            inStream = new FileInputStream(filePath);
+        } catch (FileNotFoundException e) {
+            throw new IllegalArgumentException("文件不存在, 路径: " + filePath);
+        }
+        // 设置输出格式
+        response.reset();
+        response.addHeader(CONTENT_DISPOSITION, "attachment; filename=\"" + filePath + "\"");
+        // 循环取出流中的数据
+        byte[] bytes = new byte[100];
+        int len;
+        try {
+            while ((len = inStream.read(bytes)) > 0)
+                response.getOutputStream().write(bytes, 0, len);
+            inStream.close();
+        } catch (IOException e) {
+            throw new UnsupportedOperationException("文件下载失败, 路径: " + filePath);
+        }
+    }
+
+    /**
      * 校验文件后缀是否合规
      *
      * @param originalFileName 文件全名
@@ -120,10 +148,25 @@ public class FileUtils {
         if (StringUtils.isBlank(originalFileName) || suffixSet == null) {
             throw new IllegalArgumentException("文件名为空或未配置后缀校验规则");
         }
-        String suffix = Objects.requireNonNull(originalFileName.substring(originalFileName.lastIndexOf(".")));
+        String suffix = FilenameUtils.getExtension(originalFileName);
         if (StringUtils.isBlank(suffix) || !suffixSet.contains(suffix)) {
-            String type = StringUtils.join(suffix, ", ");
+            String type = StringUtils.join(suffixSet, ", ");
             throw new IllegalArgumentException("仅允许 " + type + " 类型的文件, 请重新上传");
         }
+    }
+
+    /**
+     * 校验文件是否存在
+     *
+     * @param filePath 完整的文件路径
+     */
+    public static boolean checkFileExists(String filePath) {
+        File file = new File(filePath);
+        return file.exists();
+    }
+
+    /** 获取当前项目的根目录 */
+    public static String getProjectRoot() {
+        return System.getProperty("user.dir");
     }
 }

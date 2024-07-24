@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SessionController {
 
     @Resource
-    private SessionService sessionService;
+    private com.sgh.demo.common.session.SessionService sessionService;
 
     @PostMapping("/create")
     @Operation(summary = "创建 session")

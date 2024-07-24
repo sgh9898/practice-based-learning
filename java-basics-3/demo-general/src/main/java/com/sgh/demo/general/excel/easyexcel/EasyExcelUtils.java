@@ -1,14 +1,14 @@
-package com.sgh.demo.common.excel.easyexcel;
+package com.sgh.demo.general.excel.easyexcel;
 
 
 import com.alibaba.excel.ExcelWriter;
-import com.sgh.demo.common.excel.easyexcel.constants.ExcelConstants;
-import com.sgh.demo.common.excel.easyexcel.handler.ExcelColWidthStrategy;
-import com.sgh.demo.common.excel.easyexcel.listener.ExcelListener;
-import com.sgh.demo.common.excel.easyexcel.listener.ExcelNoModelListener;
-import com.sgh.demo.common.excel.easyexcel.pojo.EasyExcelExportDto;
-import com.sgh.demo.common.excel.easyexcel.pojo.EasyExcelNoModelExportDto;
-import com.sgh.demo.common.excel.easyexcel.utils.BaseEasyExcelUtils;
+import com.sgh.demo.general.excel.easyexcel.constants.ExcelConstants;
+import com.sgh.demo.general.excel.easyexcel.handler.ExcelColWidthStrategy;
+import com.sgh.demo.general.excel.easyexcel.listener.ExcelListener;
+import com.sgh.demo.general.excel.easyexcel.listener.ExcelNoModelListener;
+import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelExportDto;
+import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelNoModelExportDto;
+import com.sgh.demo.general.excel.easyexcel.utils.BaseEasyExcelUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;

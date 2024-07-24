@@ -1,4 +1,4 @@
-package com.sgh.demo.common.excel.easyexcel;
+package com.sgh.demo.general.excel.easyexcel;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.DateTimeFormat;
@@ -11,8 +11,8 @@ import com.alibaba.excel.enums.poi.HorizontalAlignmentEnum;
 import com.alibaba.excel.enums.poi.VerticalAlignmentEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.sgh.demo.common.excel.easyexcel.annotation.ExcelDropDown;
-import com.sgh.demo.common.excel.easyexcel.pojo.EasyExcelExportDto;
+import com.sgh.demo.general.excel.easyexcel.annotation.ExcelDropDown;
+import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelExportDto;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

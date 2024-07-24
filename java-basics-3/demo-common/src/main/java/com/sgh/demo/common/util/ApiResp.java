@@ -1,6 +1,7 @@
 package com.sgh.demo.common.util;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.sgh.demo.common.constant.ResultStatus;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
 

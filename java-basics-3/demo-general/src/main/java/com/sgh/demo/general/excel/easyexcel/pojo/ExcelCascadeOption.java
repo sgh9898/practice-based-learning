@@ -1,4 +1,4 @@
-package com.sgh.demo.common.excel.easyexcel.pojo;
+package com.sgh.demo.general.excel.easyexcel.pojo;
 
 import lombok.Data;
 import org.springframework.lang.NonNull;

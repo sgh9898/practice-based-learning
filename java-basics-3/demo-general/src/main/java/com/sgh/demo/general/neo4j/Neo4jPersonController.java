@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class Neo4jPersonController {
 
     @Resource
-    private Neo4jService neo4jService;
+    private com.sgh.demo.common.neo4j.Neo4jService neo4jService;
 
     @PostMapping("/createNode")
     @Operation(summary = "创建节点")

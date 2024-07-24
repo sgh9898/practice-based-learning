@@ -1,6 +1,6 @@
-package com.sgh.demo.common.excel.easyexcel.pojo;
+package com.sgh.demo.general.excel.easyexcel.pojo;
 
-import com.sgh.demo.common.excel.easyexcel.handler.ExcelColWidthStrategy;
+import com.sgh.demo.general.excel.easyexcel.handler.ExcelColWidthStrategy;
 import lombok.Data;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;

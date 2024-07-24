@@ -1,10 +1,10 @@
-package com.sgh.demo.common.excel.easyexcel.handler;
+package com.sgh.demo.general.excel.easyexcel.handler;
 
 import com.alibaba.excel.write.handler.SheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
-import com.sgh.demo.common.excel.easyexcel.constants.ExcelConstants;
-import com.sgh.demo.common.excel.easyexcel.pojo.ExcelCascadeOption;
+import com.sgh.demo.general.excel.easyexcel.constants.ExcelConstants;
+import com.sgh.demo.general.excel.easyexcel.pojo.ExcelCascadeOption;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 

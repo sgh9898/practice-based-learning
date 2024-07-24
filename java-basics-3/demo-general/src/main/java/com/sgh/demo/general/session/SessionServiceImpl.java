@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
  * @author Song gh on 2023/3/6.
  */
 @Service
-public class SessionServiceImpl implements SessionService {
+public class SessionServiceImpl implements com.sgh.demo.common.session.SessionService {
 
     /** 添加 session */
     @Override

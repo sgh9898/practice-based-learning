@@ -1,6 +1,6 @@
-package com.sgh.demo.common.excel.easyexcel.constants;
+package com.sgh.demo.general.excel.easyexcel.constants;
 
-import com.sgh.demo.common.excel.easyexcel.EasyExcelClassTemplate;
+import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
 
 /**
  * EasyExcel 相关常数

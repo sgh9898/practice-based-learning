@@ -1,7 +1,7 @@
 package com.sgh.demo.common.work;
 
-import com.sgh.demo.common.excel.easyexcel.EasyExcelUtils;
 import com.sgh.demo.common.util.JsonUtils;
+import com.sgh.demo.general.excel.easyexcel.EasyExcelUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,14 +30,14 @@ public class WorkController {
     @Operation(summary = "导入数据中台主题域模型")
     @PostMapping("/dataCenter/model")
     public String dataCenterModel(MultipartFile file, HttpServletRequest request, HttpServletResponse response) {
-        List<DataCenterModelExcel> excelList = EasyExcelUtils.importExcel(file, request, response, DataCenterModelExcel.class);
+        List<com.sgh.demo.common.work.DataCenterModelExcel> excelList = EasyExcelUtils.importExcel(file, request, response, com.sgh.demo.common.work.DataCenterModelExcel.class);
         return JsonUtils.beanToJson(excelList);
     }
 
     @GetMapping("/dataCenter/exportTemplate")
     @Operation(summary = "导出数据中台主题域模型模板")
     public void exportTemplate(HttpServletRequest request, HttpServletResponse response) {
-        EasyExcelUtils.exportTemplate(request, response, "主题域模型", DataCenterModelExcel.class, "");
+        EasyExcelUtils.exportTemplate(request, response, "主题域模型", com.sgh.demo.common.work.DataCenterModelExcel.class, "");
     }
 
 }

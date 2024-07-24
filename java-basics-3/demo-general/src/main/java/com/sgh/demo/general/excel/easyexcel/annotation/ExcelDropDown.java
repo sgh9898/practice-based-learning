@@ -1,6 +1,6 @@
-package com.sgh.demo.common.excel.easyexcel.annotation;
+package com.sgh.demo.general.excel.easyexcel.annotation;
 
-import com.sgh.demo.common.excel.easyexcel.pojo.EasyExcelExportDto;
+import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelExportDto;
 
 import java.lang.annotation.*;
 

@@ -1,7 +1,7 @@
-package com.sgh.demo.general.exception.handler;
+package com.sgh.demo.common.exception.handler;
 
+import com.sgh.demo.common.constant.ResultStatus;
 import com.sgh.demo.common.util.ApiResp;
-import com.sgh.demo.common.util.ResultStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -11,6 +11,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * [异常处理类] 接口参数校验异常
+ * [异常处理类] 处理参数校验异常
  *
  * @author Song gh
  * @version 2024/7/15
@@ -36,5 +37,12 @@ public class ValidationExceptionHandler {
         List<ObjectError> errorList = e.getBindingResult().getAllErrors();
         String message = errorList.stream().map(DefaultMessageSourceResolvable::getDefaultMessage).collect(Collectors.joining(";"));
         return ApiResp.error(ResultStatus.PARAM_ERROR.getCode(), message);
+    }
+
+    /** 接口参数转换失败时(多发生于参数值与枚举类不匹配), 进行统一的异常处理 */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ApiResp handleMethodArgumentTypeMismatchException(HttpServletRequest request, MethodArgumentTypeMismatchException e) throws IOException {
+        log.error("接口参数未通过校验, 路径: {}, 方法: {}", request.getRequestURI(), request.getMethod(), e);
+        return ApiResp.error(ResultStatus.PARAM_ERROR.getCode(), "参数类型或参数值错误");
     }
 }

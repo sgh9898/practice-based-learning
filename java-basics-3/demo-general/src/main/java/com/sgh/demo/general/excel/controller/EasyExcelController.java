@@ -1,8 +1,8 @@
-package com.sgh.demo.common.excel.controller;
+package com.sgh.demo.general.excel.controller;
 
-import com.sgh.demo.common.excel.easyexcel.EasyExcelUtils;
-import com.sgh.demo.common.excel.pojo.ExcelToDdl;
-import com.sgh.demo.common.excel.service.ExcelService;
+import com.sgh.demo.general.excel.easyexcel.EasyExcelUtils;
+import com.sgh.demo.general.excel.pojo.ExcelToDdl;
+import com.sgh.demo.general.excel.service.ExcelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
  * @author Song gh on 2022/6/14.
  */
 @Service
-public class WebSocketServiceImpl implements WebSocketService {
+public class WebSocketServiceImpl implements com.sgh.demo.common.websocket.WebSocketService {
 
     @Resource
     private SimpMessagingTemplate wsTemplate;
