@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * JDBC 配置工具
+ * JDBC 工具类
  *
  * @author Song gh
- * @version 2024/3/13
+ * @version 2024/7/8
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class JdbcUtils {
@@ -102,6 +102,34 @@ public class JdbcUtils {
     }
 
     /**
+     * Mysql 查询, 指定返回的实体类
+     *
+     * @param sql         查询sql
+     * @param params      查询参数, sql 和 countSql 同时使用
+     * @param resultClass 查询结果对应的实体类
+     */
+    public static <T> T queryForObject(NamedParameterJdbcTemplate npJdbcTemplate, String sql, Map<String, Object> params, Class<T> resultClass) {
+        if (StringUtils.isBlank(sql)) {
+            throw new IllegalArgumentException("sql 不能为空");
+        }
+        return npJdbcTemplate.queryForObject(sql, params, BeanPropertyRowMapper.newInstance(resultClass));
+    }
+
+    /**
+     * Mysql 列表查询, 指定返回的实体类
+     *
+     * @param sql         查询sql
+     * @param params      查询参数, sql 和 countSql 同时使用
+     * @param resultClass 查询结果对应的实体类
+     */
+    public static <T> List<T> queryForList(NamedParameterJdbcTemplate npJdbcTemplate, String sql, Map<String, Object> params, Class<T> resultClass) {
+        if (StringUtils.isBlank(sql)) {
+            throw new IllegalArgumentException("sql 不能为空");
+        }
+        return npJdbcTemplate.query(sql, params, BeanPropertyRowMapper.newInstance(resultClass));
+    }
+
+    /**
      * Mysql 分页查询, 指定返回的实体类
      *
      * @param sql         查询sql
@@ -114,12 +142,6 @@ public class JdbcUtils {
     public static <T> Page<T> queryForPage(NamedParameterJdbcTemplate npJdbcTemplate, String sql, @Nullable String countSql, Map<String, Object> params, Class<T> resultClass, int page, int size) {
         if (StringUtils.isBlank(sql)) {
             throw new IllegalArgumentException("sql 不能为空");
-        }
-        if (page < 0) {
-            page = 0;
-        }
-        if (size <= 0) {
-            size = 10;
         }
         // 未配置计数sql时, 进行默认配置
         if (StringUtils.isBlank(countSql)) {
@@ -150,12 +172,6 @@ public class JdbcUtils {
     public static Page<Map<String, Object>> queryForPage(NamedParameterJdbcTemplate npJdbcTemplate, String sql, @Nullable String countSql, Map<String, Object> params, int page, int size) {
         if (StringUtils.isBlank(sql)) {
             throw new IllegalArgumentException("sql 不能为空");
-        }
-        if (size <= 0) {
-            size = 10;
-        }
-        if (page < 0) {
-            page = 0;
         }
         // 未配置计数sql时, 进行默认配置
         if (StringUtils.isBlank(countSql)) {

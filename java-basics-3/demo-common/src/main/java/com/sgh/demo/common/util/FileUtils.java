@@ -22,7 +22,8 @@ import java.util.zip.ZipInputStream;
 /**
  * 文件工具
  *
- * @author Song gh on 2023/8/28.
+ * @author Song gh
+ * @version 2024/7/17
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FileUtils {

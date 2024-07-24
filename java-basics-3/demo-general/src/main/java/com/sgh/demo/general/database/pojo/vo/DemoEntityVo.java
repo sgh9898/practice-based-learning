@@ -1,11 +1,11 @@
-package com.sgh.demo.common.database.pojo.vo;
+package com.sgh.demo.general.database.pojo.vo;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.sgh.demo.common.database.db.entity.DemoEntity;
+import com.sgh.demo.general.database.db.entity.DemoEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 

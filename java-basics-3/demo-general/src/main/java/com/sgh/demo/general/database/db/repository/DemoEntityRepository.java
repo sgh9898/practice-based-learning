@@ -1,7 +1,7 @@
-package com.sgh.demo.common.database.db.repository;
+package com.sgh.demo.general.database.db.repository;
 
-import com.sgh.demo.common.database.db.entity.DemoEntity;
-import com.sgh.demo.common.database.pojo.excel.ExcelDemoEntity;
+import com.sgh.demo.general.database.db.entity.DemoEntity;
+import com.sgh.demo.general.database.pojo.excel.ExcelDemoEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -37,7 +37,7 @@ public interface DemoEntityRepository extends JpaRepository<DemoEntity, Long> {
     Page<DemoEntity> findAllByIsDeletedIsFalse(Pageable pageable);
 
     /** [列表, excel] 测试数据 excel */
-    @Query("select new com.sgh.demo.common.database.pojo.excel.ExcelDemoEntity(entity) " +
+    @Query("select new com.sgh.demo.general.database.pojo.excel.ExcelDemoEntity(entity) " +
             "from DemoEntity as entity " +
             "where entity.isDeleted = false ")
     List<ExcelDemoEntity> getExcelList();

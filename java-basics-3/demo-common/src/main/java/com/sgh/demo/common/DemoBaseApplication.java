@@ -18,7 +18,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAsync
 @EnableScheduling
 @SpringBootApplication
-//@EnableJpaRepositories("com.sgh.demo.common.database")   // 解决 JPA 与 ElasticSearch 冲突
+//@EnableJpaRepositories("com.sgh.demo.general.database")   // 解决 JPA 与 ElasticSearch 冲突
 public class DemoBaseApplication {
 
     public static void main(String[] args) {

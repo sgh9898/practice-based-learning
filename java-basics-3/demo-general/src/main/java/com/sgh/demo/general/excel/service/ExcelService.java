@@ -24,7 +24,7 @@ import java.util.stream.IntStream;
 public class ExcelService {
 
     @Resource
-    private com.sgh.demo.common.database.db.repository.DemoEntityRepository demoEntityRepository;
+    private com.sgh.demo.general.database.db.repository.DemoEntityRepository demoEntityRepository;
 
     /** 导入数据 */
     public Object importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response) {
@@ -38,8 +38,8 @@ public class ExcelService {
 
     /** 导出数据 */
     public void exportData(HttpServletRequest request, HttpServletResponse response) {
-        List<com.sgh.demo.common.database.pojo.excel.ExcelDemoEntity> excelList = demoEntityRepository.getExcelList();
-        com.sgh.demo.general.excel.easyexcel.EasyExcelUtils.exportData(request, response, "数据样例", com.sgh.demo.common.database.pojo.excel.ExcelDemoEntity.class, excelList);
+        List<com.sgh.demo.general.database.pojo.excel.ExcelDemoEntity> excelList = demoEntityRepository.getExcelList();
+        com.sgh.demo.general.excel.easyexcel.EasyExcelUtils.exportData(request, response, "数据样例", com.sgh.demo.general.database.pojo.excel.ExcelDemoEntity.class, excelList);
     }
 
     /** 导出自定义数据 */

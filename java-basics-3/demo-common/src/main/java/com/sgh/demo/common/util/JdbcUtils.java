@@ -1,6 +1,5 @@
 package com.sgh.demo.common.util;
 
-import jakarta.annotation.Nullable;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -12,6 +11,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.lang.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -99,6 +99,20 @@ public class JdbcUtils {
     public static NamedParameterJdbcTemplate createNamedJdbcTemplate(String driverClassName, String url, String username, String password) {
         DriverManagerDataSource dataSource = getDataSource(driverClassName, url, username, password);
         return new NamedParameterJdbcTemplate(dataSource);
+    }
+
+    /**
+     * Mysql 查询, 指定返回的实体类
+     *
+     * @param sql         查询sql
+     * @param params      查询参数, sql 和 countSql 同时使用
+     * @param resultClass 查询结果对应的实体类
+     */
+    public static <T> T queryForObject(NamedParameterJdbcTemplate npJdbcTemplate, String sql, Map<String, Object> params, Class<T> resultClass) {
+        if (StringUtils.isBlank(sql)) {
+            throw new IllegalArgumentException("sql 不能为空");
+        }
+        return npJdbcTemplate.queryForObject(sql, params, BeanPropertyRowMapper.newInstance(resultClass));
     }
 
     /**

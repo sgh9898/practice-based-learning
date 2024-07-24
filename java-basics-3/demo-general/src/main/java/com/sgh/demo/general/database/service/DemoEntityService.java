@@ -1,8 +1,8 @@
-package com.sgh.demo.common.database.service;
+package com.sgh.demo.general.database.service;
 
-import com.sgh.demo.common.database.db.entity.DemoEntity;
-import com.sgh.demo.common.database.pojo.query.DemoEntityQueryDto;
-import com.sgh.demo.common.database.pojo.upsert.DemoEntityUpsertDto;
+import com.sgh.demo.general.database.db.entity.DemoEntity;
+import com.sgh.demo.general.database.pojo.query.DemoEntityQueryDto;
+import com.sgh.demo.general.database.pojo.upsert.DemoEntityUpsertDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;

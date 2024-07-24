@@ -1,10 +1,10 @@
-package com.sgh.demo.common.database.pojo.excel;
+package com.sgh.demo.general.database.pojo.excel;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.sgh.demo.common.database.db.entity.DemoEntity;
+import com.sgh.demo.general.database.db.entity.DemoEntity;
 import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
