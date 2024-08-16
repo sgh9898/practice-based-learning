@@ -1,7 +1,7 @@
 package com.sgh.demo.general.database.controller;
 
 import com.sgh.demo.common.exception.BaseException;
-import com.sgh.demo.common.util.ApiResp;
+import com.sgh.demo.common.constant.ApiResp;
 import com.sgh.demo.general.database.db.entity.DemoEntity;
 import com.sgh.demo.general.database.pojo.query.DemoEntityQueryDto;
 import com.sgh.demo.general.database.pojo.upsert.DemoEntityUpsertDto;

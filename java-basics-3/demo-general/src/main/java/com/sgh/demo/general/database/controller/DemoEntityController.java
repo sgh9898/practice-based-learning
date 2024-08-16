@@ -5,7 +5,7 @@ import com.sgh.demo.general.database.pojo.query.DemoEntityQueryDto;
 import com.sgh.demo.general.database.pojo.upsert.DemoEntityUpsertDto;
 import com.sgh.demo.general.database.service.DemoEntityService;
 import com.sgh.demo.common.exception.BaseException;
-import com.sgh.demo.common.util.ApiResp;
+import com.sgh.demo.common.constant.ApiResp;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;

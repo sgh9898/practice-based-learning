@@ -8,7 +8,11 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.net.URLEncoder;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
@@ -118,22 +122,14 @@ public class FileUtils {
      */
     public static void downloadFile(HttpServletResponse response, String filePath) {
         // 读取文件
-        InputStream inStream;
-        try {
-            inStream = new FileInputStream(filePath);
-        } catch (FileNotFoundException e) {
+        File file = new File(filePath);
+        if (!file.exists()) {
             throw new IllegalArgumentException("文件不存在, 路径: " + filePath);
         }
         // 设置输出格式
-        response.reset();
-        response.addHeader(CONTENT_DISPOSITION, "attachment; filename=\"" + filePath + "\"");
-        // 循环取出流中的数据
-        byte[] bytes = new byte[100];
-        int len;
         try {
-            while ((len = inStream.read(bytes)) > 0)
-                response.getOutputStream().write(bytes, 0, len);
-            inStream.close();
+            response.addHeader(CONTENT_DISPOSITION, "attachment; filename=\"" + URLEncoder.encode(file.getName(), StandardCharsets.UTF_8.displayName()) + "\"");
+            Files.copy(file.toPath(), response.getOutputStream());
         } catch (IOException e) {
             throw new UnsupportedOperationException("文件下载失败, 路径: " + filePath);
         }

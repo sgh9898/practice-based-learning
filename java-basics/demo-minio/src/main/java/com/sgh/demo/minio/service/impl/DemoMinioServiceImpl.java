@@ -61,7 +61,7 @@ public class DemoMinioServiceImpl implements DemoMinioService {
         }
 
         // 根据时间分配 bucket (名称 = 前缀 + 年月), 不存在则创建
-        String bucketName = BUCKET_PREFIX + DateUtils.toStr(new Date(), BUCKET_PREFIX_DATE_PATTERN);
+        String bucketName = BUCKET_PREFIX + DateUtils.dateToStr(new Date(), BUCKET_PREFIX_DATE_PATTERN);
         createBucketIfNotExist(bucketName);
 
         // 文件存入 minio

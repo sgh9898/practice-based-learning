@@ -18,6 +18,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -72,7 +73,7 @@ public class ExcelListener<T> implements ReadListener<T> {
         this.invalidList = new LinkedList<>();
         this.excelClass = excelClass;
 
-        log.info("导入 Excel 开始: " + excelClass.getName());
+        log.info("导入 Excel 开始: {}", excelClass.getName());
     }
 
 // ------------------------------ 可 Override ------------------------------
@@ -111,7 +112,7 @@ public class ExcelListener<T> implements ReadListener<T> {
             return;
         } else if (validList.isEmpty()) {
             try {
-                T tempExcel = excelClass.newInstance();
+                T tempExcel = excelClass.getDeclaredConstructor().newInstance();
                 if (tempExcel instanceof EasyExcelClassTemplate) {
                     ((EasyExcelClassTemplate) tempExcel).setDefaultExcelErrorMessage("文件内容为空或列名不匹配");
                 } else {
@@ -122,7 +123,8 @@ public class ExcelListener<T> implements ReadListener<T> {
                     }
                 }
                 invalidList.add(tempExcel);
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
+                     InvocationTargetException e) {
                 log.error("设置 Excel 导入错误信息失败", e);
             }
             log.info("读取 Excel 完成, 文件内容为空或列名不匹配, 所属类别: {}", excelClass.getName());

@@ -136,7 +136,7 @@ public class ExcelSheetWriteHandler implements SheetWriteHandler {
         StringBuilder columnStr = new StringBuilder();
         column--;
         do {
-            if (columnStr.length() > 0) {
+            if (!columnStr.isEmpty()) {
                 column--;
             }
             columnStr.insert(0, ((char) (column % 26 + 'A')));

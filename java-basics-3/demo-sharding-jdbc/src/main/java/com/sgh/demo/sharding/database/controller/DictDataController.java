@@ -1,6 +1,6 @@
 package com.sgh.demo.sharding.database.controller;
 
-import com.sgh.demo.common.util.ApiResp;
+import com.sgh.demo.common.constant.ApiResp;
 import com.sgh.demo.sharding.database.pojo.upsert.DictDataUpsertDto;
 import com.sgh.demo.sharding.database.service.DictDataService;
 import io.swagger.v3.oas.annotations.Operation;

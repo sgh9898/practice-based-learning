@@ -1,6 +1,6 @@
 package com.sgh.demo.general.quartz.controller;
 
-import com.sgh.demo.common.util.ApiResp;
+import com.sgh.demo.common.constant.ApiResp;
 import com.sgh.demo.general.quartz.dto.QuartzConfigDto;
 import com.sgh.demo.general.quartz.quartz.service.QuartzJobService;
 import io.swagger.annotations.Api;

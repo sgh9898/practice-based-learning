@@ -1,7 +1,6 @@
-package com.sgh.demo.common.util;
+package com.sgh.demo.common.constant;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.sgh.demo.common.constant.ResultStatus;
 import lombok.Getter;
 import org.springframework.data.domain.Page;
 
@@ -11,15 +10,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 统一的接口返回格式
- * <br> (便于 OpenAPI 自动生成接口文档时解析数据结构)
- * <br> 1. 常规接口(无数据), 返回格式 {@link ApiResp}
- * <br> 2. 常规接口(有数据), 返回格式 {@link Data}
- * <br> 3. 实体类(单条数据), 返回格式 {@link Entity}
- * <br> 4. 实体类(列表数据), 返回格式 {@link ListEntity}
- * <br> 5. 实体类(分页数据), 返回格式 {@link PageEntity}
+ * 统一的接口返回格式(便于 OpenAPI 自动生成接口文档时解析数据结构)
+ * <pre>
+ * 1. 常规接口(无数据), 返回格式 {@link ApiResp}
+ * 2. 常规接口(有数据), 返回格式 {@link Data}
+ * 3. 实体类(单条数据), 返回格式 {@link Entity}
+ * 4. 实体类(列表数据), 返回格式 {@link ListEntity}
+ * 5. 实体类(分页数据), 返回格式 {@link PageEntity}
+ * 6. 其他自定义返回类可以 extends {@link ApiResp} 实现 </pre>
  *
- * @author Song gh on 2023/11/24
+ * @author Song gh
+ * @version 2024/8/2
  */
 @Getter
 @JsonPropertyOrder({"code", "message"})

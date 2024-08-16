@@ -1,6 +1,5 @@
 package com.sgh.demo.general.excel.easyexcel;
 
-
 import com.alibaba.excel.ExcelWriter;
 import com.sgh.demo.general.excel.easyexcel.constants.ExcelConstants;
 import com.sgh.demo.general.excel.easyexcel.handler.ExcelColWidthStrategy;
@@ -8,7 +7,6 @@ import com.sgh.demo.general.excel.easyexcel.listener.ExcelListener;
 import com.sgh.demo.general.excel.easyexcel.listener.ExcelNoModelListener;
 import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelExportDto;
 import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelNoModelExportDto;
-import com.sgh.demo.general.excel.easyexcel.utils.BaseEasyExcelUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -57,7 +55,7 @@ import java.util.Map;
  *       * 分页导出: {@link #noModelWriteSheet}--在新的一页写入数据, 数据写入全部完成后必须手动调用 {@link #closeExcel} 进行关闭 </pre>
  *
  * @author Song gh
- * @version 2024/1/30
+ * @version 2024/8/16
  */
 @Slf4j
 @Getter

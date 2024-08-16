@@ -1,7 +1,7 @@
 package com.sgh.demo.general.aop;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.sgh.demo.common.util.ApiResp;
+import com.sgh.demo.common.constant.ApiResp;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import jakarta.json.JsonException;

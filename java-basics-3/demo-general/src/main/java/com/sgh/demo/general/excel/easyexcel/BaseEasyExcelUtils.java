@@ -1,4 +1,4 @@
-package com.sgh.demo.general.excel.easyexcel.utils;
+package com.sgh.demo.general.excel.easyexcel;
 
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.ExcelWriter;
@@ -14,7 +14,6 @@ import com.alibaba.excel.write.metadata.WriteTable;
 import com.alibaba.excel.write.metadata.style.WriteCellStyle;
 import com.alibaba.excel.write.metadata.style.WriteFont;
 import com.alibaba.excel.write.style.HorizontalCellStyleStrategy;
-import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
 import com.sgh.demo.general.excel.easyexcel.annotation.ExcelDropDown;
 import com.sgh.demo.general.excel.easyexcel.handler.*;
 import com.sgh.demo.general.excel.easyexcel.listener.ExcelListener;
@@ -22,6 +21,8 @@ import com.sgh.demo.general.excel.easyexcel.listener.ExcelNoModelListener;
 import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelExportDto;
 import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelNoModelExportDto;
 import com.sgh.demo.general.excel.easyexcel.pojo.ExcelCascadeOption;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -30,10 +31,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -55,7 +53,7 @@ import java.util.*;
  *   2) 不指定 ExcelClass, 写入指定 Sheet: {@link #noModelBaseWriteSheet} </pre>
  *
  * @author Song gh
- * @version 2024/1/30
+ * @version 2024/8/16
  */
 @Slf4j
 public class BaseEasyExcelUtils {
@@ -136,7 +134,7 @@ public class BaseEasyExcelUtils {
                 }
             }
         } catch (IOException e) {
-            log.error(file.getOriginalFilename() + " Excel 导入异常, 请检查导入文件或 Excel 类 " + excelClass.getName(), e);
+            log.error("{} Excel 导入异常, 请检查导入文件或 Excel 类 {}", file.getOriginalFilename(), excelClass.getName(), e);
             return null;
         }
         return true;
@@ -168,7 +166,7 @@ public class BaseEasyExcelUtils {
                 errorList.addAll(listener.getInvalidList());
             }
         } catch (IOException e) {
-            log.error(file.getOriginalFilename() + " Excel 导入异常, 请检查导入文件 ", e);
+            log.error("{} Excel 导入异常, 请检查导入文件 ", file.getOriginalFilename(), e);
             return null;
         }
         return true;
@@ -419,11 +417,7 @@ public class BaseEasyExcelUtils {
         // 处理中文乱码
         String userAgent = request.getHeader("User-Agent");
         if (userAgent.contains("MSIE") || userAgent.contains("Trident") || userAgent.contains("Chrome")) {
-            try {
-                fileName = URLEncoder.encode(fileName, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new UnsupportedOperationException("处理中文文件名失败", e);
-            }
+            fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8);
         } else {
             fileName = new String(fileName.getBytes(), StandardCharsets.ISO_8859_1);
         }

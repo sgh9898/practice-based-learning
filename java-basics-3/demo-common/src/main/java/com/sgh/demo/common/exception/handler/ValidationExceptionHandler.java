@@ -1,7 +1,7 @@
 package com.sgh.demo.common.exception.handler;
 
 import com.sgh.demo.common.constant.ResultStatus;
-import com.sgh.demo.common.util.ApiResp;
+import com.sgh.demo.common.constant.ApiResp;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;

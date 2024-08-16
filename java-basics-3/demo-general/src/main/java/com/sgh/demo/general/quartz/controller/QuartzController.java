@@ -2,7 +2,7 @@ package com.sgh.demo.common.quartz.controller;
 
 import com.sgh.demo.common.quartz.dto.QuartzConfigDto;
 import com.sgh.demo.common.quartz.quartz.service.QuartzJobService;
-import com.sgh.demo.common.util.ApiResp;
+import com.sgh.demo.common.constant.ApiResp;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;

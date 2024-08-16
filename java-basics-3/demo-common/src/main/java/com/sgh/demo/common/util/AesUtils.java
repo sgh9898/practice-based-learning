@@ -1,6 +1,8 @@
 package com.sgh.demo.common.util;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
  * @version 2024/3/5
  */
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AesUtils {
 
     /** 十六位密钥(需要前端和后端保持一致), 更换项目时必须重新生成 */
@@ -239,9 +242,6 @@ public class AesUtils {
     }
 
 // ------------------------------ Private ------------------------------
-
-    private AesUtils() {
-    }
 
     /** 生成加密/解密工具 */
     @NonNull

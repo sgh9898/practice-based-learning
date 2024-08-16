@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import javax.annotation.Nullable;
+
 /**
  * Demo 应用, 包含通用功能或演示
  * <pre>
@@ -19,6 +21,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * @author Song gh
  * @version 2024/3/21
  */
+@Nullable
 @Slf4j
 @EnableAsync
 @EnableScheduling
