@@ -25,10 +25,10 @@ import java.util.Map;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class JsonUtils {
 
-    /** 默认 */
+    /** 默认 mapper */
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    /** 忽略值为null的字段 */
+    /** mapper: 忽略值为 null 的字段 */
     private static final ObjectMapper NON_NULL_MAPPER;
 
     static {

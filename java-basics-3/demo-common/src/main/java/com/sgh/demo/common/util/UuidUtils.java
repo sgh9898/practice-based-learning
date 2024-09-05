@@ -20,7 +20,7 @@ public class UuidUtils {
         return UUID.randomUUID().toString();
     }
 
-    /** 获取 32位 UUID */
+    /** 获取指定长度的 UUID */
     public static String getUuid(int length) {
         return StringUtils.substring(UUID.randomUUID().toString(), 0, length);
     }
@@ -30,7 +30,7 @@ public class UuidUtils {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
-    /** 获取 32位 没有连接线的 UUID */
+    /** 获取指定长度的, 没有连接线的 UUID */
     public static String getUuidNoDash(int length) {
         return StringUtils.substring(UUID.randomUUID().toString().replace("-", ""), 0, length);
     }

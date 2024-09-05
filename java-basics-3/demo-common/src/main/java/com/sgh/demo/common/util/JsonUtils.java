@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -20,13 +21,16 @@ import java.util.Map;
  * (基于 JacksonUtil 工具类优化)
  *
  * @author Song gh
- * @version 2024/3/21
+ * @version 2024/8/22
  */
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class JsonUtils {
-    /** 默认 */
+
+    /** 默认 mapper */
     private static final ObjectMapper MAPPER = new ObjectMapper();
-    /** 忽略值为null的字段 */
+
+    /** mapper: 忽略值为 null 的字段 */
     private static final ObjectMapper NON_NULL_MAPPER;
 
     static {
@@ -38,7 +42,7 @@ public class JsonUtils {
         MAPPER.enable(SerializationFeature.INDENT_OUTPUT);
 
         NON_NULL_MAPPER = MAPPER.copy();
-        // 忽略值为null的字段
+        // 忽略值为 null 的字段
         NON_NULL_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
@@ -76,6 +80,7 @@ public class JsonUtils {
             return MAPPER.readValue(json, new TypeReference<HashMap<String, Object>>() {
             });
         } catch (JsonProcessingException e) {
+            log.error("转换 Json 为 Map 错误:{}", json, e);
             throw new UnsupportedOperationException("转换 Json 为 Map 错误:" + json, e);
         }
     }
@@ -85,7 +90,8 @@ public class JsonUtils {
         try {
             return MAPPER.readValue(json, beanType);
         } catch (Exception e) {
-            throw new UnsupportedOperationException("转换 Json 为 Java Bean 错误: " + json, e);
+            log.error("转换 Json 为 JavaBean 错误:{}", json, e);
+            throw new UnsupportedOperationException("转换 Json 为 JavaBean 错误: " + json, e);
         }
     }
 
@@ -95,6 +101,7 @@ public class JsonUtils {
             CollectionType type = MAPPER.getTypeFactory().constructCollectionType(List.class, beanType);
             return MAPPER.readValue(json, type);
         } catch (Exception e) {
+            log.error("转换 Json 为 JavaList 错误:{}", json, e);
             throw new UnsupportedOperationException("转换 Json 为 JavaList 错误: " + json, e);
         }
     }

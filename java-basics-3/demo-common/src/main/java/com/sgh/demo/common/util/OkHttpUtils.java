@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * 2. 出现 handshake_failure 时需要切换 TLS 协议版本
  *
  * @author Song gh
- * @version 2024.6.11
+ * @version 2024/8/21
  */
 public class OkHttpUtils {
 
@@ -38,7 +38,7 @@ public class OkHttpUtils {
     /** 参数类型: Form */
     private static final MediaType APPLICATION_FORM_URLENCODED = MediaType.parse("application/x-www-form-urlencoded");
 
-    /** 链接超时时间(秒) */
+    /** 连接超时时间(秒) */
     private static final int CONNECT_TIME_OUT = 6;
     /** 读超时时间(秒) */
     private static final int READ_TIME_OUT = 6;
@@ -92,7 +92,42 @@ public class OkHttpUtils {
         return getStrResponse(request, url);
     }
 
+    /** get 访问, 自定义 Headers */
+    public static String getWithHeaders (@NonNull String url, @NonNull Map<String, String> headers) {
+        if (StringUtils.isBlank(url)) {
+            throw new IllegalArgumentException("url 不能为空");
+        }
+        Request.Builder builder = new Request.Builder().url(url);
+        headers.forEach(builder::addHeader);
+        Request request = builder.build();
+        return getStrResponse(request, url);
+    }
+
+// ------------------------------ Put 访问 ------------------------------
+
+    /** put 访问, 自定义 Headers */
+    public static String putWithHeaders (String url, String json, Map<String, String> headers) {
+        if (StringUtils.isBlank(url)) {
+            throw new IllegalArgumentException("url 不能为空");
+        }
+        Request.Builder builder = new Request.Builder().url(url);
+        headers.forEach(builder::addHeader);
+        RequestBody body = RequestBody.create(json, APPLICATION_JSON);
+        Request request = builder.put(body).build();
+        return getStrResponse(request, url);
+    }
+
 // ------------------------------ Post 访问 ------------------------------
+
+    /** post 访问, 自定义 Headers */
+    public static String postWithHeaders(@NonNull String url, @NonNull Map<String, String> headers) {
+        if (StringUtils.isBlank(url)) {
+            throw new IllegalArgumentException("url 不能为空");
+        }
+        RequestBody body = RequestBody.create("",null);
+        Request request = new Request.Builder().url(url).post(body).build();
+        return getStrResponse(request, url);
+    }
 
     /** post 访问, 提交 json */
     public static String postJson(@NonNull String url, String bodyJsonStr) {
@@ -105,7 +140,7 @@ public class OkHttpUtils {
     }
 
     /** post 访问, 提交 json, 自定义 Headers */
-    public static String postJsonWithHeaders(@NonNull String url, String bodyJsonStr, @NonNull Map<String, String> headers) {
+    public static String postJsonWithHeaders(@NonNull String url, @NonNull String bodyJsonStr, @NonNull Map<String, String> headers) {
         if (StringUtils.isBlank(url)) {
             throw new IllegalArgumentException("url 不能为空");
         }

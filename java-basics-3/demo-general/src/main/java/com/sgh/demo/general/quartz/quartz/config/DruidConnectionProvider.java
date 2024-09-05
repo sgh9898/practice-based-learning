@@ -1,4 +1,4 @@
-package com.sgh.demo.common.quartz.quartz.config;
+package com.sgh.demo.general.quartz.quartz.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.sgh.demo.common.exception.BaseException;
@@ -24,7 +24,7 @@ public class DruidConnectionProvider implements ConnectionProvider {
     /** 数据库默认最大连接数 */
     private static final int DEFAULT_DB_MAX_CONNECTIONS = 10;
 
-    /** 默认每个链接缓存120个预编译语句 */
+    /** 默认每个链接缓存 120 个预编译语句 */
     private static final int DEFAULT_DB_MAX_CACHED_STATEMENTS_PER_CONNECTION = 120;
 
 // ------------------------------ 自动读取配置文件 ------------------------------
@@ -38,7 +38,7 @@ public class DruidConnectionProvider implements ConnectionProvider {
     private String password;
     /** 数据库最大连接数 */
     private int maxConnection;
-    /** 测试数据库连接的 sql, 数据库SQL查询每次连接返回执行到连接池，以确保它仍然是有效的。 */
+    /** 测试数据库连接的 sql, 数据库 sql 查询每次连接返回执行到连接池, 以确保它仍然是有效的 */
     private String validationQuery;
     /** 每个链接最多缓存预编译语句的数量 */
     private String maxCachedStatementsPerConnection;

@@ -8,10 +8,7 @@ import org.springframework.lang.Nullable;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
@@ -322,5 +319,17 @@ public class DateUtils {
     public static boolean isSameDay(Date date1, Date date2) {
         SimpleDateFormat fmt = new SimpleDateFormat(COMPACT_DATE_PATTERN);
         return fmt.format(date1).equals(fmt.format(date2));
+    }
+
+    /**
+     * 计算时间间隔
+     *
+     * @param startTimestamp 开始时间(时间戳)
+     * @param endTimestamp   结束时间(时间戳)
+     */
+    public static Duration getDuration(long startTimestamp, long endTimestamp) {
+        LocalDateTime start = LocalDateTime.ofInstant(Instant.ofEpochMilli(startTimestamp), ZoneId.systemDefault());
+        LocalDateTime end = LocalDateTime.ofInstant(Instant.ofEpochMilli(endTimestamp), ZoneId.systemDefault());
+        return Duration.between(start, end);
     }
 }
