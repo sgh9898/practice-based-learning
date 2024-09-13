@@ -1,6 +1,6 @@
 package com.sgh.demo.common.session;
 
-import com.sgh.demo.general.database.db.entity.DemoEntity;
+import com.sgh.demo.common.database.db.entity.DemoEntity;
 import com.sgh.demo.common.util.JsonUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;

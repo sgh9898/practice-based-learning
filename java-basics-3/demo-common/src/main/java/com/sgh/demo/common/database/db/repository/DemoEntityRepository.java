@@ -1,7 +1,7 @@
-package com.sgh.demo.general.database.db.repository;
+package com.sgh.demo.common.database.db.repository;
 
-import com.sgh.demo.general.database.db.entity.DemoEntity;
-import com.sgh.demo.general.database.pojo.excel.ExcelDemoEntity;
+import com.sgh.demo.common.database.db.entity.DemoEntity;
+import com.sgh.demo.common.database.pojo.excel.ExcelDemoEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,4 +1,4 @@
-package com.sgh.demo.common.quartz.controller;
+package com.sgh.demo.general.quartz.controller;
 
 import com.sgh.demo.common.quartz.dto.QuartzConfigDto;
 import com.sgh.demo.common.quartz.quartz.service.QuartzJobService;

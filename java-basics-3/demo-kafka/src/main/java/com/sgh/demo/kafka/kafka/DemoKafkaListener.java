@@ -1,6 +1,6 @@
 package com.sgh.demo.kafka.kafka;
 
-import com.sgh.demo.general.database.db.entity.DemoEntity;
+import com.sgh.demo.common.database.db.entity.DemoEntity;
 import com.sgh.demo.common.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -32,8 +32,8 @@ public class DemoKafkaListener {
         List<DemoEntity> entityList = new LinkedList<>();
         msg.forEach(str -> entityList.add(JsonUtils.jsonToBean(str, DemoEntity.class)));
         log.info("批量消息转换: " + JsonUtils.beanToJson(entityList));
-//        acknowledgment.acknowledge();
-//        throw new UnsupportedOperationException("这是一条批量报错信息");
+        acknowledgment.acknowledge();
+        throw new UnsupportedOperationException("这是一条批量报错信息");
     }
 
 //    /**

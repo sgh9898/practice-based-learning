@@ -1,7 +1,7 @@
 //package com.sgh.demo.common.temp;
 //
 //import com.sgh.demo.common.async.AsyncService;
-//import com.sgh.demo.general.database.db.entity.DemoEntity;
+//import com.sgh.demo.common.database.entity.db.DemoEntity;
 //import com.sgh.demo.common.constant.ApiResp;
 //import com.sgh.demo.common.util.JsonUtils;
 //import com.sgh.demo.common.util.ResultUtil;

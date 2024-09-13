@@ -21,7 +21,7 @@ import java.util.Map;
  * (基于 JacksonUtil 工具类优化)
  *
  * @author Song gh
- * @version 2024/8/22
+ * @version 2024/9/11
  */
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -46,9 +46,9 @@ public class JsonUtils {
         NON_NULL_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
-// ------------------------------ Java对象 转换其他类型 ------------------------------
+// ------------------------------ Java Bean 转换其他类型 ------------------------------
 
-    /** Java对象 --> Json String */
+    /** Java Bean --> Json String */
     public static String beanToJson(Object bean) {
         try {
             return MAPPER.writeValueAsString(bean);
@@ -57,7 +57,7 @@ public class JsonUtils {
         }
     }
 
-    /** Java对象 --> Json String; 忽略值为null的字段 */
+    /** Java Bean --> Json String; 忽略值为 null 的字段 */
     public static String beanToJsonIgnoreNull(Object bean) {
         try {
             return NON_NULL_MAPPER.writeValueAsString(bean);
@@ -66,10 +66,18 @@ public class JsonUtils {
         }
     }
 
-    /** Java对象 --> Map */
+    /** Java Bean --> Map(String, Object) */
     @SuppressWarnings("unchecked")
-    public static Map<String, Object> beanToMap(Object bean) {
+    public static <T, U> Map<T, U> beanToMap(Object bean) {
         return MAPPER.convertValue(bean, Map.class);
+    }
+
+    /** Java Bean --> Map(String, Object), 移除值为 null 的字段 */
+    @SuppressWarnings("unchecked")
+    public static <T, U> Map<T, U> beanToMapNonNull(Object bean) {
+        Map<T, U> map = MAPPER.convertValue(bean, Map.class);
+        map.entrySet().removeIf(entry -> entry.getValue() == null);
+        return map;
     }
 
 // ------------------------------ Json 转换其他类型 ------------------------------
@@ -85,7 +93,12 @@ public class JsonUtils {
         }
     }
 
-    /** Json String --> Java对象 */
+    /**
+     * Json String --> Java Bean
+     * <pre>
+     * 1. 返回数据类型不可包含泛型, 如 {@code OuterClass<InnerClass>}, 需要调用 {@link #jsonToBean(String, TypeReference)}
+     * </pre>
+     */
     public static <T> T jsonToBean(String json, Class<T> beanType) {
         try {
             return MAPPER.readValue(json, beanType);
@@ -95,7 +108,22 @@ public class JsonUtils {
         }
     }
 
-    /** JsonArray String --> List(Java对象) */
+    /**
+     * Json String --> Java Bean
+     * <pre>
+     * 1. 返回数据类型可以包含泛型, 如 {@code OuterClass<InnerClass>}
+     * </pre>
+     */
+    public static <T> T jsonToBean(String json, TypeReference<T> typeReference) {
+        try {
+            return MAPPER.readValue(json, typeReference);
+        } catch (Exception e) {
+            log.error("转换 Json 为 JavaBean 错误:{}", json, e);
+            throw new UnsupportedOperationException("转换 Json 为 JavaBean 错误: " + json, e);
+        }
+    }
+
+    /** JsonArray String --> List(Java Bean) */
     public static <T> List<T> jsonToList(String json, Class<T> beanType) {
         try {
             CollectionType type = MAPPER.getTypeFactory().constructCollectionType(List.class, beanType);
@@ -106,7 +134,7 @@ public class JsonUtils {
         }
     }
 
-    /** Java对象 --> Map */
+    /** Java Bean --> Map */
     public static <T> T mapToBean(Object bean, Class<T> tClass) {
         return MAPPER.convertValue(bean, tClass);
     }
@@ -122,12 +150,12 @@ public class JsonUtils {
         }
     }
 
-    /** JsonNode --> Java对象 */
+    /** JsonNode --> Java Bean */
     public static <T> T jsonNodeToBean(JsonNode jsonNode, Class<T> beanType) {
         return MAPPER.convertValue(jsonNode, beanType);
     }
 
-    /** JsonNode --> Java对象, 次级结构包含泛型 */
+    /** JsonNode --> Java Bean, 次级结构包含泛型 */
     public static <T> T jsonNodeToBean(JsonNode jsonNode, Class<T> beanType, Class<?> subBeanType) {
         JavaType type = MAPPER.getTypeFactory().constructParametricType(beanType, subBeanType);
         return MAPPER.convertValue(jsonNode, type);

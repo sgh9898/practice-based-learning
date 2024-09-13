@@ -1,4 +1,4 @@
-package com.sgh.demo.general.database.pojo.query;
+package com.sgh.demo.common.database.pojo.query;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;

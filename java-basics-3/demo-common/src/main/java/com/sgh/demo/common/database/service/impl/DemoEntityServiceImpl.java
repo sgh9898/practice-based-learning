@@ -1,11 +1,11 @@
-package com.sgh.demo.general.database.service.impl;
+package com.sgh.demo.common.database.service.impl;
 
-import com.sgh.demo.general.database.db.entity.DemoEntity;
-import com.sgh.demo.general.database.db.repository.DemoEntityRepository;
-import com.sgh.demo.general.database.pojo.excel.ExcelDemoEntity;
-import com.sgh.demo.general.database.pojo.query.DemoEntityQueryDto;
-import com.sgh.demo.general.database.pojo.upsert.DemoEntityUpsertDto;
-import com.sgh.demo.general.database.service.DemoEntityService;
+import com.sgh.demo.common.database.db.entity.DemoEntity;
+import com.sgh.demo.common.database.db.repository.DemoEntityRepository;
+import com.sgh.demo.common.database.pojo.excel.ExcelDemoEntity;
+import com.sgh.demo.common.database.pojo.query.DemoEntityQueryDto;
+import com.sgh.demo.common.database.pojo.upsert.DemoEntityUpsertDto;
+import com.sgh.demo.common.database.service.DemoEntityService;
 import com.sgh.demo.general.excel.easyexcel.EasyExcelUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
