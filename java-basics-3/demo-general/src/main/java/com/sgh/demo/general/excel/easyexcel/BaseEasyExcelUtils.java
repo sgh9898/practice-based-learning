@@ -278,7 +278,9 @@ public class BaseEasyExcelUtils {
         ExcelColWidthStrategy widthStrategy = exportDto.getWidthStrategy();
         sheetBuilder.registerWriteHandler(new ExcelSheetWriteHandler(skipRowNum, indexedDynamicMenuMap, cascadeMenuIndexMap, cascadeMenuMap));
         sheetBuilder.registerWriteHandler(new ExcelColumnWidthHandler(widthStrategy, doNotChangeWidth));
-        sheetBuilder.registerWriteHandler(new ExcelRowHeightHandler());
+        if (Boolean.TRUE.equals(exportDto.getAutoRowHeight())) {
+            sheetBuilder.registerWriteHandler(new ExcelRowHeightHandler());
+        }
 
         // 单表(不使用标题与自定义说明)且需要动态列名时, 需要在 writer 中应用 head 样式, 并且提前终止
         boolean needEarlyStop = isHeadReplaced && StringUtils.isBlank(title) && StringUtils.isBlank(note);
@@ -370,7 +372,9 @@ public class BaseEasyExcelUtils {
         sheetBuilder.registerWriteHandler(new ExcelSheetWriteHandler(skipRowNum, indexedDropDownMap, cascadeMenuIndexMap, exportDto.getCascadeMenuMap()));
         sheetBuilder.registerWriteHandler(new ExcelNoModelVerticalStyleHandler(cnSpecialHeadSet));
         sheetBuilder.registerWriteHandler(new ExcelColumnWidthHandler(exportDto.getWidthStrategy()));
-        sheetBuilder.registerWriteHandler(new ExcelRowHeightHandler());
+        if (Boolean.TRUE.equals(exportDto.getAutoRowHeight())) {
+            sheetBuilder.registerWriteHandler(new ExcelRowHeightHandler());
+        }
 
         // 根据是否存在标题与自定义说明, 配置导出设置
         int mainTableIndex = 0;

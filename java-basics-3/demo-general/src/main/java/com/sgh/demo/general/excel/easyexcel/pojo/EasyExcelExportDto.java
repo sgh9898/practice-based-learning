@@ -53,6 +53,10 @@ public class EasyExcelExportDto {
     @Nullable
     private ExcelColWidthStrategy widthStrategy;
 
+    /** 是否自动调整行高(需要手动指定时设为 false 即可) */
+    @Nullable
+    private Boolean autoRowHeight = true;
+
     /**
      * 是否使用 2007 版 Excel(仅在出现兼容问题时考虑使用, 默认使用 2003 版)
      * <pre>
