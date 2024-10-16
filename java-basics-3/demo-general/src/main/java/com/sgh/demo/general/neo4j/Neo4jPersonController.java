@@ -1,4 +1,4 @@
-package com.sgh.demo.common.neo4j;
+package com.sgh.demo.general.neo4j;
 
 import com.sgh.demo.common.util.ResultUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class Neo4jPersonController {
 
     @Resource
-    private com.sgh.demo.common.neo4j.Neo4jService neo4jService;
+    private Neo4jService neo4jService;
 
     @PostMapping("/createNode")
     @Operation(summary = "创建节点")

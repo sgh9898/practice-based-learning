@@ -1,4 +1,4 @@
-package com.sgh.demo.common.neo4j;
+package com.sgh.demo.general.neo4j;
 
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -12,24 +12,24 @@ import org.springframework.stereotype.Service;
 public class Neo4jService {
 
     @Resource
-    private com.sgh.demo.common.neo4j.Neo4jPersonRepository neo4JRepository;
+    private Neo4jPersonRepository neo4JRepository;
 
     /** 创建新节点 */
     void createNode(String name) {
-        neo4JRepository.save(new com.sgh.demo.common.neo4j.Neo4jPerson(name));
+        neo4JRepository.save(new Neo4jPerson(name));
     }
 
     /** 建立节点关系 */
     public void buildUpRelationships(String name1, String name2, Integer type) {
         // 查询节点, 没有则新建
-        com.sgh.demo.common.neo4j.Neo4jPerson person1 = neo4JRepository.findFirstByName(name1);
+        Neo4jPerson person1 = neo4JRepository.findFirstByName(name1);
         if (person1 == null) {
-            person1 = new com.sgh.demo.common.neo4j.Neo4jPerson(name1);
+            person1 = new Neo4jPerson(name1);
             neo4JRepository.save(person1);
         }
-        com.sgh.demo.common.neo4j.Neo4jPerson person2 = neo4JRepository.findFirstByName(name2);
+        Neo4jPerson person2 = neo4JRepository.findFirstByName(name2);
         if (person2 == null) {
-            person2 = new com.sgh.demo.common.neo4j.Neo4jPerson(name2);
+            person2 = new Neo4jPerson(name2);
             neo4JRepository.save(person2);
         }
         // 建立关系

@@ -1,4 +1,4 @@
-package com.sgh.demo.common.neo4j;
+package com.sgh.demo.general.neo4j;
 
 import lombok.Data;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
