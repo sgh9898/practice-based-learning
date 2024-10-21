@@ -3,10 +3,7 @@ package com.sgh.demo.common.database.service;
 import com.sgh.demo.common.database.db.entity.DemoEntity;
 import com.sgh.demo.common.database.pojo.query.DemoEntityQueryDto;
 import com.sgh.demo.common.database.pojo.upsert.DemoEntityUpsertDto;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -32,13 +29,4 @@ public interface DemoEntityService {
 
     /** [分页] 测试数据 */
     Page<DemoEntity> getPage(DemoEntityQueryDto dto);
-
-    /** [导入] 测试数据 */
-    void importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response);
-
-    /** [模板] 测试数据 */
-    void exportExcelTemplate(HttpServletRequest request, HttpServletResponse response);
-
-    /** [导出] 测试数据 */
-    void exportData(HttpServletRequest request, HttpServletResponse response);
 }

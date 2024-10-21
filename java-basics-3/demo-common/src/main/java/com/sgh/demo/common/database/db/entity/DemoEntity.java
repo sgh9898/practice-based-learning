@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.sgh.demo.common.database.pojo.excel.ExcelDemoEntity;
 import com.sgh.demo.common.database.pojo.upsert.DemoEntityUpsertDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -84,15 +83,6 @@ public class DemoEntity {
     public DemoEntity(DemoEntityUpsertDto dto) {
         init();
         update(dto);
-    }
-
-    /** [构造] 根据 excel 创建 */
-    public DemoEntity(ExcelDemoEntity excel) {
-        init();
-        this.name = excel.getName();
-        this.num = excel.getNum();
-        this.date = excel.getDate();
-        this.comment = excel.getComment();
     }
 
     /** 初始化 */

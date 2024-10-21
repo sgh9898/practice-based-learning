@@ -93,7 +93,7 @@ public class OkHttpUtils {
     }
 
     /** get 访问, 自定义 Headers */
-    public static String getWithHeaders (@NonNull String url, @NonNull Map<String, String> headers) {
+    public static String getWithHeaders(@NonNull String url, @NonNull Map<String, String> headers) {
         if (StringUtils.isBlank(url)) {
             throw new IllegalArgumentException("url 不能为空");
         }
@@ -106,7 +106,7 @@ public class OkHttpUtils {
 // ------------------------------ Put 访问 ------------------------------
 
     /** put 访问, 自定义 Headers */
-    public static String putWithHeaders (String url, String json, Map<String, String> headers) {
+    public static String putWithHeaders(String url, String json, Map<String, String> headers) {
         if (StringUtils.isBlank(url)) {
             throw new IllegalArgumentException("url 不能为空");
         }
@@ -124,7 +124,7 @@ public class OkHttpUtils {
         if (StringUtils.isBlank(url)) {
             throw new IllegalArgumentException("url 不能为空");
         }
-        RequestBody body = RequestBody.create("",null);
+        RequestBody body = RequestBody.create("", null);
         Request request = new Request.Builder().url(url).post(body).build();
         return getStrResponse(request, url);
     }
