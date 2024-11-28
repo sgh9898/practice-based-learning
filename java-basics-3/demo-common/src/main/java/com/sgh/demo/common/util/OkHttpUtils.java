@@ -1,6 +1,7 @@
 package com.sgh.demo.common.util;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,16 +28,19 @@ import java.util.concurrent.TimeUnit;
  * @author Song gh
  * @version 2024/11/21
  */
+@Slf4j
 public class OkHttpUtils {
 
 // ------------------------------ 参数 ------------------------------
 
     /** 参数类型: Json */
-    private static final MediaType APPLICATION_JSON = MediaType.parse("application/json; charset=utf-8");
+    private static final MediaType APPLICATION_JSON = MediaType.parse("application/json;charset=utf-8");
     /** 参数类型: 文件 */
     private static final MediaType APPLICATION_FILE = MediaType.parse("application/octet-stream");
     /** 参数类型: Form */
     private static final MediaType APPLICATION_FORM_URLENCODED = MediaType.parse("application/x-www-form-urlencoded");
+    /** 参数类型: 流 */
+    private static final MediaType TEXT_EVENT_STREAM_VALUE = MediaType.parse(org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE);
 
     /** 连接超时时间(秒) */
     private static final int CONNECT_TIME_OUT = 6;
@@ -44,6 +48,9 @@ public class OkHttpUtils {
     private static final int READ_TIME_OUT = 6;
     /** 写超时时间(秒) */
     private static final int WRITE_TIME_OUT = 6;
+
+    /** sse 写超时时间(秒) */
+    private static final int SSE_WRITE_TIME_OUT = 60;
 
     /** 默认协议版本 */
     private static final TLSVersion DEFAULT_TLS_VERSION = TLSVersion.TLS_V12;
@@ -54,17 +61,25 @@ public class OkHttpUtils {
 // ------------------------------ 构建 ------------------------------
 
     // 构建默认 client, 注意协议版本 TLSVersion
-    private static final OkHttpClient defaultClientTLS12 = new OkHttpClient.Builder()
+    private static final OkHttpClient defaultClient = new OkHttpClient.Builder()
             // 超时时间
             .connectTimeout(CONNECT_TIME_OUT, TimeUnit.SECONDS)
             .readTimeout(READ_TIME_OUT, TimeUnit.SECONDS)
             .writeTimeout(WRITE_TIME_OUT, TimeUnit.SECONDS)
-//            // 信任指定 host (替换"信任所有 host")
+//            // 信任指定 host (替换 "信任所有 host")
 //            .hostnameVerifier(new StandardHostnameVerifier(trustedHosts))
             // 信任所有 host
             .hostnameVerifier((hostName, session) -> true)
             // 信任所有证书, 默认协议版本 TLSv1.2, handshake_failure 需要考虑更换使用其他协议的 client
             .sslSocketFactory(createSSLSocketFactory(), new TrustAllCerts())
+            .build();
+
+    // 构建 sse client, 注意协议版本 TLSVersion
+    private static final OkHttpClient sseClient = new OkHttpClient.Builder(defaultClient)
+            // 超时时间
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(SSE_WRITE_TIME_OUT, TimeUnit.SECONDS)
             .build();
 
 // ------------------------------ Get 访问 ------------------------------
@@ -75,46 +90,23 @@ public class OkHttpUtils {
             throw new IllegalArgumentException("url 不能为空");
         }
         Request request = new Request.Builder().url(url).build();
-        return getStrResponse(request, url);
+        return getStrResponse(request);
     }
 
     /** get 访问, 附带参数 */
-    public static String get(@NonNull String url, @NonNull Map<String, String> params) {
+    public static String get(@NonNull String url, @NonNull Map<String, ?> params) {
         if (StringUtils.isBlank(url)) {
             throw new IllegalArgumentException("url 不能为空");
         }
 
         // 拼接参数
         HttpUrl.Builder urlBuilder = Objects.requireNonNull(HttpUrl.parse(url)).newBuilder();
-        params.forEach(urlBuilder::addQueryParameter);
+        for (Map.Entry<String, ?> entry : params.entrySet()) {
+            urlBuilder.addQueryParameter(entry.getKey(), entry.getValue().toString());
+        }
         String urlWithParams = urlBuilder.build().toString();
         Request request = new Request.Builder().url(urlWithParams).build();
-        return getStrResponse(request, url);
-    }
-
-    /** get 访问, 自定义 Headers */
-    public static String getWithHeaders(@NonNull String url, @NonNull Map<String, String> headers) {
-        if (StringUtils.isBlank(url)) {
-            throw new IllegalArgumentException("url 不能为空");
-        }
-        Request.Builder builder = new Request.Builder().url(url);
-        headers.forEach(builder::addHeader);
-        Request request = builder.build();
-        return getStrResponse(request, url);
-    }
-
-// ------------------------------ Put 访问 ------------------------------
-
-    /** put 访问, 自定义 Headers */
-    public static String putWithHeaders(String url, String json, Map<String, String> headers) {
-        if (StringUtils.isBlank(url)) {
-            throw new IllegalArgumentException("url 不能为空");
-        }
-        Request.Builder builder = new Request.Builder().url(url);
-        headers.forEach(builder::addHeader);
-        RequestBody body = RequestBody.create(json, APPLICATION_JSON);
-        Request request = builder.put(body).build();
-        return getStrResponse(request, url);
+        return getStrResponse(request);
     }
 
 // ------------------------------ Post 访问 ------------------------------
@@ -125,8 +117,10 @@ public class OkHttpUtils {
             throw new IllegalArgumentException("url 不能为空");
         }
         RequestBody body = RequestBody.create("", null);
-        Request request = new Request.Builder().url(url).post(body).build();
-        return getStrResponse(request, url);
+        Request.Builder builder = new Request.Builder().url(url);
+        headers.forEach(builder::addHeader);
+        Request request = builder.post(body).build();
+        return getStrResponse(request);
     }
 
     /** post 访问, 提交 json */
@@ -136,11 +130,11 @@ public class OkHttpUtils {
         }
         RequestBody body = RequestBody.create(bodyJsonStr, APPLICATION_JSON);
         Request request = new Request.Builder().url(url).post(body).build();
-        return getStrResponse(request, url);
+        return getStrResponse(request);
     }
 
     /** post 访问, 提交 json, 自定义 Headers */
-    public static String postJsonWithHeaders(@NonNull String url, @NonNull String bodyJsonStr, @NonNull Map<String, String> headers) {
+    public static String postJsonWithHeaders(@NonNull String url, String bodyJsonStr, @NonNull Map<String, String> headers) {
         if (StringUtils.isBlank(url)) {
             throw new IllegalArgumentException("url 不能为空");
         }
@@ -148,7 +142,7 @@ public class OkHttpUtils {
         Request.Builder builder = new Request.Builder().url(url);
         headers.forEach(builder::addHeader);
         Request request = builder.post(body).build();
-        return getStrResponse(request, url);
+        return getStrResponse(request);
     }
 
     /** post 访问, 提交 form (参数使用 UTF-8 编码) */
@@ -158,7 +152,7 @@ public class OkHttpUtils {
         }
         RequestBody body = RequestBody.create(Objects.requireNonNull(encodeValue(params, "UTF-8")), APPLICATION_FORM_URLENCODED);
         Request request = new Request.Builder().url(url).post(body).build();
-        return getStrResponse(request, url);
+        return getStrResponse(request);
     }
 
     /** post 访问, 提交 form (参数使用 UTF-8 编码), 自定义 Headers */
@@ -170,7 +164,7 @@ public class OkHttpUtils {
         Request.Builder builder = new Request.Builder().url(url);
         headers.forEach(builder::addHeader);
         Request request = builder.post(body).build();
-        return getStrResponse(request, url);
+        return getStrResponse(request);
     }
 
     /**
@@ -186,7 +180,7 @@ public class OkHttpUtils {
         }
         RequestBody body = RequestBody.create(encodeValue(params, encode), APPLICATION_FORM_URLENCODED);
         Request request = new Request.Builder().url(url).post(body).build();
-        return getStrResponse(request, url);
+        return getStrResponse(request);
     }
 
     /**
@@ -207,7 +201,7 @@ public class OkHttpUtils {
         params.forEach((key, value) -> builder.addFormDataPart(key, (String) value));
         RequestBody multipartBody = builder.build();
         Request request = new Request.Builder().url(url).post(multipartBody).build();
-        return getStrResponse(request, url);
+        return getStrResponse(request);
     }
 
     /**
@@ -233,7 +227,7 @@ public class OkHttpUtils {
             params.forEach((key, value) -> builder.addFormDataPart(key, (String) value));
             RequestBody multipartBody = builder.build();
             Request request = new Request.Builder().url(url).post(multipartBody).build();
-            return getStrResponse(request, url);
+            return getStrResponse(request);
         } finally {
             if (file != null) {
                 file.delete();
@@ -263,7 +257,7 @@ public class OkHttpUtils {
             params.forEach((key, value) -> builder.addFormDataPart(key, (String) value));
             RequestBody multipartBody = builder.build();
             Request request = new Request.Builder().url(url).post(multipartBody).build();
-            return getStrResponse(request, url);
+            return getStrResponse(request);
         } finally {
             fileList.forEach(File::delete);
         }
@@ -284,11 +278,12 @@ public class OkHttpUtils {
 // ------------------------------ Private ------------------------------
 
     /** 返回 url 访问结果 (String), 协议版本 TLSv1.2 */
-    private static String getStrResponse(Request request, @NonNull String url) {
-        try (Response response = defaultClientTLS12.newCall(request).execute()) {
+    private static String getStrResponse(Request request) {
+        try (Response response = defaultClient.newCall(request).execute()) {
             return response.body() == null ? null : response.body().string();
         } catch (IOException e) {
-            throw new UnsupportedOperationException("OkHttp 访问失败, url: " + url);
+            log.error("OkHttp 访问失败, 请求内容: {}", request, e);
+            throw new UnsupportedOperationException("OkHttp 访问失败, url: " + request.url());
         }
     }
 
