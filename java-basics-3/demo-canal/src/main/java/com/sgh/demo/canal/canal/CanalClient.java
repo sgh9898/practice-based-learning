@@ -23,14 +23,14 @@ import java.util.List;
  * 1. 启用监听功能
  *   1) [推荐] 使用定时任务启动, 意外中断时会自动重连: {@link #scheduledStart}
  *   2) 单次启动, 中断时不会自动重连: {@link #startOnce}
- * 2. 数据分流, 可以按表或者事件类型(insert/update/delete)对监听的数据进行分流: {@link #dealWithOneLineEntry }
+ * 2. 数据分流, 可以按表或者事件类型(insert/update/delete)对监听的数据进行分流: {@link #processData }
  * 3. 分流后的数据处理
  *   1) 插入时 {@link #afterEventInsert}
  *   2) 更新时 {@link #afterEventUpdate}
  *   3) 删除时 {@link #afterEventDelete} </pre>
  *
  * @author Song gh
- * @version 2024/3/19
+ * @version 2024/11/25
  */
 @Slf4j
 @Component
@@ -192,7 +192,8 @@ public class CanalClient {
                     Thread.sleep(EMPTY_BATCH_DELAY * 1000L);
                 } else {
                     emptyCount = 0;
-                    dealWithOneLineEntry(message.getEntries());
+                    processData(message.getEntries());
+                    log.info("Canal 成功处理 {} 条数据", message.getEntries().size());
                 }
                 // 确认并提交 ≤ batchId 的 Message
                 connector.ack(batchId);
@@ -206,8 +207,8 @@ public class CanalClient {
         }
     }
 
-    /** 处理单行数据 */
-    private void dealWithOneLineEntry(List<Entry> entries) {
+    /** 逐行处理数据 */
+    private void processData(List<Entry> entries) {
         for (Entry entry : entries) {
             // 跳过默认事件
             if (entry.getEntryType() == EntryType.TRANSACTIONBEGIN || entry.getEntryType() == EntryType.TRANSACTIONEND) {

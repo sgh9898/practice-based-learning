@@ -1,6 +1,7 @@
 package com.sgh.demo.minio.minio;
 
 import io.minio.*;
+import io.minio.http.Method;
 import io.minio.messages.Bucket;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,7 +28,7 @@ import java.util.UUID;
  * 3. 允许通过 url 直接访问 bucket 之中的文件: {@link #allowsPublicReading} </pre>
  *
  * @author Song gh
- * @version 2024/4/3
+ * @version 2024/10/28
  */
 @Slf4j
 @Component
@@ -59,12 +60,6 @@ public class MinioUtils {
 
     @Setter(AccessLevel.PRIVATE)
     private static MinioClient minioClient;
-
-    /** [构造] */
-    protected MinioUtils(@Autowired MinioConfig minioConfig, @Autowired MinioClient minioClient) {
-        setMinioConfig(minioConfig);
-        setMinioClient(minioClient);
-    }
 
     /** 判断 bucket 是否存在 */
     public static boolean existBucket(String bucketName) {
@@ -141,6 +136,49 @@ public class MinioUtils {
     }
 
     /**
+     * 上传文件
+     *
+     * @param bucketName bucket 名称, 不存在时会自动创建
+     * @param file       文件
+     */
+    public static void uploadFile(String bucketName, MultipartFile file) {
+        uploadFile(bucketName, file, null);
+    }
+
+    /**
+     * 上传文件, 可替换文件名
+     *
+     * @param bucketName  bucket 名称, 不存在时会自动创建
+     * @param file        文件
+     * @param newFileName 自定义文件名
+     */
+    public static void uploadFile(String bucketName, MultipartFile file, String newFileName) {
+        // 保存文件
+        InputStream inputStream = null;
+        String fileName;
+        if (StringUtils.isBlank(newFileName)) {
+            fileName = file.getOriginalFilename();
+        } else {
+            fileName = newFileName;
+        }
+        try {
+            // 保存文件, 名称相同会覆盖
+            inputStream = file.getInputStream();
+            minioClient.putObject(PutObjectArgs.builder()
+                    .bucket(bucketName)
+                    .object(fileName)
+                    .stream(inputStream, file.getSize(), -1)
+                    .contentType(file.getContentType())
+                    .build());
+        } catch (Exception e) {
+            log.error("保存文件失败, bucket 名称: {}; 文件名: {}; 报错原因: {}", bucketName, fileName, e.getMessage(), e);
+            throw new UnsupportedOperationException("保存文件失败, bucket 名称: " + bucketName + "; 文件名: " + fileName);
+        } finally {
+            closeInputStream(inputStream);
+        }
+    }
+
+    /**
      * 上传文件, 将文件名替换为 UUID
      *
      * @param bucketName bucket 名称, 不存在时会自动创建
@@ -164,23 +202,7 @@ public class MinioUtils {
             newFileName = String.valueOf(UUID.randomUUID());
         }
 
-        // 保存文件
-        InputStream inputStream = null;
-        try {
-            // 保存文件, 名称相同会覆盖
-            inputStream = file.getInputStream();
-            minioClient.putObject(PutObjectArgs.builder()
-                    .bucket(bucketName)
-                    .object(newFileName)
-                    .stream(inputStream, file.getSize(), -1)
-                    .contentType(file.getContentType())
-                    .build());
-        } catch (Exception e) {
-            log.error("保存文件失败, bucket 名称: {}; 文件名: {}; 报错原因: {}", bucketName, originalFileName, e.getMessage(), e);
-            throw new UnsupportedOperationException("保存文件失败, bucket 名称: " + bucketName + "; 文件名: " + originalFileName);
-        } finally {
-            closeInputStream(inputStream);
-        }
+        uploadFile(bucketName, file, newFileName);
         return newFileName;
     }
 
@@ -254,7 +276,8 @@ public class MinioUtils {
     /** 获取 minio 文件下载/预览地址 */
     public static String getFileUrl(String bucketName, String fileName) {
         try {
-            return minioClient.getObjectUrl(bucketName, fileName);
+            GetPresignedObjectUrlArgs args = GetPresignedObjectUrlArgs.builder().method(Method.GET).bucket(bucketName).object(fileName).build();
+            return minioClient.getPresignedObjectUrl(args);
         } catch (Exception e) {
             log.error("获取文件路径失败, bucket 名称: {}; 文件名: {}; 报错原因: {}", bucketName, fileName, e.getMessage(), e);
             throw new UnsupportedOperationException("获取文件路径失败, bucket 名称: " + bucketName + "; 文件名: " + fileName);
@@ -268,12 +291,18 @@ public class MinioUtils {
      */
     public static String getHostFileUrl(String bucketName, String fileName) {
         try {
-            URL originalUrl = new URL(minioClient.getObjectUrl(bucketName, fileName));
+            URL originalUrl = new URL(getFileUrl(bucketName, fileName));
             return minioConfig.getFileUrlHost() + originalUrl.getPath();
         } catch (Exception e) {
             log.error("获取指定 host 文件路径失败, bucket 名称: {}; 文件名: {}; 报错原因: {}", bucketName, fileName, e.getMessage(), e);
             throw new UnsupportedOperationException("获取指定 host 文件路径失败, bucket 名称: " + bucketName + "; 文件名: " + fileName);
         }
+    }
+
+    /** [构造] */
+    private MinioUtils(@Autowired MinioConfig minioConfig, @Autowired MinioClient minioClient) {
+        setMinioConfig(minioConfig);
+        setMinioClient(minioClient);
     }
 
 // ------------------------------ Private 方法 ------------------------------

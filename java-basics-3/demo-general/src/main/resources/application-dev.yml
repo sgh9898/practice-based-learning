@@ -47,7 +47,7 @@ spring:
   mail:
     host: smtp.163.com            # 邮箱所属服务器
     username: test8y5Wr@163.com   # 邮箱
-    password: ZQCVOJLAPZEGEUZO    # 邮箱 smtp 授权码, 或邮箱密码(取决于邮箱种类)
+    password: ZQCVOJLAPZEGEUZO    # 邮箱 smtp 授权码
 
   task:
     # 线程池

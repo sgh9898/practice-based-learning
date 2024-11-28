@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * 2. 出现 handshake_failure 时需要切换 TLS 协议版本
  *
  * @author Song gh
- * @version 2024/8/21
+ * @version 2024/11/21
  */
 public class OkHttpUtils {
 
@@ -268,6 +268,18 @@ public class OkHttpUtils {
             fileList.forEach(File::delete);
         }
     }
+
+//    /** 获取 sse 返回, 使用 post 访问, 提交 json */
+//    public static void ssePostJson(@NonNull String url, String bodyJsonStr, EventSourceListener eventSourceListener) {
+//        if (StringUtils.isBlank(url)) {
+//            throw new IllegalArgumentException("url 不能为空");
+//        }
+//        RequestBody body = RequestBody.create(bodyJsonStr, APPLICATION_JSON);
+//        Request request = new Request.Builder().url(url).post(body).build();
+//        EventSource.Factory factory = EventSources.createFactory(sseClient);
+//        // 创建事件
+//        factory.newEventSource(request, eventSourceListener);
+//    }
 
 // ------------------------------ Private ------------------------------
 
