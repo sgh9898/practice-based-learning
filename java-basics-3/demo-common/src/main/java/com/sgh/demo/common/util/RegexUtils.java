@@ -17,11 +17,17 @@ import java.util.regex.Pattern;
 public class RegexUtils {
 
     /** 不可见的 UNICODE 字符集 */
-    private static final String INVISIBLE_UNICODE = "[\\u200b-\\u200f]|[\\u200e-\\u200f]|[\\u202a-\\u202e]|[\\u2066-\\u2069]|\ufeff|\u06ec";
+    private static final String INVISIBLE_UNICODE = "[\\u200b-\\u200f]|[\\u202a-\\u202e]|[\\u2066-\\u2069]|\ufeff|\u06ec";
 
     /** 获取末尾的数字 */
-    public static String getTailingNum(String str) {
-        return str.replaceAll(".*\\D", "");
+    public static String getTrailingNum(String str) {
+        Pattern pattern = Pattern.compile("\\d+$");
+        Matcher matcher = pattern.matcher(str);
+        if (matcher.find()) {
+            return matcher.group();
+        } else {
+            return "";
+        }
     }
 
     /**
@@ -62,14 +68,11 @@ public class RegexUtils {
         return mobile;
     }
 
-    /** 去除不可见的 unicode 字符 */
-    public static String trimUnicode(String source) {
-        Pattern compile = Pattern.compile(INVISIBLE_UNICODE);
-        Matcher matcher = compile.matcher(source);
-        if (matcher.find()) {
-            return matcher.replaceAll("");
-        }
-        return source;
+    /** 去除不可见字符(包括 unicode ) */
+    public static String trimInvisible(String source) {
+        Pattern pattern = Pattern.compile(INVISIBLE_UNICODE);
+        Matcher matcher = pattern.matcher(source);
+        return matcher.replaceAll("");
     }
 
     /** 去除空格 */

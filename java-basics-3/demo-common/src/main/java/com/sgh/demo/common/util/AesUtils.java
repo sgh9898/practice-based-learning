@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
@@ -20,6 +19,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,8 +45,8 @@ public class AesUtils {
 
     /** 生成随机 Key 与 IV */
     public static void main(String[] args) {
-        System.out.println("随机 Key: " + generateRandomStr(16));
-        System.out.println("随机 IV: " + generateRandomStr(16));
+        log.info("随机 Key: {}", generateRandomStr(16));
+        log.info("随机 IV: {}", generateRandomStr(16));
     }
 
     /**
@@ -74,8 +74,8 @@ public class AesUtils {
         byte[] result;
         try {
             Cipher cipher = Cipher.getInstance(AesAlgorithms.AES.getAlgorithms());
-            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(Arrays.copyOf(DigestUtils.sha1(keyStr), 16), "AES"));
-            result = cipher.doFinal(java.util.Base64.getDecoder().decode(encryptedStr.trim()));
+            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(Arrays.copyOf(DigestUtils.sha512(keyStr), 16), "AES"));
+            result = cipher.doFinal(Base64.getDecoder().decode(encryptedStr.trim()));
             return new String(result, StandardCharsets.UTF_8);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException |
                  BadPaddingException e) {
@@ -99,7 +99,7 @@ public class AesUtils {
         try {
             Cipher cipher = Cipher.getInstance(DEFAULT_AES_ALGORITHM.getAlgorithms());
             cipher.init(Cipher.DECRYPT_MODE, key, iv);
-            byte[] decryptBytes = cipher.doFinal(Base64.decodeBase64(encryptedStr));
+            byte[] decryptBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedStr));
             return new String(decryptBytes, StandardCharsets.UTF_8);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
                  InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
@@ -135,7 +135,7 @@ public class AesUtils {
         }
         try {
             Cipher cipher = generateCipher(keyStr, ivStr, Cipher.DECRYPT_MODE, algorithms);
-            byte[] decryptBytes = cipher.doFinal(Base64.decodeBase64(encryptedStr));
+            byte[] decryptBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedStr));
             return new String(decryptBytes, StandardCharsets.UTF_8);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
                  InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
@@ -168,7 +168,7 @@ public class AesUtils {
         byte[] encryptedStr;
         try {
             Cipher cipher = Cipher.getInstance(AesAlgorithms.AES.getAlgorithms());
-            byte[] keyByte = Arrays.copyOf(DigestUtils.sha1(keyStr), 16);
+            byte[] keyByte = Arrays.copyOf(DigestUtils.sha512(keyStr), 16);
             SecretKey secretKey = new SecretKeySpec(keyByte, "AES");
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             encryptedStr = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
@@ -177,7 +177,7 @@ public class AesUtils {
             log.error("AES(无IV) 加密失败, 加密前数据: {}", plainText, e);
             throw new IllegalArgumentException("AES(无IV) 加密失败", e);
         }
-        return java.util.Base64.getEncoder().encodeToString(encryptedStr);
+        return Base64.getEncoder().encodeToString(encryptedStr);
     }
 
     /**
@@ -202,7 +202,7 @@ public class AesUtils {
             log.error("AES 加密失败, 加密前数据: {}", plainText, e);
             throw new IllegalArgumentException("AES 加密失败", e);
         }
-        return java.util.Base64.getEncoder().encodeToString(encryptedStr);
+        return Base64.getEncoder().encodeToString(encryptedStr);
     }
 
     /**
@@ -238,7 +238,7 @@ public class AesUtils {
             log.error("AES 加密失败, 加密前数据: {}", plainText, e);
             throw new IllegalArgumentException("AES 加密失败", e);
         }
-        return java.util.Base64.getEncoder().encodeToString(encryptedStr);
+        return Base64.getEncoder().encodeToString(encryptedStr);
     }
 
 // ------------------------------ Private ------------------------------
@@ -271,7 +271,7 @@ public class AesUtils {
         List<Character> tokenList = random.ints(strLength, 32, 1025).mapToObj(i -> (char) i).collect(Collectors.toList());
         Collections.shuffle(tokenList);
         String token = tokenList.stream().map(String::valueOf).collect(Collectors.joining());
-        String base64Token = java.util.Base64.getEncoder().encodeToString(token.getBytes());
+        String base64Token = Base64.getEncoder().encodeToString(token.getBytes());
         return base64Token.substring(0, Math.min(length, base64Token.length()));
     }
 
