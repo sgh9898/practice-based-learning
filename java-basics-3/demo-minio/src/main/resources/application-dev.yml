@@ -25,7 +25,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/data?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
     username: root
-    password: "RVsdbgjs~4921"
+    password: "xaTqi5!moNzx#noZcYr"
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       minimum-idle: 3

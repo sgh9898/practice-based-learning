@@ -3,11 +3,11 @@ package com.sgh.demo.sharding.sharding.algorithm.table;
 import com.google.common.collect.Range;
 import com.sgh.demo.sharding.sharding.util.ShardingDateUtils;
 import com.sgh.demo.sharding.sharding.util.ShardingJdbcUtils;
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shardingsphere.sharding.api.sharding.standard.PreciseShardingValue;
 import org.apache.shardingsphere.sharding.api.sharding.standard.RangeShardingValue;
 import org.apache.shardingsphere.sharding.api.sharding.standard.StandardShardingAlgorithm;
-import org.springframework.lang.NonNull;
 
 import java.util.*;
 
@@ -36,7 +36,7 @@ public class TimeShardingAlgorithm implements StandardShardingAlgorithm<Date> {
      * @param preciseShardingValue 当前查询参数
      */
     @Override
-    public String doSharding(@NonNull Collection<String> availableTargetNames, PreciseShardingValue<Date> preciseShardingValue) {
+    public String doSharding(@Nonnull Collection<String> availableTargetNames, PreciseShardingValue<Date> preciseShardingValue) {
         Date date = preciseShardingValue.getValue();
         String logicTableName = preciseShardingValue.getLogicTableName();
         String actualTableName = logicTableName + TABLE_SHARDING_SEPARATOR + ShardingDateUtils.toStr(date, TABLE_SHARDING_PATTERN);

@@ -4,9 +4,9 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
 import com.sgh.demo.general.excel.easyexcel.annotation.ExcelDropDown;
 import com.sgh.demo.general.excel.easyexcel.handler.ExcelColWidthStrategy;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.Data;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -30,7 +30,7 @@ public class EasyExcelExportDto {
     private String sheetName;
 
     /** 导出时排除的列名(ExcelClass 字段英文原名) */
-    @NonNull
+    @Nonnull
     private Set<String> excludedCols = new HashSet<>();
 
     /** 标题(位于最上方, 自定义说明与列名之上) */
@@ -42,11 +42,11 @@ public class EasyExcelExportDto {
     private String note;
 
     /** 动态下拉框, Map(列名, 选项); 其中列名必须使用 {@link ExcelDropDown#dynamicMenuName} 在 ExcelClass 进行定义 */
-    @NonNull
+    @Nonnull
     private Map<String, String[]> dynamicMenuMap = new HashMap<>();
 
     /** 需要替换的中文列名, Map(旧列名, 新列名); 其中旧列名必须使用 {@link ExcelProperty#value} 在 ExcelClass 进行定义 */
-    @NonNull
+    @Nonnull
     private Map<String, String> replaceHeadMap = new HashMap<>();
 
     /** 列宽选取方式 */
@@ -63,7 +63,7 @@ public class EasyExcelExportDto {
      * 2007 版 excel 对应 ContentType: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
      * 2003 版 excel 对应 ContentType: application/vnd.ms-excel </pre>
      */
-    @NonNull
+    @Nonnull
     private Boolean useExcel07 = false;
 
     /**
@@ -73,7 +73,7 @@ public class EasyExcelExportDto {
      * 2. 存在多组联动下拉框时, 需要使用 {@link #cascadeMenuMap} 进行配置
      * 3. {@link #cascadeMenuMap} 会优先于本参数生效 </pre>
      */
-    @NonNull
+    @Nonnull
     private List<ExcelCascadeOption> cascadeMenu = new LinkedList<>();
 
     /**
@@ -83,7 +83,7 @@ public class EasyExcelExportDto {
      * 2. 组名需要与 {@link ExcelDropDown#cascadeGroupName} 保持一致
      * 3. 会覆盖 {@link #cascadeMenu} 的效果 </pre>
      */
-    @NonNull
+    @Nonnull
     private Map<String, List<ExcelCascadeOption>> cascadeMenuMap = new HashMap<>();
 
     /**

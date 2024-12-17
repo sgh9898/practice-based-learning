@@ -7,6 +7,7 @@ import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ConverterUtils;
 import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
 import com.sgh.demo.general.excel.easyexcel.constants.ExcelConstants;
+import jakarta.annotation.Nonnull;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -14,7 +15,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.lang.NonNull;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
@@ -208,7 +208,7 @@ public class ExcelListener<T> implements ReadListener<T> {
     }
 
     /** 校验实体类: 通过返回 null, 未通过返回报错 */
-    @NonNull
+    @Nonnull
     private static String validate(Object entity) {
         Set<ConstraintViolation<Object>> violationSet = validator.validate(entity);
         StringBuilder errorMsg = new StringBuilder();

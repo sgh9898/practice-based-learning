@@ -1,5 +1,6 @@
 package com.sgh.demo.sharding.sharding.util;
 
+import jakarta.annotation.Nullable;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +11,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;

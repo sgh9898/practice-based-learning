@@ -9,10 +9,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
@@ -33,36 +30,6 @@ public class EasyExcelController {
     @Resource
     private ExcelService excelService;
 
-    @PostMapping("/importData")
-    @Operation(summary = "导入数据")
-    public Object importData(MultipartFile file, HttpServletRequest request, HttpServletResponse response) {
-        return excelService.importData(file, request, response);
-    }
-
-    @GetMapping("/exportTemplate")
-    @Operation(summary = "导出模板")
-    public void exportTemplate(HttpServletRequest request, HttpServletResponse response) {
-        excelService.exportTemplate(request, response);
-    }
-
-    @GetMapping("/exportData")
-    @Operation(summary = "导出数据")
-    public void exportData(HttpServletRequest request, HttpServletResponse response) {
-        excelService.exportData(request, response);
-    }
-
-    @GetMapping("/exportExcel")
-    @Operation(summary = "导出自定义数据")
-    public void exportExcel(HttpServletRequest request, HttpServletResponse response) {
-        excelService.exportExcel(request, response);
-    }
-
-    @GetMapping("/noModel/export")
-    @Operation(summary = "不指定 ExcelClass 导出")
-    public void noModelExport(HttpServletRequest request, HttpServletResponse response) {
-        excelService.noModelExportExcel(request, response);
-    }
-
     @PostMapping("/noModel/importData")
     @Operation(summary = "不指定 ExcelClass 导入数据")
     public Object noModelImportData(MultipartFile file, HttpServletRequest request, HttpServletResponse response) {
@@ -80,8 +47,8 @@ public class EasyExcelController {
     }
 
     @PostMapping("/excelToDdl")
-    @Operation(summary = "Excel 转 DDL ")
-    public String excelToDdl(MultipartFile file, HttpServletRequest request, HttpServletResponse response, String tableName, Boolean exportExcel) {
+    @Operation(summary = "Excel 转 DDL")
+    public String excelToDdl(@RequestParam MultipartFile file, HttpServletRequest request, HttpServletResponse response, @RequestParam String tableName, @RequestParam Boolean exportExcel) {
         return excelService.generateDdl(file, request, response, tableName, exportExcel);
     }
 }

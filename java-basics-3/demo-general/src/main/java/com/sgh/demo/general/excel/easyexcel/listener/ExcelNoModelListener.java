@@ -5,12 +5,12 @@ import com.alibaba.excel.metadata.data.ReadCellData;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ConverterUtils;
 import com.sgh.demo.general.excel.easyexcel.constants.ExcelConstants;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 
 import java.util.*;
 
@@ -44,7 +44,7 @@ public class ExcelNoModelListener implements ReadListener<Map<Integer, String>> 
 // ------------------------------ 变量 ------------------------------
     /** 中英列名对照, Map(中文, 英文) */
     @Setter
-    @NonNull
+    @Nonnull
     protected Map<String, String> cnToEnHeadNameMap;
     /** Excel 读取的列名(含序号) */
     protected Map<Integer, String> indexedCnHeadMap = new HashMap<>();

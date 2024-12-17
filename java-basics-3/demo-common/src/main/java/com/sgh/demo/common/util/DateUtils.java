@@ -59,6 +59,16 @@ public class DateUtils {
      * @return 格式为 yyyy-MM-dd HH:mm:ss 的 string, 日期为 null 则返回 ""(空白 string)
      */
     @NonNull
+    public static String dateToStr(Date date) {
+        return dateToStr(date, DATETIME_PATTERN);
+    }
+
+    /**
+     * Date 转为 String, 取日期 + 时间
+     *
+     * @return 格式为 yyyy-MM-dd HH:mm:ss 的 string, 日期为 null 则返回 ""(空白 string)
+     */
+    @NonNull
     public static String dateToStrDateTime(Date date) {
         return dateToStr(date, DATETIME_PATTERN);
     }
@@ -132,6 +142,16 @@ public class DateUtils {
         } catch (ParseException e) {
             throw new IllegalArgumentException("解析 " + pattern + " 格式日期失败, 当前内容: " + strDate, e);
         }
+    }
+
+    /**
+     * String 转为 Date, 取日期 + 时间
+     *
+     * @param strDate 格式为 yyyy-MM-dd HH:mm:ss
+     */
+    @Nullable
+    public static Date strToDate(String strDate) {
+        return strToDate(strDate, DATETIME_PATTERN);
     }
 
     /**

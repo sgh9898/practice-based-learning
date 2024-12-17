@@ -1,6 +1,6 @@
-package com.sgh.demo.common.quartz.quartz.service.impl;
+package com.sgh.demo.general.quartz.quartz.service.impl;
 
-import com.sgh.demo.common.quartz.quartz.service.QuartzJobService;
+import com.sgh.demo.general.quartz.quartz.service.QuartzJobService;
 import jakarta.annotation.Resource;
 import org.quartz.*;
 import org.springframework.stereotype.Service;

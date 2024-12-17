@@ -11,7 +11,7 @@
 //@FeignClient(value = "demoOpenFeignClient", url = "http://localhost:8080/demo")
 //public interface OpenFeignClient {
 //
-//////    @PostMapping(value = "/demoEntity/get", produces = "application/json")
-////    @GetMapping("/demoEntity/get")
-////    DemoEntity getDemoEntity(Long id);
+/// ///    @PostMapping(value = "/demoEntity/get", produces = "application/json")
+/// /    @GetMapping("/demoEntity/get")
+/// /    DemoEntity getDemoEntity(Long id);
 //}

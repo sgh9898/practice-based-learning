@@ -1,4 +1,4 @@
-package com.sgh.demo.common.quartz.quartz.config;
+package com.sgh.demo.general.quartz.quartz.config;
 
 import jakarta.annotation.Resource;
 import org.quartz.Scheduler;
@@ -24,7 +24,7 @@ public class QuartzConfig {
     private static final String PROP_PATH = "quartz.properties";
 
     @Resource
-    private com.sgh.demo.common.quartz.quartz.config.QuartzJobFactory jobFactory;
+    private QuartzJobFactory jobFactory;
 
     @Bean
     public SchedulerFactoryBean schedulerFactoryBean() throws IOException {

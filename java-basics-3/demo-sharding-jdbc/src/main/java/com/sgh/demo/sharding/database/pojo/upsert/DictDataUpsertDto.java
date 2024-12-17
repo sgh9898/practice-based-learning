@@ -19,12 +19,12 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DictDataUpsertDto {
 
-    /** List(${column.comment}) */
-    @Schema(description = "List(${column.comment})")
+    /** List(id) */
+    @Schema(description = "List(id)")
     private List<Long> idList;
 
-    /** ${column.comment} */
-    @Schema(description = "${column.comment}", notes = "新增数据时主键应为空")
+    /** id */
+    @Schema(description = "id")
     private Long id;
 
     /** 目录中文名 */

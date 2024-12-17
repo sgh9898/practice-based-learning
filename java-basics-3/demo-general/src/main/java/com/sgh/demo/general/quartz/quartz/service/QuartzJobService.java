@@ -1,4 +1,4 @@
-package com.sgh.demo.common.quartz.quartz.service;
+package com.sgh.demo.general.quartz.quartz.service;
 
 import java.util.Map;
 

@@ -1,6 +1,6 @@
-package com.sgh.demo.common.quartz.quartz.schedule;
+package com.sgh.demo.general.quartz.quartz.schedule;
 
-import com.sgh.demo.common.quartz.quartz.service.QuartzJobService;
+import com.sgh.demo.general.quartz.quartz.service.QuartzJobService;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
@@ -10,12 +10,14 @@ import java.util.Date;
 
 /**
  * [Quartz 定时任务] 示例(新任务需要初始化至数据库才会激活)
- * <br> 新任务激活方法: 1. 在 {@link com.sgh.demo.common.quartz.quartz.schedule.QuartzInit} 配置
- * <br>               2. 使用 {@link QuartzJobService} 手动添加)
- * <br> 禁止任务并发执行: 在当前 Class 上注解 {@link DisallowConcurrentExecution}
+ * <pre>
+ * 1. 新任务激活方法: 1) 在 {@link com.sgh.demo.general.quartz.quartz.schedule.QuartzInit} 配置
+ *                  2) 使用 {@link QuartzJobService} 手动添加)
+ * 2. 禁止任务并发执行: 在当前 Class 上注解 {@link DisallowConcurrentExecution}
+ * </pre>
  *
  * @author Song gh
- * @version 2024/01/24
+ * @version 2024/1/24
  */
 @Slf4j
 @DisallowConcurrentExecution

@@ -1,10 +1,10 @@
 package com.sgh.demo.sharding.sharding.util;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -47,7 +47,7 @@ public class ShardingDateUtils {
      * @param pattern 日期格式, 如 yyyy-MM-dd HH:mm:ss
      * @return 指定格式的 string, 日期为 null 则返回 ""(空白 string)
      */
-    @NonNull
+    @Nonnull
     public static String toStr(Date date, String pattern) {
         if (date == null) {
             return "";
@@ -61,7 +61,7 @@ public class ShardingDateUtils {
      *
      * @return 格式为 yyyy-MM-dd HH:mm:ss 的 string, 日期为 null 则返回 ""(空白 string)
      */
-    @NonNull
+    @Nonnull
     public static String toStrDateTime(Date date) {
         return toStr(date, DATETIME_PATTERN);
     }
@@ -71,7 +71,7 @@ public class ShardingDateUtils {
      *
      * @return 格式为 yyyy-MM-dd 的 string, 日期为 null 则返回 ""(空白 string)
      */
-    @NonNull
+    @Nonnull
     public static String toStrDate(Date date) {
         return toStr(date, DATE_PATTERN);
     }
@@ -81,7 +81,7 @@ public class ShardingDateUtils {
      *
      * @return 格式为 HH:mm:ss 的 string, 日期为 null 则返回 ""(空白 string)
      */
-    @NonNull
+    @Nonnull
     public static String toStrTime(Date date) {
         return toStr(date, TIME_PATTERN);
     }
@@ -91,7 +91,7 @@ public class ShardingDateUtils {
      *
      * @return 格式为 yyyyMMddHHmmss 的 string, 日期为 null 则返回 ""(空白 string)
      */
-    @NonNull
+    @Nonnull
     public static String toStrCompactDateTime(Date date) {
         return toStr(date, COMPACT_DATETIME_PATTERN);
     }
@@ -101,7 +101,7 @@ public class ShardingDateUtils {
      *
      * @return 格式为 yyyyMMdd 的 string, 日期为 null 则返回 ""(空白 string)
      */
-    @NonNull
+    @Nonnull
     public static String toStrCompactDate(Date date) {
         return toStr(date, COMPACT_DATE_PATTERN);
     }
@@ -111,7 +111,7 @@ public class ShardingDateUtils {
      *
      * @return 格式为 HHmmss 的 string, 日期为 null 则返回 ""(空白 string)
      */
-    @NonNull
+    @Nonnull
     public static String toStrCompactTime(Date date) {
         return toStr(date, COMPACT_TIME_PATTERN);
     }
@@ -199,42 +199,42 @@ public class ShardingDateUtils {
 // ------------------------------ LocalDateTime 转换 ------------------------------
 
     /** Date 转 LocalDateTime */
-    @NonNull
-    public static LocalDateTime toLocalDateTime(@NonNull Date date) {
+    @Nonnull
+    public static LocalDateTime toLocalDateTime(@Nonnull Date date) {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 
     /** LocalDateTime 转 Date */
-    @NonNull
-    public static Date fromLocalDateTime(@NonNull LocalDateTime localDateTime) {
+    @Nonnull
+    public static Date fromLocalDateTime(@Nonnull LocalDateTime localDateTime) {
         return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
 // ------------------------------ 获取特定日期 ------------------------------
 
     /** 获取日期当天的开始时间(零点) */
-    @NonNull
+    @Nonnull
     public static Date getDayStart(Date date) {
         LocalDate localDate = LocalDate.from(toLocalDateTime(date));
         return fromLocalDateTime(localDate.atStartOfDay());
     }
 
     /** 获取日期当周的开始时间(周一零点) */
-    @NonNull
+    @Nonnull
     public static Date getWeekStart(Date date) {
         LocalDate localDate = LocalDate.from(toLocalDateTime(date));
         return fromLocalDateTime(localDate.with(DayOfWeek.MONDAY).atStartOfDay());
     }
 
     /** 获取日期当月的开始时间 */
-    @NonNull
+    @Nonnull
     public static Date getMonthStart(Date date) {
         LocalDate localDate = LocalDate.from(toLocalDateTime(date));
         return fromLocalDateTime(localDate.withDayOfMonth(1).atStartOfDay());
     }
 
     /** 获取日期当年的开始时间 */
-    @NonNull
+    @Nonnull
     public static Date getYearStart(Date date) {
         LocalDate localDate = LocalDate.from(toLocalDateTime(date));
         return fromLocalDateTime(localDate.withDayOfYear(1).withDayOfMonth(1).atStartOfDay());
@@ -250,7 +250,7 @@ public class ShardingDateUtils {
      * @param chronoUnit 加减值对应的时间单位
      * @return 计算后的日期时间
      */
-    @NonNull
+    @Nonnull
     public static Date getDate(Date date, int num, ChronoUnit chronoUnit) {
         LocalDateTime localDateTime = toLocalDateTime(date);
         return fromLocalDateTime(localDateTime.plus(num, chronoUnit));

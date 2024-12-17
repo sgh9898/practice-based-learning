@@ -46,7 +46,7 @@ dataSources:
     driverClassName: com.mysql.cj.jdbc.Driver   # 部分低版本数据库使用 com.mysql.jdbc.Driver
     url: jdbc:mysql://localhost:3306/sharding_ds_1?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
     username: root
-    password: "RVsdbgjs~4921"
+    password: "xaTqi5!moNzx#noZcYr"
     hikari:
       minimum-idle: 3
       maximum-pool-size: 30
@@ -57,7 +57,7 @@ dataSources:
     driverClassName: com.mysql.cj.jdbc.Driver   # 部分低版本数据库使用 com.mysql.jdbc.Driver
     url: jdbc:mysql://localhost:3306/sharding_ds_2?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
     username: root
-    password: "RVsdbgjs~4921"
+    password: "xaTqi5!moNzx#noZcYr"
     hikari:
       minimum-idle: 3
       maximum-pool-size: 30

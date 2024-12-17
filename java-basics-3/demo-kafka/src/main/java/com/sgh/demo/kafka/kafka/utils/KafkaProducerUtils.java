@@ -66,7 +66,7 @@ public class KafkaProducerUtils {
      * @param message 消息内容
      */
     public static void asyncSend(String topic, String message) {
-        CompletableFuture<SendResult<Object, Object>> future = kafkaTemplate.send(topic, message).completable();
+        CompletableFuture<SendResult<Object, Object>> future = kafkaTemplate.send(topic, message);
         // 回调, 记录报错
         future.whenCompleteAsync((result, e) -> {
             if (e != null) {
@@ -83,7 +83,7 @@ public class KafkaProducerUtils {
      * @param message 消息内容
      */
     public static void asyncSend(String topic, String key, String message) {
-        CompletableFuture<SendResult<Object, Object>> future = kafkaTemplate.send(topic, key, message).completable();
+        CompletableFuture<SendResult<Object, Object>> future = kafkaTemplate.send(topic, key, message);
         // 回调, 记录报错
         future.whenCompleteAsync((result, e) -> {
             if (e != null) {

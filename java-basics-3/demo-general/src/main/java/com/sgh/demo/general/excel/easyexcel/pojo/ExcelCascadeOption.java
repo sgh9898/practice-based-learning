@@ -1,7 +1,7 @@
 package com.sgh.demo.general.excel.easyexcel.pojo;
 
+import jakarta.annotation.Nonnull;
 import lombok.Data;
-import org.springframework.lang.NonNull;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -16,7 +16,7 @@ public class ExcelCascadeOption {
     private String name;
 
     /** (选择当前选项之后的)下一层选项, 没有下一层选项可以不填 */
-    @NonNull
+    @Nonnull
     private List<ExcelCascadeOption> childList = new LinkedList<>();
 
     public ExcelCascadeOption(String name) {

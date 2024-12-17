@@ -28,7 +28,7 @@ public class DemoEntityShardingTimeUpsertDto {
     private List<Long> idList;
 
     /** id */
-    @Schema(description = "id", notes = "新增数据时主键应为空")
+    @Schema(description = "id, 新增数据时主键应为空")
     private Long id;
 
     /** 主表id */

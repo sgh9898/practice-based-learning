@@ -22,14 +22,14 @@ import com.sgh.demo.general.excel.easyexcel.listener.ExcelNoModelListener;
 import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelExportDto;
 import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelNoModelExportDto;
 import com.sgh.demo.general.excel.easyexcel.pojo.ExcelCascadeOption;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -161,7 +161,7 @@ public class EasyExcelUtils {
      * @param excelClass Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
      * @return 全部通过校验时--返回数据; 存在报错数据时--返回空白List, 并以 Excel 形式下载报错数据
      */
-    @NonNull
+    @Nonnull
     public static <T> List<T> importExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass) {
         ExcelListener<T> excelListener = new ExcelListener<>(excelClass);
         // 导入并进行初步校验: 成功 --> 返回数据; 失败 --> 自动下载报错信息
@@ -184,9 +184,9 @@ public class EasyExcelUtils {
      * @param errorList  存储报错信息
      * @return 返回通过校验的数据, 未通过校验的数据存储于 errorList 中
      */
-    @NonNull
-    public static <T> List<T> importExcelSaveError(@NonNull MultipartFile file, HttpServletRequest request, HttpServletResponse response,
-                                                   Class<T> excelClass, @NonNull List<T> errorList) {
+    @Nonnull
+    public static <T> List<T> importExcelSaveError(@Nonnull MultipartFile file, HttpServletRequest request, HttpServletResponse response,
+                                                   Class<T> excelClass, @Nonnull List<T> errorList) {
         ExcelListener<T> excelListener = new ExcelListener<>(excelClass);
         // 导入成功
         baseImportExcel(file, request, response, excelClass, excelListener, false, errorList);
@@ -203,8 +203,8 @@ public class EasyExcelUtils {
      * @param cnToEnHeadNameMap 中英列名对照, Map(中文, 英文)
      * @return 全部通过校验时--返回数据; 存在报错数据时--返回空白List, 并以 Excel 形式下载报错数据
      */
-    @NonNull
-    public static List<Map<String, Object>> noModelImportExcel(@NonNull MultipartFile file, @Nullable Map<String, String> cnToEnHeadNameMap) {
+    @Nonnull
+    public static List<Map<String, Object>> noModelImportExcel(@Nonnull MultipartFile file, @Nullable Map<String, String> cnToEnHeadNameMap) {
         ExcelNoModelListener excelNoModelListener = new ExcelNoModelListener(cnToEnHeadNameMap, ExcelConstants.HEAD_RULES_CONTAINS);
         // 导入成功
         if (Boolean.TRUE.equals(noModelBaseImportExcel(file, excelNoModelListener, null))) {
@@ -223,8 +223,8 @@ public class EasyExcelUtils {
      * @param cnToEnHeadNameMap 中英列名对照, Map(中文, 英文)
      * @return 全部通过校验时--返回数据; 存在报错数据时--返回空白List, 并以 Excel 形式下载报错数据
      */
-    @NonNull
-    public static List<Map<String, Object>> noModelImportExcelStrictly(@NonNull MultipartFile file, @Nullable Map<String, String> cnToEnHeadNameMap) {
+    @Nonnull
+    public static List<Map<String, Object>> noModelImportExcelStrictly(@Nonnull MultipartFile file, @Nullable Map<String, String> cnToEnHeadNameMap) {
         ExcelNoModelListener excelNoModelListener = new ExcelNoModelListener(cnToEnHeadNameMap, ExcelConstants.HEAD_RULES_STRICTLY_CONTAINS);
         // 导入成功
         if (Boolean.TRUE.equals(noModelBaseImportExcel(file, excelNoModelListener, null))) {
@@ -284,7 +284,7 @@ public class EasyExcelUtils {
      * @param excelDataList 数据, 格式需与 excelClass 保持一致
      */
     public static <T> void exportErrorData(HttpServletRequest request, HttpServletResponse response,
-                                           @Nullable String fileName, Class<T> excelClass, @NonNull List<T> excelDataList) {
+                                           @Nullable String fileName, Class<T> excelClass, @Nonnull List<T> excelDataList) {
         // 配置参数
         EasyExcelExportDto exportDto = new EasyExcelExportDto();
         exportDto.setFileName(fileName);
@@ -441,7 +441,7 @@ public class EasyExcelUtils {
      * @return true = 全部数据通过校验, false = 文件为空或存在数据未通过校验
      */
     @Nullable
-    private static <T, U extends ExcelListener<T>> Boolean baseImportExcel(@NonNull MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass, U listener, Boolean exportError, List<T> errorList) {
+    private static <T, U extends ExcelListener<T>> Boolean baseImportExcel(@Nonnull MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass, U listener, Boolean exportError, List<T> errorList) {
         try {
             // 读取数据
             EasyExcelFactory.read(file.getInputStream(), excelClass, listener).extraRead(CellExtraTypeEnum.MERGE).sheet().doRead();
@@ -847,8 +847,8 @@ public class EasyExcelUtils {
      * @param cascadeMenuIndexMap   记录联动下拉框在 Excel 中的位置, Map(组名, 列)
      */
     private static void setUpDropDownMenus(Class<?> targetClass, EasyExcelExportDto exportDto,
-                                           @NonNull Map<String, String[]> dynamicMenuMap, @NonNull Map<Integer, String[]> indexedDynamicMenuMap,
-                                           @NonNull Map<String, List<Integer>> cascadeMenuIndexMap) {
+                                           @Nonnull Map<String, String[]> dynamicMenuMap, @Nonnull Map<Integer, String[]> indexedDynamicMenuMap,
+                                           @Nonnull Map<String, List<Integer>> cascadeMenuIndexMap) {
 
         // 遍历 Class 所有字段
         Field[] fieldArray = targetClass.getDeclaredFields();
@@ -907,7 +907,7 @@ public class EasyExcelUtils {
      * @param orderedEnHead 整理后的最底层英文列名
      */
     private static List<String> setUpEnglishHead(EasyExcelNoModelExportDto exportDto,
-                                                 @NonNull List<List<String>> cnHeadList, @NonNull List<String> orderedEnHead) {
+                                                 @Nonnull List<List<String>> cnHeadList, @Nonnull List<String> orderedEnHead) {
         // 获取列名对照
         Map<String, String> enToCnHeadMap = exportDto.getEnToCnHeadMap();
 
@@ -948,7 +948,7 @@ public class EasyExcelUtils {
      * @param dropDownMap        下拉框, Map(英文列名, 选项)
      * @param orderedEnglishHead 最底层英文列名
      */
-    private static Map<Integer, String[]> setUpIndexedDropDownMap(@NonNull Map<String, String[]> dropDownMap, @NonNull List<String> orderedEnglishHead) {
+    private static Map<Integer, String[]> setUpIndexedDropDownMap(@Nonnull Map<String, String[]> dropDownMap, @Nonnull List<String> orderedEnglishHead) {
         Map<Integer, String[]> indexedDropDownMap = new HashMap<>();
         int index = 0;
         for (String head : orderedEnglishHead) {

@@ -4,13 +4,13 @@ import com.alibaba.otter.canal.client.CanalConnector;
 import com.alibaba.otter.canal.client.CanalConnectors;
 import com.alibaba.otter.canal.protocol.CanalEntry.*;
 import com.alibaba.otter.canal.protocol.Message;
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.lang.NonNull;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -79,12 +79,12 @@ public class CanalClient {
 
 // ------------------------------ 业务参数 ------------------------------
     /** 备份表所属 schema */
-    @NonNull
+    @Nonnull
     @Value("${canal.extension.slave.schema:#{''}}")
     private String backupSchema;
 
     /** 备份表统一前缀, 格式统一为下划线 _ 结尾 */
-    @NonNull
+    @Nonnull
     @Value("${canal.extension.slave.table-name-prefix:#{''}}")
     private String backupPrefix;
 
@@ -160,7 +160,7 @@ public class CanalClient {
     }
 
     /** 创建 Canal 连接 */
-    @NonNull
+    @Nonnull
     private CanalConnector createConnector() {
         CanalConnector connector = CanalConnectors.newSingleConnector(new InetSocketAddress(canalHost,
                 canalPort), canalInstance, canalUsername, canalPassword);

@@ -1,4 +1,4 @@
-package com.sgh.demo.common.quartz.dto;
+package com.sgh.demo.general.quartz.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;

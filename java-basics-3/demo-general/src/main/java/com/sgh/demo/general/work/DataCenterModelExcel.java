@@ -1,4 +1,4 @@
-package com.sgh.demo.common.work;
+package com.sgh.demo.general.work;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

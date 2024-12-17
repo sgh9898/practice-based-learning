@@ -17,7 +17,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/data?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
     username: root
-    password: "RVsdbgjs~4921"
+    password: "xaTqi5!moNzx#noZcYr"
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       minimum-idle: 3
@@ -43,15 +43,15 @@ spring:
       auto-offset-reset: earliest # 没有 offset 时的重置规则
       enable-auto-commit: false   # 是否允许自动提交
       max-poll-records: 1000      # 拉取数据时, 每批次最大数据量
-      fetch-max-wait: 3s
+      fetch-max-wait: 3s          # 拉取数据最大间隔时间
       properties:
-        isolation.level: read_committed
+        isolation.level: read_committed   # 事务隔离级别: 仅读取成功提交的数据
     listener:
       type: batch  # single = 单条监听; batch = 批量监听
-      ack-mode: manual_immediate  # 提交模式
+      ack-mode: manual_immediate    # 提交模式
+      missing-topics-fatal: false   # 未知 topic 不会终止进程
+      concurrency: 4                # 并发数
       idle-event-interval: 10s
-      concurrency: 4
-      missing-topics-fatal: false
     producer:
       acks: 1  # 消息处理成功的条件: 0 不返回, 1 leader 收到返回成功, all/-1 全员收到返回成功
 
@@ -76,4 +76,4 @@ logging:
       max-history: 10 # 最大保留时长(天)
       max-file-size: 100MB
   file:
-    path: "demo-kafka/logs"
+    path: "logs"
