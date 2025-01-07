@@ -179,13 +179,13 @@
 //        request.getRequestDispatcher("http://localhost:8071/accept-sm-api/api/acceptSm/excel/exportData").forward(request, response);
 //    }
 //
-////    /** 此时不可使用 @RestController, 而是要使用 @Controller, 否则重定向不生效 */
-////    @Operation(summary = "重定向(不同 host, port)")
-////    @PostMapping("/redirect")
-////    public String okhttp1(RedirectAttributes attributes, @RequestBody ComplaintsSearchDto demo) {
-//////        String body = "{\"validType\": 1}";
-//////        attributes.addFlashAttribute("searchDto", body);
-////        String url = "http://localhost:8071/accept-sm-api/api/acceptSm/excel/exportData";
-////        return OkHttpUtils.get(url);
-////    }
+/// /    /** 此时不可使用 @RestController, 而是要使用 @Controller, 否则重定向不生效 */
+/// /    @Operation(summary = "重定向(不同 host, port)")
+/// /    @PostMapping("/redirect")
+/// /    public String okhttp1(RedirectAttributes attributes, @RequestBody ComplaintsSearchDto demo) {
+/// ///        String body = "{\"validType\": 1}";
+/// ///        attributes.addFlashAttribute("searchDto", body);
+/// /        String url = "http://localhost:8071/accept-sm-api/api/acceptSm/excel/exportData";
+/// /        return OkHttpUtils.get(url);
+/// /    }
 //}

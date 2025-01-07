@@ -16,6 +16,11 @@ spring:
     web:
       pageable:
         one-indexed-parameters: true  # true = 分页查询页码从 1 而不是 0 开始
+    redis:
+      host: localhost
+      port: 6379
+      password: "xembec-1rasDi-paztoq"
+      timeout: 10s
 
   # 数据库
   datasource:
@@ -95,20 +100,6 @@ spring:
     authentication:
       username: neo4j
       password: RVsdbgjs~4921
-
-  # Redis
-  redis:
-    host: localhost
-    port: 6379
-    password: "xembec-1rasDi-paztoq"
-    timeout: 10s  # 超时(时间 + 单位)
-    lettuce:
-      pool:
-        max-active: 8
-        # 需要时间单位
-        max-wait: -1s
-        max-idle: 8
-        min-idle: 0
 
   # Swagger
   mvc:

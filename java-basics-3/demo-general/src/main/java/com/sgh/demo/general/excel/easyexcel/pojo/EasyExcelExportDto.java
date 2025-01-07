@@ -92,15 +92,21 @@ public class EasyExcelExportDto {
      * @see #excludedCols
      */
     public void setIncludedCols(Class<?> targetClass, Set<String> includedCols) {
-        if (includedCols == null || includedCols.isEmpty()) {
-            return;
-        }
         // 获取 Class 所有字段
         Set<String> excluded = new HashSet<>();
         Field[] fieldArray = targetClass.getDeclaredFields();
-        for (Field field : fieldArray) {
-            if (!includedCols.contains(field.getName())) {
+
+        if (includedCols == null || includedCols.isEmpty()) {
+            // 正选的列为空则不导出
+            for (Field field : fieldArray) {
                 excluded.add(field.getName());
+            }
+        } else {
+            // 根据正选的列配置排除的列
+            for (Field field : fieldArray) {
+                if (!includedCols.contains(field.getName())) {
+                    excluded.add(field.getName());
+                }
             }
         }
         this.excludedCols.addAll(excluded);

@@ -1,4 +1,4 @@
-package com.sgh.demo.common.substitution;
+package com.sgh.demo.general.substitution;
 
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
