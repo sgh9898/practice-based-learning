@@ -37,7 +37,7 @@ public class EasyExcelController {
         headMap.put("二级标题1", "title1");
         headMap.put("二级标题2", "title2");
         headMap.put("二级标题3", "title3");
-        return EasyExcelUtils.noModelImportExcel(file, headMap);
+        return EasyExcelUtils.noModelImportExcel(file, headMap, null);
     }
 
     @GetMapping("/excelToDdl/template")

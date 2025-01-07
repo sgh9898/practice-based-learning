@@ -7,6 +7,7 @@ import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ConverterUtils;
 import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
 import com.sgh.demo.general.excel.easyexcel.constants.ExcelConstants;
+import com.sgh.demo.general.excel.easyexcel.constants.ExcelHeadRulesEnums;
 import jakarta.annotation.Nonnull;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -44,9 +45,9 @@ public class ExcelListener<T> implements ReadListener<T> {
     protected Integer currentInvalidHeadRowNum;
     /** 校准后 head 是否有效 */
     protected Boolean validHead;
-    /** head 校验规则, {@link ExcelConstants} */
+    /** head 校验规则, {@link ExcelHeadRulesEnums} */
     @Setter
-    protected Integer headRules;
+    protected ExcelHeadRulesEnums headRules;
     /** 标准 head 行数 */
     protected Integer headRowNum;
 
@@ -66,7 +67,7 @@ public class ExcelListener<T> implements ReadListener<T> {
         this.maxInvalidHeadRowNum = 0;
         this.currentInvalidHeadRowNum = 0;
         this.validHead = false;
-        this.headRules = ExcelConstants.HEAD_RULES_CONTAINS;
+        this.headRules = ExcelHeadRulesEnums.CONTAINS;
         this.headRowNum = null;
         // 变量
         this.validList = new LinkedList<>();
@@ -159,7 +160,7 @@ public class ExcelListener<T> implements ReadListener<T> {
         List<String> readHeadList = new ArrayList<>(readHeadMap.values());
         Set<String> validHeadNameSet = getHeadNameSet(excelClass);
         // 根据设定规则进行校验
-        if (Objects.equals(headRules, ExcelConstants.HEAD_RULES_CONTAINS)) {
+        if (Objects.equals(headRules, ExcelHeadRulesEnums.CONTAINS)) {
             // 存在有效字段即可
             for (String currHead : readHeadList) {
                 // head 有效
@@ -168,7 +169,7 @@ public class ExcelListener<T> implements ReadListener<T> {
                     return;
                 }
             }
-        } else if (Objects.equals(headRules, ExcelConstants.HEAD_RULES_STRICTLY_CONTAINS)) {
+        } else if (Objects.equals(headRules, ExcelHeadRulesEnums.STRICTLY_CONTAINS)) {
             // 存在有效字段, 且没有无效字段
             boolean tempValid = true;
             for (String currHead : readHeadList) {
