@@ -75,7 +75,7 @@ import java.util.*;
  *       * 分页导出: {@link #noModelWriteSheet}--在新的一页写入数据, 数据写入全部完成后必须手动调用 {@link #closeExcel} 进行关闭 </pre>
  *
  * @author Song gh
- * @version 2024/8/16
+ * @version 2025/1/10
  */
 @Slf4j
 public class EasyExcelUtils {
