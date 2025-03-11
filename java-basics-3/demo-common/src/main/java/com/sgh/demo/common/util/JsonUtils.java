@@ -7,9 +7,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.type.CollectionType;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -21,11 +20,11 @@ import java.util.Map;
  * (基于 JacksonUtil 工具类优化)
  *
  * @author Song gh
- * @version 2024/9/11
+ * @version 2025/3/5
  */
-@Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class JsonUtils {
+
+    private static final Logger log = LoggerFactory.getLogger(JsonUtils.class);
 
     /** 默认 mapper */
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -36,6 +35,10 @@ public class JsonUtils {
     static {
         // 所有属性都可以访问到 (private/public)
         MAPPER.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        // 禁止检测所有 get 方法
+        MAPPER.setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
+        // 仅序列化字段
+        MAPPER.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         // 反序列化时, 未知字段不报错
         MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         // 自动缩进生成的 Json
@@ -74,7 +77,7 @@ public class JsonUtils {
 
     /** Java Bean --> Map(String, Object), 移除值为 null 的字段 */
     @SuppressWarnings("unchecked")
-    public static <T, U> Map<T, U> beanToMapNonNull(Object bean) {
+    public static <T, U> Map<T, U> beanToMapNonnull(Object bean) {
         Map<T, U> map = MAPPER.convertValue(bean, Map.class);
         map.entrySet().removeIf(entry -> entry.getValue() == null);
         return map;
@@ -96,8 +99,7 @@ public class JsonUtils {
     /**
      * Json String --> Java Bean
      * <pre>
-     * 1. 返回数据类型不可包含泛型, 如 {@code OuterClass<InnerClass>}, 需要调用 {@link #jsonToBean(String, TypeReference)}
-     * </pre>
+     * 1. 返回数据类型不可包含泛型, 如 {@code OuterClass<InnerClass>}, 需要调用 {@link #jsonToBean(String, TypeReference)} </pre>
      */
     public static <T> T jsonToBean(String json, Class<T> beanType) {
         try {
@@ -111,8 +113,7 @@ public class JsonUtils {
     /**
      * Json String --> Java Bean
      * <pre>
-     * 1. 返回数据类型可以包含泛型, 如 {@code OuterClass<InnerClass>}
-     * </pre>
+     * 1. 返回数据类型可以包含泛型, 如 {@code OuterClass<InnerClass>} </pre>
      */
     public static <T> T jsonToBean(String json, TypeReference<T> typeReference) {
         try {
@@ -159,5 +160,8 @@ public class JsonUtils {
     public static <T> T jsonNodeToBean(JsonNode jsonNode, Class<T> beanType, Class<?> subBeanType) {
         JavaType type = MAPPER.getTypeFactory().constructParametricType(beanType, subBeanType);
         return MAPPER.convertValue(jsonNode, type);
+    }
+
+    private JsonUtils() {
     }
 }
