@@ -8,14 +8,15 @@ import com.alibaba.excel.util.ConverterUtils;
 import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
 import com.sgh.demo.general.excel.easyexcel.constants.ExcelConstants;
 import com.sgh.demo.general.excel.easyexcel.constants.ExcelHeadRulesEnums;
-import jakarta.annotation.Nonnull;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
@@ -32,9 +33,10 @@ import java.util.*;
  * @author Song gh
  * @version 2024/1/30
  */
-@Slf4j
 @Getter
 public class ExcelListener<T> implements ReadListener<T> {
+
+    private static final Logger log = LoggerFactory.getLogger(ExcelListener.class);
 
 // ------------------------------ 常量 ------------------------------
     /** 校验 */
@@ -209,7 +211,7 @@ public class ExcelListener<T> implements ReadListener<T> {
     }
 
     /** 校验实体类: 通过返回 null, 未通过返回报错 */
-    @Nonnull
+    @NonNull
     private static String validate(Object entity) {
         Set<ConstraintViolation<Object>> violationSet = validator.validate(entity);
         StringBuilder errorMsg = new StringBuilder();

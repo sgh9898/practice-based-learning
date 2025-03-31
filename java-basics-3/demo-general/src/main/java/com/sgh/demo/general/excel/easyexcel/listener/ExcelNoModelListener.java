@@ -5,12 +5,13 @@ import com.alibaba.excel.metadata.data.ReadCellData;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ConverterUtils;
 import com.sgh.demo.general.excel.easyexcel.constants.ExcelHeadRulesEnums;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 import java.util.*;
 
@@ -24,9 +25,10 @@ import java.util.*;
  * @author Song gh
  * @version 2024/1/30
  */
-@Slf4j
 @Getter
 public class ExcelNoModelListener implements ReadListener<Map<Integer, String>> {
+
+    private static final Logger log = LoggerFactory.getLogger(ExcelNoModelListener.class);
 
 // ------------------------------ 常量 ------------------------------
     /** 无效的 head 行数上限 */
@@ -44,7 +46,7 @@ public class ExcelNoModelListener implements ReadListener<Map<Integer, String>> 
 // ------------------------------ 变量 ------------------------------
     /** 中英列名对照, Map(中文, 英文) */
     @Setter
-    @Nonnull
+    @NonNull
     protected Map<String, String> cnToEnHeadNameMap;
     /** Excel 读取的列名(含序号) */
     protected Map<Integer, String> indexedCnHeadMap = new HashMap<>();

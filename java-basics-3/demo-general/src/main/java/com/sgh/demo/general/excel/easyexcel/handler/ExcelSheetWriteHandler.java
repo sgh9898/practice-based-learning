@@ -5,6 +5,7 @@ import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.sgh.demo.general.excel.easyexcel.constants.ExcelConstants;
 import com.sgh.demo.general.excel.easyexcel.pojo.ExcelCascadeOption;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 
@@ -165,7 +166,7 @@ public class ExcelSheetWriteHandler implements SheetWriteHandler {
         StringBuilder columnStr = new StringBuilder();
         column--;
         do {
-            if (!columnStr.isEmpty()) {
+            if (StringUtils.isNotBlank(columnStr.toString())) {
                 column--;
             }
             columnStr.insert(0, ((char) (column % 26 + 'A')));
