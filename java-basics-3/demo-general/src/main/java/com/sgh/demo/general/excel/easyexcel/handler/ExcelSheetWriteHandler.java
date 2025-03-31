@@ -8,9 +8,7 @@ import com.sgh.demo.general.excel.easyexcel.pojo.ExcelCascadeOption;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -35,6 +33,30 @@ public class ExcelSheetWriteHandler implements SheetWriteHandler {
     /** 联动下拉框, Map(组名, 选项) */
     private final Map<String, List<ExcelCascadeOption>> cascadeMenuMap;
 
+    /** 记录多选框的列序号 */
+    private final Set<Integer> indexMultipleDropDownSet;
+
+    /**
+     * 构造
+     *
+     * @param headRowNum               标题行的数量, 配置单元格时需要跳过
+     * @param indexedDynamicMenuMap    动态下拉框
+     * @param cascadeMenuMap           联动下拉框
+     * @param cascadeMenuIndexMap      联动下拉框位置
+     * @param indexMultipleDropDownSet 记录多选框的列序号
+     */
+    public ExcelSheetWriteHandler(Integer headRowNum, Map<Integer, String[]> indexedDynamicMenuMap,
+                                  Map<String, List<Integer>> cascadeMenuIndexMap, Map<String, List<ExcelCascadeOption>> cascadeMenuMap,
+                                  Set<Integer> indexMultipleDropDownSet) {
+        // 记录 head 行数
+        this.headRowNum = 1 + headRowNum;
+        // 下拉框
+        this.indexedDynamicMenuMap = indexedDynamicMenuMap;
+        this.cascadeMenuIndexMap = cascadeMenuIndexMap;
+        this.cascadeMenuMap = cascadeMenuMap;
+        this.indexMultipleDropDownSet = indexMultipleDropDownSet;
+    }
+
     /**
      * 构造
      *
@@ -51,6 +73,7 @@ public class ExcelSheetWriteHandler implements SheetWriteHandler {
         this.indexedDynamicMenuMap = indexedDynamicMenuMap;
         this.cascadeMenuIndexMap = cascadeMenuIndexMap;
         this.cascadeMenuMap = cascadeMenuMap;
+        this.indexMultipleDropDownSet = new HashSet<>();
     }
 
     /**
@@ -76,16 +99,22 @@ public class ExcelSheetWriteHandler implements SheetWriteHandler {
                 DataValidationConstraint constraint = validationHelper.createExplicitListConstraint(options);
                 // 设置下拉单元格的首行, 末行, 首列, 末列
                 CellRangeAddressList addressList = new CellRangeAddressList(headRowNum, 65536, index, index);
-                setValidation(sheet, validationHelper, constraint, addressList);
+                if (indexMultipleDropDownSet.contains(index)) {
+                    // 多选框, 禁用输入校验
+                    setValidation(sheet, validationHelper, constraint, addressList);
+                } else {
+                    // 单选框
+                    setValidationWithErrorBox(sheet, validationHelper, constraint, addressList);
+                }
             });
         }
 
         // 配置联动下拉框
-        setUpCascadeMenu(writeWorkbookHolder, sheet);
+        configureCascadeMenu(writeWorkbookHolder, sheet);
     }
 
     /** 配置联动下拉框 */
-    private void setUpCascadeMenu(WriteWorkbookHolder writeWorkbookHolder, Sheet sheet) {
+    private void configureCascadeMenu(WriteWorkbookHolder writeWorkbookHolder, Sheet sheet) {
         for (Map.Entry<String, List<ExcelCascadeOption>> cascadeMenu : cascadeMenuMap.entrySet()) {
             String cascadeGroupName = cascadeMenu.getKey();
             List<ExcelCascadeOption> optionList = cascadeMenu.getValue();
@@ -110,7 +139,7 @@ public class ExcelSheetWriteHandler implements SheetWriteHandler {
             CellRangeAddressList cascadeRangeList = new CellRangeAddressList(headRowNum, 65536, firstColIndex, firstColIndex);
             String mainEndCol = colIndexToStr(optionList.size());
             DataValidationConstraint mainFormula = validationHelper.createFormulaListConstraint("=" + cascadeSheetName + "!$A$1:$" + mainEndCol + "$1");
-            setValidation(sheet, validationHelper, mainFormula, cascadeRangeList);
+            setValidationWithErrorBox(sheet, validationHelper, mainFormula, cascadeRangeList);
 
             // 配置联动下拉框后续列
             // "INDIRECT($A$" + 2 + ")" 表示规则数据会从名称管理器中获取 key 与单元格 A2 值相同的数据: 如果A2是省, 那么此处就是省下面的市
@@ -122,7 +151,7 @@ public class ExcelSheetWriteHandler implements SheetWriteHandler {
                 String parentCol = "$" + colIndexToStr(parentColIndex) + "$";
                 CellRangeAddressList rangeAddressList = new CellRangeAddressList(headRowNum, 65536, currColIndex, currColIndex);
                 DataValidationConstraint formula = validationHelper.createFormulaListConstraint("INDIRECT(" + parentCol + (headRowNum + 1) + ")");
-                setValidation(sheet, validationHelper, formula, rangeAddressList);
+                setValidationWithErrorBox(sheet, validationHelper, formula, rangeAddressList);
             }
 
         }
@@ -146,7 +175,7 @@ public class ExcelSheetWriteHandler implements SheetWriteHandler {
     }
 
     /**
-     * 设置验证规则, 阻止输入下拉选项以外的值
+     * 设置验证规则, 但不会阻止输入下拉选项以外的值
      *
      * @param sheet            当前页
      * @param validationHelper 验证器
@@ -155,10 +184,30 @@ public class ExcelSheetWriteHandler implements SheetWriteHandler {
      */
     private static void setValidation(Sheet sheet, DataValidationHelper validationHelper, DataValidationConstraint constraint, CellRangeAddressList rangeList) {
         DataValidation validation = validationHelper.createValidation(constraint, rangeList);
+        validation.setSuppressDropDownArrow(true);
+        // 禁用输入校验
+        validation.setShowErrorBox(false);
+        validation.setErrorStyle(DataValidation.ErrorStyle.INFO);
+        validation.createPromptBox("-------多选输入框-------", "选项间使用逗号分隔");
+        validation.setShowPromptBox(true);
+        sheet.addValidationData(validation);
+    }
+
+    /**
+     * 设置验证规则, 阻止输入下拉选项以外的值
+     *
+     * @param sheet            当前页
+     * @param validationHelper 验证器
+     * @param constraint       数据范围
+     * @param rangeList        单元格范围
+     */
+    private static void setValidationWithErrorBox(Sheet sheet, DataValidationHelper validationHelper, DataValidationConstraint constraint, CellRangeAddressList rangeList) {
+        DataValidation validation = validationHelper.createValidation(constraint, rangeList);
+        validation.setSuppressDropDownArrow(true);
+        // 报错提示
         validation.setErrorStyle(DataValidation.ErrorStyle.STOP);
         validation.setShowErrorBox(true);
-        validation.setSuppressDropDownArrow(true);
-        validation.createErrorBox("提示", "请选择下拉框内的数据");
+        validation.createErrorBox("数据填写错误", "请选择下拉框内的数据");
         sheet.addValidationData(validation);
     }
 

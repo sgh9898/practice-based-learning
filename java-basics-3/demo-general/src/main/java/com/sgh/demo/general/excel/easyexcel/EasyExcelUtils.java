@@ -132,7 +132,7 @@ public class EasyExcelUtils {
      * @param fileName 文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
      */
     public EasyExcelUtils(HttpServletRequest request, HttpServletResponse response, @Nullable String fileName) {
-        this.outStream = setUpExcelFileName(request, response, null, fileName, false);
+        this.outStream = configureExcelFileName(request, response, null, fileName, false);
         this.excelWriter = EasyExcelFactory.write(this.outStream).excelType(ExcelTypeEnum.XLSX).build();
     }
 
@@ -143,7 +143,7 @@ public class EasyExcelUtils {
      * @param fileName 文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
      */
     public EasyExcelUtils(@Nullable String fileDir, @Nullable String fileName) {
-        this.outStream = setUpExcelFileName(null, null, fileDir, fileName, false);
+        this.outStream = configureExcelFileName(null, null, fileDir, fileName, false);
         this.excelWriter = EasyExcelFactory.write(this.outStream).excelType(ExcelTypeEnum.XLSX).build();
     }
 
@@ -584,7 +584,7 @@ public class EasyExcelUtils {
     private static void noModelBaseExportExcel(HttpServletRequest request, HttpServletResponse response, String fileDir, EasyExcelNoModelExportDto exportDto) {
         // 创建 excel writer
         String fileName = exportDto.getFileName();
-        OutputStream outputStream = setUpExcelFileName(request, response, fileDir, fileName, exportDto.getUseExcel07());
+        OutputStream outputStream = configureExcelFileName(request, response, fileDir, fileName, exportDto.getUseExcel07());
         ExcelWriter excelWriter;
         excelWriter = EasyExcelFactory.write(outputStream).excelType(ExcelTypeEnum.XLSX).build();
 
@@ -608,9 +608,14 @@ public class EasyExcelUtils {
         // 动态下拉框
         Map<String, String[]> dynamicMenuMap = exportDto.getDynamicMenuMap();
         Map<Integer, String[]> indexedDynamicMenuMap = new HashMap<>();
+        // 记录多选框的列序号
+        Set<Integer> indexMultipleDropDownSet = new HashSet<>();
         // 联动下拉框
         Map<String, List<Integer>> cascadeMenuIndexMap = new HashMap<>();
-        setUpDropDownMenus(excelClass, exportDto, dynamicMenuMap, indexedDynamicMenuMap, cascadeMenuIndexMap);
+        // 统一配置下拉框
+        configureDropDownMenus(excelClass, exportDto, dynamicMenuMap, indexedDynamicMenuMap, cascadeMenuIndexMap, indexMultipleDropDownSet);
+
+        // 联动下拉框后续处理
         Map<String, List<ExcelCascadeOption>> cascadeMenuMap = exportDto.getCascadeMenuMap();
         // 仅存在一组联动下拉框, 进行默认配置
         if (cascadeMenuMap.isEmpty()) {
@@ -627,7 +632,7 @@ public class EasyExcelUtils {
         Set<String> excludedCols = exportDto.getExcludedCols();
         List<String[]> originalHeadList = new ArrayList<>();  // 记录列名, 用于动态列名替换
         Set<String> doNotChangeWidth = new HashSet<>();       // 记录手动指定列宽的字段
-        validColumnNum = setUpValidCols(excelClass, excludedCols, originalHeadList, validColumnNum, doNotChangeWidth);
+        validColumnNum = configureValidCols(excelClass, excludedCols, originalHeadList, validColumnNum, doNotChangeWidth);
 
         // 动态列名, 对旧列名进行替换
         List<List<String>> newHeadList = new ArrayList<>();
@@ -655,7 +660,8 @@ public class EasyExcelUtils {
 
         // 表单设置: 列宽, 行高, 下拉框...
         ExcelColWidthStrategy widthStrategy = exportDto.getWidthStrategy();
-        sheetBuilder.registerWriteHandler(new ExcelSheetWriteHandler(skipRowNum, indexedDynamicMenuMap, cascadeMenuIndexMap, cascadeMenuMap));
+        sheetBuilder.registerWriteHandler(new ExcelSheetWriteHandler(skipRowNum, indexedDynamicMenuMap,
+                cascadeMenuIndexMap, cascadeMenuMap, indexMultipleDropDownSet));
         sheetBuilder.registerWriteHandler(new ExcelColumnWidthHandler(widthStrategy, doNotChangeWidth));
         if (Boolean.TRUE.equals(exportDto.getAutoRowHeight())) {
             sheetBuilder.registerWriteHandler(new ExcelRowHeightHandler());
@@ -727,7 +733,7 @@ public class EasyExcelUtils {
         }
 
         // 调整下拉框位置
-        Map<Integer, String[]> indexedDropDownMap = setUpIndexedDropDownMap(exportDto.getDropDownMap(), orderedEnHead);
+        Map<Integer, String[]> indexedDropDownMap = configureIndexedDropDownMap(exportDto.getDropDownMap(), orderedEnHead);
         int skipRowNum = 0;
         if (StringUtils.isNotBlank(exportDto.getTitle())) {
             skipRowNum++;
@@ -793,7 +799,7 @@ public class EasyExcelUtils {
         // 创建 excel writer
         ExcelWriter excelWriter;
         String fileName = exportDto.getFileName();
-        OutputStream outputStream = setUpExcelFileName(request, response, fileDir, fileName, exportDto.getUseExcel07());
+        OutputStream outputStream = configureExcelFileName(request, response, fileDir, fileName, exportDto.getUseExcel07());
         excelWriter = EasyExcelFactory.write(outputStream).excelType(ExcelTypeEnum.XLSX).build();
 
         // 写入数据
@@ -834,7 +840,7 @@ public class EasyExcelUtils {
      *
      * @return 有效列的数量
      */
-    private static int setUpValidCols(Class<?> excelClass, Set<String> excludedCols, List<String[]> originalHeadList, int validColumnNum, Set<String> doNotChangeWidth) {
+    private static int configureValidCols(Class<?> excelClass, Set<String> excludedCols, List<String[]> originalHeadList, int validColumnNum, Set<String> doNotChangeWidth) {
         for (Field field : excelClass.getDeclaredFields()) {
             // 仅记录 ExcelProperty 注解的列
             ExcelProperty excelAnnotation = field.getAnnotation(ExcelProperty.class);
@@ -897,15 +903,16 @@ public class EasyExcelUtils {
     /**
      * 配置下拉框, 处理 {@link ExcelDropDown} 注解
      *
-     * @param targetClass           Excel 实体类
-     * @param exportDto             Excel 导出参数
-     * @param dynamicMenuMap        动态下拉框, Map(列名, 选项); 其中列名必须使用 {@link ExcelDropDown#dynamicMenuName} 在 ExcelClass 进行定义
-     * @param indexedDynamicMenuMap 记录动态下拉框在 Excel 中的位置, Map(列, 选项)
-     * @param cascadeMenuIndexMap   记录联动下拉框在 Excel 中的位置, Map(组名, 列)
+     * @param targetClass              Excel 实体类
+     * @param exportDto                Excel 导出参数
+     * @param dynamicMenuMap           动态下拉框, Map(列名, 选项); 其中列名必须使用 {@link ExcelDropDown#dynamicMenuName} 在 ExcelClass 进行定义
+     * @param indexedDynamicMenuMap    记录动态下拉框在 Excel 中的位置, Map(列, 选项)
+     * @param cascadeMenuIndexMap      记录联动下拉框在 Excel 中的位置, Map(组名, 列)
+     * @param indexMultipleDropDownSet 记录多选框的列序号
      */
-    private static void setUpDropDownMenus(Class<?> targetClass, EasyExcelExportDto exportDto,
-                                           @Nonnull Map<String, String[]> dynamicMenuMap, @Nonnull Map<Integer, String[]> indexedDynamicMenuMap,
-                                           @Nonnull Map<String, List<Integer>> cascadeMenuIndexMap) {
+    private static void configureDropDownMenus(Class<?> targetClass, EasyExcelExportDto exportDto,
+                                               @Nonnull Map<String, String[]> dynamicMenuMap, @Nonnull Map<Integer, String[]> indexedDynamicMenuMap,
+                                               @Nonnull Map<String, List<Integer>> cascadeMenuIndexMap, @Nonnull Set<Integer> indexMultipleDropDownSet) {
 
         // 遍历 Class 所有字段
         Field[] fieldArray = targetClass.getDeclaredFields();
@@ -920,7 +927,7 @@ public class EasyExcelUtils {
                 indexLeftShift++;
                 continue;
             }
-            dealWithExcelDropDown(dynamicMenuMap, indexedDynamicMenuMap, cascadeMenuIndexMap, field, index, indexLeftShift);
+            configureExcelDropDown(dynamicMenuMap, indexedDynamicMenuMap, cascadeMenuIndexMap, indexMultipleDropDownSet, field, index, indexLeftShift);
         }
     }
 
@@ -941,7 +948,7 @@ public class EasyExcelUtils {
         }
 
         // 整理列名
-        orderedEnHead = setUpEnglishHead(exportDto, cnHeadList, orderedEnHead);
+        orderedEnHead = configureEnglishHead(exportDto, cnHeadList, orderedEnHead);
 
         // 根据列名顺序整理数据
         List<Map<String, Object>> srcDataList = exportDto.getDataList();
@@ -963,8 +970,8 @@ public class EasyExcelUtils {
      * @param cnHeadList    整理后的中文列名
      * @param orderedEnHead 整理后的最底层英文列名
      */
-    private static List<String> setUpEnglishHead(EasyExcelNoModelExportDto exportDto,
-                                                 @Nonnull List<List<String>> cnHeadList, @Nonnull List<String> orderedEnHead) {
+    private static List<String> configureEnglishHead(EasyExcelNoModelExportDto exportDto,
+                                                     @Nonnull List<List<String>> cnHeadList, @Nonnull List<String> orderedEnHead) {
         // 获取列名对照
         Map<String, String> enToCnHeadMap = exportDto.getEnToCnHeadMap();
 
@@ -1005,7 +1012,7 @@ public class EasyExcelUtils {
      * @param dropDownMap        下拉框, Map(英文列名, 选项)
      * @param orderedEnglishHead 最底层英文列名
      */
-    private static Map<Integer, String[]> setUpIndexedDropDownMap(@Nonnull Map<String, String[]> dropDownMap, @Nonnull List<String> orderedEnglishHead) {
+    private static Map<Integer, String[]> configureIndexedDropDownMap(@Nonnull Map<String, String[]> dropDownMap, @Nonnull List<String> orderedEnglishHead) {
         Map<Integer, String[]> indexedDropDownMap = new HashMap<>();
         int index = 0;
         for (String head : orderedEnglishHead) {
@@ -1017,8 +1024,21 @@ public class EasyExcelUtils {
         return indexedDropDownMap;
     }
 
-    /** 处理 {@link ExcelDropDown} 注解 */
-    private static void dealWithExcelDropDown(Map<String, String[]> dynamicMenuMap, Map<Integer, String[]> indexedDynamicMenuMap, Map<String, List<Integer>> cascadeMenuIndexMap, Field field, int index, int indexLeftShift) {
+    /**
+     * 处理 {@link ExcelDropDown} 注解
+     *
+     * @param dynamicMenuMap           动态下拉框, Map(列名, 选项); 其中列名必须使用 {@link ExcelDropDown#dynamicMenuName} 在 ExcelClass 进行定义
+     * @param indexedDynamicMenuMap    记录动态下拉框在 Excel 中的位置, Map(列, 选项)
+     * @param cascadeMenuIndexMap      记录联动下拉框在 Excel 中的位置, Map(组名, 列)
+     * @param indexMultipleDropDownSet 记录多选框的列序号
+     * @param field                    当前处理的 ExcelClass 字段
+     * @param index                    当前 Excel 列序号
+     * @param indexLeftShift           跳过的列数量(部分列会被 {@link EasyExcelExportDto#getExcludedCols()} 排除)
+     */
+
+    private static void configureExcelDropDown(Map<String, String[]> dynamicMenuMap, Map<Integer, String[]> indexedDynamicMenuMap,
+                                               Map<String, List<Integer>> cascadeMenuIndexMap, Set<Integer> indexMultipleDropDownSet,
+                                               Field field, int index, int indexLeftShift) {
         // 检测到 @ExcelDropDown 注解, 进行下拉框配置
         ExcelDropDown excelDropDown = field.getAnnotation(ExcelDropDown.class);
         if (excelDropDown != null) {
@@ -1042,12 +1062,17 @@ public class EasyExcelUtils {
             if (StringUtils.isNotBlank(cascadeGroupName)) {
                 cascadeMenuIndexMap.computeIfAbsent(cascadeGroupName, k -> new LinkedList<>()).add(shiftedIndex);
             }
+
+            // 多选下拉框配置
+            if (excelDropDown.multiple()) {
+                indexMultipleDropDownSet.add(shiftedIndex);
+            }
         }
     }
 
     /** 配置 Excel 文件名 */
-    private static OutputStream setUpExcelFileName(@Nullable HttpServletRequest request, @Nullable HttpServletResponse response,
-                                                   @Nullable String fileDir, @Nullable String fileName, @Nullable Boolean useExcel07) {
+    private static OutputStream configureExcelFileName(@Nullable HttpServletRequest request, @Nullable HttpServletResponse response,
+                                                       @Nullable String fileDir, @Nullable String fileName, @Nullable Boolean useExcel07) {
         // 设置文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
         if (StringUtils.isBlank(fileName)) {
             fileName = "Excel 导出数据" + new SimpleDateFormat("yyyyMMdd").format(new Date()) + ".xlsx";

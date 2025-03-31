@@ -70,8 +70,9 @@ public class EasyExcelExportDto {
      * 联动下拉框, 单组
      * <pre>
      * 1. 存在联动关系的下拉框属于同一组, 如: 省市区
-     * 2. 存在多组联动下拉框时, 需要使用 {@link #cascadeMenuMap} 进行配置
-     * 3. {@link #cascadeMenuMap} 会优先于本参数生效 </pre>
+     * 2. 组名需要使用 {@link ExcelDropDown#cascadeGroupName} 配置
+     * 3. 存在多组联动下拉框时, 需要使用 {@link #cascadeMenuMap} 进行配置
+     * 4. {@link #cascadeMenuMap} 会优先于本参数生效 </pre>
      */
     @Nonnull
     private List<ExcelCascadeOption> cascadeMenu = new LinkedList<>();

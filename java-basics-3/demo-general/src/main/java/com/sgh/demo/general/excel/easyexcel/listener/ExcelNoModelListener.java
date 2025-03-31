@@ -34,7 +34,7 @@ public class ExcelNoModelListener implements ReadListener<Map<Integer, String>> 
     /** 当前无效的 head 行数 */
     protected Integer currentInvalidHeadRowNum = 0;
     /** 标准 head 行数 */
-    protected Integer headRowNum = null;
+    protected Integer headRowNum;
     /** head 校验规则, {@link ExcelHeadRulesEnums} */
     @Setter
     protected ExcelHeadRulesEnums headRules = ExcelHeadRulesEnums.CONTAINS;

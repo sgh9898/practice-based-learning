@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +19,7 @@ import java.util.Map;
  * 数据字典工具类
  *
  * @author Song gh
- * @version 2024/3/12
+ * @version 2025/3/12
  */
 @Component
 @DependsOn("dictDataRepository")
@@ -35,8 +36,10 @@ public class DictionaryUtils {
     @Setter(AccessLevel.PRIVATE)
     private static DictDataRepository dictDataRepository;
 
+// ------------------------------ 中文 --> 词条编码 ------------------------------
+
     /**
-     * 根据目录 获取 中文转编码字典
+     * 根据目录获取中文转编码字典
      *
      * @param dictCode 目录编码
      */
@@ -51,7 +54,7 @@ public class DictionaryUtils {
     }
 
     /**
-     * 根据中文 获取 词条编码
+     * 根据中文获取词条编码
      *
      * @param dictCode     目录编码
      * @param dictDataName 词条中文名
@@ -68,7 +71,7 @@ public class DictionaryUtils {
     }
 
     /**
-     * 根据中文 获取 词条编码, 获取失败时使用默认值
+     * 根据中文获取词条编码, 获取失败时使用默认值
      *
      * @param dictCode     目录编码
      * @param dictDataName 词条中文名
@@ -99,7 +102,7 @@ public class DictionaryUtils {
     }
 
     /**
-     * 根据目录 获取 编码转中文字典
+     * 根据目录获取编码转中文字典
      *
      * @param dictCode 目录编码
      */
@@ -113,8 +116,10 @@ public class DictionaryUtils {
         }
     }
 
+// ------------------------------ 词条编码 --> 中文 ------------------------------
+
     /**
-     * 根据词条编码 获取 中文
+     * 根据词条编码获取中文
      *
      * @param dictCode     目录编码
      * @param dictDataCode 词条编码
@@ -122,6 +127,10 @@ public class DictionaryUtils {
      */
     @Nullable
     public static String getName(String dictCode, Object dictDataCode) {
+        if (dictDataCode == null) {
+            return null;
+        }
+        // 转换词条编码为 string
         String key;
         if (dictDataCode instanceof Integer) {
             key = ((Integer) dictDataCode).toString();
@@ -132,16 +141,43 @@ public class DictionaryUtils {
         } else {
             key = (String) dictDataCode;
         }
-        try {
-            return codeToCnMap.getOrDefault(dictCode, new HashMap<>()).get(key);
-        } catch (NullPointerException e) {
-            updateDictMap();
-            return codeToCnMap.getOrDefault(dictCode, new HashMap<>()).get(key);
+
+        // 获取中文
+        Map<String, String> codeCnMap = getCodeToCnDict(dictCode);
+        return codeCnMap.get(key);
+    }
+
+    /**
+     * 根据词条编码获取中文, 支持多个逗号分隔的词条编码
+     *
+     * @param dictCode     目录编码
+     * @param dictDataCode 词条编码, 支持多个逗号分隔的词条编码
+     * @return 词条对应的编码, 无对应编码则返回 null
+     */
+    public static String getChainedName(String dictCode, Object dictDataCode) {
+        if (dictDataCode == null) {
+            return null;
+        }
+        if (dictDataCode instanceof String) {
+            String key = (String) dictDataCode;
+            // 获取中文
+            Map<String, String> codeCnMap = getCodeToCnDict(dictCode);
+            // 转换数据
+            String[] codeArr = key.split(",");
+            List<String> cnList = new LinkedList<>();
+            for (String code : codeArr) {
+                if (codeCnMap.containsKey(code)) {
+                    cnList.add(codeCnMap.get(code));
+                }
+            }
+            return String.join(",", cnList);
+        } else {
+            return getName(dictCode, dictDataCode);
         }
     }
 
     /**
-     * 根据词条编码 获取 中文, 获取失败时使用默认值
+     * 根据词条编码获取中文, 获取失败时使用默认值
      *
      * @param dictCode     目录编码
      * @param dictDataCode 词条编码
@@ -154,6 +190,8 @@ public class DictionaryUtils {
         }
         return val;
     }
+
+// ------------------------------ 内部方法 ------------------------------
 
     private DictionaryUtils(@Autowired DictDataRepository dictDataRepository) {
         setDictDataRepository(dictDataRepository);

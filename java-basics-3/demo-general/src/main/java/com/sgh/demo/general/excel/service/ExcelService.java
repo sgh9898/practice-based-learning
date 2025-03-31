@@ -43,7 +43,7 @@ public class ExcelService {
 
     /** 联动下拉框 */
     @Nonnull
-    private static List<ExcelCascadeOption> getExcelCascadeOptions() {
+    public static List<ExcelCascadeOption> getExcelCascadeOptions() {
         List<ExcelCascadeOption> nameCascadeList = new ArrayList<>();
         ExcelCascadeOption excelCascadeOption = new ExcelCascadeOption("第一层1");
 

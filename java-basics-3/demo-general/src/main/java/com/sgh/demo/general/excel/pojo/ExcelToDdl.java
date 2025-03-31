@@ -36,4 +36,16 @@ public class ExcelToDdl extends EasyExcelClassTemplate {
     @ExcelDropDown({"是", "否"})
     @ExcelProperty("是否主键")
     private String primaryKey = "";
+
+    @ExcelDropDown(value = {"选项1", "选项2", "选项3"}, multiple = true)
+    @ExcelProperty("测试多选下拉框")
+    private String testMultiSelect = "";
+
+    @ExcelDropDown(cascadeGroupName = "test")
+    @ExcelProperty("测试联动下拉框1")
+    private String testCascade1 = "";
+
+    @ExcelDropDown(cascadeGroupName = "test")
+    @ExcelProperty("测试联动下拉框2")
+    private String testCascade2 = "";
 }
