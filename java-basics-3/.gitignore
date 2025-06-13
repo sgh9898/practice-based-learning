@@ -1,31 +1,18 @@
-# 通用
-/logs/
-/target
-target/
-
-# 保留的文件(从 ignore 中排除)
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**
-
-# test
-**/src/test/**
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
+#---------- IntelliJ IDEA ----------#
+.idea/
 *.iml
+out/
+*.iws
 *.ipr
 
-### NetBeans ###
+#---------- Eclipse ----------#
+.settings/
+.eclipse
+.myeclipse
+.classpath
+.project
+
+#---------- NetBeans ----------#
 /dist/
 /.nb-gradle/
 /nbbuild/
@@ -33,8 +20,42 @@ target/
 /nbproject/private/
 build/
 
-### VS Code ###
+#---------- VS Code ----------#
 .vscode/
 
-### Mac OS ###
+#---------- Mac OS ----------#
 .DS_Store
+
+#---------- Class ----------#
+target/
+*.class
+.flattened-pom.xml
+
+#---------- 日志 ----------#
+*.log
+logs/
+
+#---------- STS ----------#
+.apt_generated
+.factorypath
+.settings
+.springBeans
+.sts4-cache
+
+#---------- BlueJ ----------#
+*.ctxt
+
+#---------- Mobile Tools for Java (J2ME) ----------#
+.mtj.tmp/
+
+#---------- Package ----------#
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+hs_err_pid*
+

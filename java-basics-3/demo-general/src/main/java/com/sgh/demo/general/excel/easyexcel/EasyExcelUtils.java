@@ -20,8 +20,8 @@ import com.sgh.demo.general.excel.easyexcel.constants.ExcelHeadRulesEnums;
 import com.sgh.demo.general.excel.easyexcel.handler.*;
 import com.sgh.demo.general.excel.easyexcel.listener.ExcelListener;
 import com.sgh.demo.general.excel.easyexcel.listener.ExcelNoModelListener;
-import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelExportDto;
-import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelNoModelExportDto;
+import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelExportDTO;
+import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelNoModelExportDTO;
 import com.sgh.demo.general.excel.easyexcel.pojo.ExcelCascadeOption;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -57,7 +57,7 @@ import java.util.*;
  *     * 导出数据: {@link #exportData}, 默认的"报错信息"列会被屏蔽
  *     * 导出报错数据: {@link #exportErrorExcel}, 不再屏蔽默认的"报错信息"列
  *   3. 自定义导出:
- *     1) 配置参数(部分未列出): {@link EasyExcelExportDto}
+ *     1) 配置参数(部分未列出): {@link EasyExcelExportDTO}
  *     2) 导出:
  *       * 常规导出: {@link #exportLocalExcel}, 默认的"报错信息"列会被屏蔽
  *       * 分页导出: {@link #writeSheet}--在新的一页写入数据, 数据写入全部完成后必须手动调用 {@link #closeExcel} 进行关闭
@@ -70,7 +70,7 @@ import java.util.*;
  *     * 导出空白模板: {@link #noModelExportTemplate}
  *     * 导出数据: {@link #noModelExportData}
  *   3. 自定义导出:
- *     1) 配置常用参数(部分未列出): {@link EasyExcelNoModelExportDto}
+ *     1) 配置常用参数(部分未列出): {@link EasyExcelNoModelExportDTO}
  *     2) 导出:
  *       * 常规导出: {@link #noModelExportExcel}
  *       * 分页导出: {@link #noModelWriteSheet}--在新的一页写入数据, 数据写入全部完成后必须手动调用 {@link #closeExcel} 进行关闭 </pre>
@@ -262,7 +262,7 @@ public class EasyExcelUtils {
      * @param exportDto     Excel 导出参数
      */
     public static <T> void exportExcel(HttpServletRequest request, HttpServletResponse response,
-                                       Class<T> excelClass, @Nullable List<T> excelDataList, EasyExcelExportDto exportDto) {
+                                       Class<T> excelClass, @Nullable List<T> excelDataList, EasyExcelExportDTO exportDto) {
         // 默认排除"错误信息"列
         exportDto.getExcludedCols().add(ExcelConstants.DEFAULT_ERROR_PARAM);
 
@@ -277,7 +277,7 @@ public class EasyExcelUtils {
      * @param excelDataList 数据, 格式需与 excelClass 保持一致
      * @param exportDto     Excel 导出参数
      */
-    public static <T> void exportLocalExcel(@Nullable String fileDir, Class<T> excelClass, @Nullable List<T> excelDataList, EasyExcelExportDto exportDto) {
+    public static <T> void exportLocalExcel(@Nullable String fileDir, Class<T> excelClass, @Nullable List<T> excelDataList, EasyExcelExportDTO exportDto) {
         // 默认排除"错误信息"列
         exportDto.getExcludedCols().add(ExcelConstants.DEFAULT_ERROR_PARAM);
 
@@ -296,7 +296,7 @@ public class EasyExcelUtils {
     public static <T> void exportData(HttpServletRequest request, HttpServletResponse response,
                                       @Nullable String fileName, Class<T> excelClass, @Nullable List<T> excelDataList) {
         // 配置参数
-        EasyExcelExportDto exportDto = new EasyExcelExportDto();
+        EasyExcelExportDTO exportDto = new EasyExcelExportDTO();
         exportDto.setFileName(fileName);
         exportDto.setSheetName(ExcelConstants.DEFAULT_SHEET_NAME);
         // 默认排除"错误信息"列
@@ -315,7 +315,7 @@ public class EasyExcelUtils {
      */
     public static <T> void exportLocalData(@Nullable String fileDir, @Nullable String fileName, Class<T> excelClass, @Nullable List<T> excelDataList) {
         // 配置参数
-        EasyExcelExportDto exportDto = new EasyExcelExportDto();
+        EasyExcelExportDTO exportDto = new EasyExcelExportDTO();
         exportDto.setFileName(fileName);
         exportDto.setSheetName(ExcelConstants.DEFAULT_SHEET_NAME);
         // 默认排除"错误信息"列
@@ -334,7 +334,7 @@ public class EasyExcelUtils {
      * @param exportDto     Excel 导出参数
      */
     public static <T> void exportErrorExcel(HttpServletRequest request, HttpServletResponse response,
-                                            Class<T> excelClass, @Nullable List<T> excelDataList, EasyExcelExportDto exportDto) {
+                                            Class<T> excelClass, @Nullable List<T> excelDataList, EasyExcelExportDTO exportDto) {
         baseExportExcel(request, response, null, excelClass, exportDto, excelDataList);
     }
 
@@ -350,7 +350,7 @@ public class EasyExcelUtils {
     public static void exportTemplate(HttpServletRequest request, HttpServletResponse response,
                                       @Nullable String fileName, Class<?> excelClass, @Nullable String note) {
         // 配置参数
-        EasyExcelExportDto exportDto = new EasyExcelExportDto();
+        EasyExcelExportDTO exportDto = new EasyExcelExportDTO();
         exportDto.setFileName(fileName);
         exportDto.setSheetName(ExcelConstants.DEFAULT_SHEET_NAME);
         exportDto.setNote(note);
@@ -368,7 +368,7 @@ public class EasyExcelUtils {
      * @param response  http servlet response
      * @param exportDto Excel 导出参数
      */
-    public static void noModelExportExcel(HttpServletRequest request, HttpServletResponse response, EasyExcelNoModelExportDto exportDto) {
+    public static void noModelExportExcel(HttpServletRequest request, HttpServletResponse response, EasyExcelNoModelExportDTO exportDto) {
         noModelBaseExportExcel(request, response, null, exportDto);
     }
 
@@ -378,7 +378,7 @@ public class EasyExcelUtils {
      * @param fileDir   导出文件目录
      * @param exportDto Excel 导出参数
      */
-    public static void noModelExportLocalExcel(String fileDir, EasyExcelNoModelExportDto exportDto) {
+    public static void noModelExportLocalExcel(String fileDir, EasyExcelNoModelExportDTO exportDto) {
         noModelBaseExportExcel(null, null, fileDir, exportDto);
     }
 
@@ -396,7 +396,7 @@ public class EasyExcelUtils {
     public static void noModelExportData(HttpServletRequest request, HttpServletResponse response, @Nullable String fileName,
                                          List<String> headList, @Nullable Map<String, String> enToCnHeadMap, @Nullable List<Map<String, Object>> dataList) {
         // 配置参数
-        EasyExcelNoModelExportDto exportDto = new EasyExcelNoModelExportDto();
+        EasyExcelNoModelExportDTO exportDto = new EasyExcelNoModelExportDTO();
         exportDto.setFileName(fileName);
         exportDto.setEnSimpleHeadList(headList);
         if (enToCnHeadMap != null) {
@@ -422,7 +422,7 @@ public class EasyExcelUtils {
     public static void noModelExportLocalData(String fileDir, @Nullable String fileName,
                                               List<String> headList, @Nullable Map<String, String> enToCnHeadMap, @Nullable List<Map<String, Object>> dataList) {
         // 配置参数
-        EasyExcelNoModelExportDto exportDto = new EasyExcelNoModelExportDto();
+        EasyExcelNoModelExportDTO exportDto = new EasyExcelNoModelExportDTO();
         exportDto.setFileName(fileName);
         exportDto.setEnSimpleHeadList(headList);
         if (dataList != null) {
@@ -447,7 +447,7 @@ public class EasyExcelUtils {
     public static void noModelExportTemplate(HttpServletRequest request, HttpServletResponse response,
                                              @Nullable String fileName, List<String> headList, @Nullable String note) {
         // 配置参数
-        EasyExcelNoModelExportDto exportDto = new EasyExcelNoModelExportDto();
+        EasyExcelNoModelExportDTO exportDto = new EasyExcelNoModelExportDTO();
         exportDto.setFileName(fileName);
         exportDto.setEnSimpleHeadList(headList);
         exportDto.setNote(note);
@@ -465,7 +465,7 @@ public class EasyExcelUtils {
      * @param dataList   表内数据
      * @param exportDto  Excel 导出参数
      */
-    public void writeSheet(Class<?> excelClass, List<?> dataList, EasyExcelExportDto exportDto) {
+    public void writeSheet(Class<?> excelClass, List<?> dataList, EasyExcelExportDTO exportDto) {
         // 默认排除"错误信息"列
         exportDto.getExcludedCols().add(ExcelConstants.DEFAULT_ERROR_PARAM);
         baseWriteSheet(excelWriter, excelClass, sheetIndex, exportDto, dataList);
@@ -473,7 +473,7 @@ public class EasyExcelUtils {
     }
 
     /** [不指定 ExcelClass] 分页导出 Excel: 写入新的 sheet, 全部导出完成后必须手动调用 {@link #closeExcel} 关闭流 */
-    public void noModelWriteSheet(EasyExcelNoModelExportDto exportDto) {
+    public void noModelWriteSheet(EasyExcelNoModelExportDTO exportDto) {
         noModelBaseWriteSheet(excelWriter, sheetIndex, exportDto);
         sheetIndex++;
     }
@@ -525,7 +525,7 @@ public class EasyExcelUtils {
             if (!listener.getInvalidList().isEmpty() && request != null && response != null) {
                 if (Boolean.TRUE.equals(exportError)) {
                     // 导出包含报错的 Excel
-                    EasyExcelExportDto exportDto = new EasyExcelExportDto();
+                    EasyExcelExportDTO exportDto = new EasyExcelExportDTO();
                     exportDto.setFileName(errorFileName);
                     baseExportExcel(request, response, null, excelClass, exportDto, listener.getInvalidList());
                     return null;
@@ -583,7 +583,7 @@ public class EasyExcelUtils {
      * @param fileDir   导出文件目录
      * @param exportDto Excel 导出参数
      */
-    private static void noModelBaseExportExcel(HttpServletRequest request, HttpServletResponse response, String fileDir, EasyExcelNoModelExportDto exportDto) {
+    private static void noModelBaseExportExcel(HttpServletRequest request, HttpServletResponse response, String fileDir, EasyExcelNoModelExportDTO exportDto) {
         // 创建 excel writer
         String fileName = exportDto.getFileName();
         OutputStream outputStream = configureExcelFileName(request, response, fileDir, fileName, exportDto.getUseExcel07());
@@ -606,7 +606,7 @@ public class EasyExcelUtils {
      * @param exportDto   Excel 导出参数
      * @param dataList    表内数据
      */
-    private static void baseWriteSheet(ExcelWriter excelWriter, Class<?> excelClass, Integer sheetIndex, EasyExcelExportDto exportDto, @Nullable List<?> dataList) {
+    private static void baseWriteSheet(ExcelWriter excelWriter, Class<?> excelClass, Integer sheetIndex, EasyExcelExportDTO exportDto, @Nullable List<?> dataList) {
         // 动态下拉框
         Map<String, String[]> dynamicMenuMap = exportDto.getDynamicMenuMap();
         Map<Integer, String[]> indexedDynamicMenuMap = new HashMap<>();
@@ -710,7 +710,7 @@ public class EasyExcelUtils {
      * @param sheetIndex  [允许 null] 表序号
      * @param exportDto   excel 参数
      */
-    private static void noModelBaseWriteSheet(ExcelWriter excelWriter, Integer sheetIndex, EasyExcelNoModelExportDto exportDto) {
+    private static void noModelBaseWriteSheet(ExcelWriter excelWriter, Integer sheetIndex, EasyExcelNoModelExportDTO exportDto) {
         // 创建表单
         String sheetName = exportDto.getSheetName();
         String finalSheetName = StringUtils.isBlank(sheetName) ? "sheet" + sheetIndex : sheetName;
@@ -797,7 +797,7 @@ public class EasyExcelUtils {
      * @param dataList   表内数据, 不填充传 null 即可
      */
     private static void baseExportExcel(HttpServletRequest request, HttpServletResponse response, String fileDir, Class<?> excelClass,
-                                        EasyExcelExportDto exportDto, @Nullable List<?> dataList) {
+                                        EasyExcelExportDTO exportDto, @Nullable List<?> dataList) {
         // 创建 excel writer
         ExcelWriter excelWriter;
         String fileName = exportDto.getFileName();
@@ -912,7 +912,7 @@ public class EasyExcelUtils {
      * @param cascadeMenuIndexMap      记录联动下拉框在 Excel 中的位置, Map(组名, 列)
      * @param indexMultipleDropDownSet 记录多选框的列序号
      */
-    private static void configureDropDownMenus(Class<?> targetClass, EasyExcelExportDto exportDto,
+    private static void configureDropDownMenus(Class<?> targetClass, EasyExcelExportDTO exportDto,
                                                @NonNull Map<String, String[]> dynamicMenuMap, @NonNull Map<Integer, String[]> indexedDynamicMenuMap,
                                                @NonNull Map<String, List<Integer>> cascadeMenuIndexMap, @NonNull Set<Integer> indexMultipleDropDownSet) {
 
@@ -941,7 +941,7 @@ public class EasyExcelUtils {
      * @param finalDataList 整理后的数据
      * @param orderedEnHead 整理后的最底层英文列名
      */
-    private static void setHeadAndDataNoModel(EasyExcelNoModelExportDto exportDto, List<List<String>> cnHeadList,
+    private static void setHeadAndDataNoModel(EasyExcelNoModelExportDTO exportDto, List<List<String>> cnHeadList,
                                               List<List<Object>> finalDataList, List<String> orderedEnHead) {
         // 不允许列名为空
         if (exportDto.getEnSimpleHeadList().isEmpty() && exportDto.getEnHeadList().isEmpty()) {
@@ -972,7 +972,7 @@ public class EasyExcelUtils {
      * @param cnHeadList    整理后的中文列名
      * @param orderedEnHead 整理后的最底层英文列名
      */
-    private static List<String> configureEnglishHead(EasyExcelNoModelExportDto exportDto,
+    private static List<String> configureEnglishHead(EasyExcelNoModelExportDTO exportDto,
                                                      @NonNull List<List<String>> cnHeadList, @NonNull List<String> orderedEnHead) {
         // 获取列名对照
         Map<String, String> enToCnHeadMap = exportDto.getEnToCnHeadMap();
@@ -1035,7 +1035,7 @@ public class EasyExcelUtils {
      * @param indexMultipleDropDownSet 记录多选框的列序号
      * @param field                    当前处理的 ExcelClass 字段
      * @param index                    当前 Excel 列序号
-     * @param indexLeftShift           跳过的列数量(部分列会被 {@link EasyExcelExportDto#getExcludedCols()} 排除)
+     * @param indexLeftShift           跳过的列数量(部分列会被 {@link EasyExcelExportDTO#getExcludedCols()} 排除)
      */
 
     private static void configureExcelDropDown(Map<String, String[]> dynamicMenuMap, Map<Integer, String[]> indexedDynamicMenuMap,

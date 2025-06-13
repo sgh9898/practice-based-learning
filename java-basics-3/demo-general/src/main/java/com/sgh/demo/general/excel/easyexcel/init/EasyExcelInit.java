@@ -2,7 +2,7 @@ package com.sgh.demo.general.excel.easyexcel.init;
 
 import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
 import com.sgh.demo.general.excel.easyexcel.EasyExcelUtils;
-import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelExportDto;
+import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelExportDTO;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +21,7 @@ class EasyExcelInit {
     @PostConstruct
     public void init() {
         EasyExcelUtils excel = new EasyExcelUtils(new NullOutputStream());
-        EasyExcelExportDto exportDto = new EasyExcelExportDto();
+        EasyExcelExportDTO exportDto = new EasyExcelExportDTO();
         excel.writeSheet(EasyExcelClassTemplate.class, null, exportDto);
         excel.closeExcel();
     }

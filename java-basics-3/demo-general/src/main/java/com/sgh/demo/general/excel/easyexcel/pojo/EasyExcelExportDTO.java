@@ -19,7 +19,7 @@ import java.util.*;
  * @see EasyExcelClassTemplate 模板
  */
 @Data
-public class EasyExcelExportDto {
+public class EasyExcelExportDTO {
 
     /** 文件名, 无后缀时自动补充"时间 + .xlsx" */
     @Nullable

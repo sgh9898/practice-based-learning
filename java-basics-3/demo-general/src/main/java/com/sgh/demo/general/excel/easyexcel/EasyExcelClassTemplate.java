@@ -12,12 +12,13 @@ import com.alibaba.excel.enums.poi.VerticalAlignmentEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sgh.demo.general.excel.easyexcel.annotation.ExcelDropDown;
-import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelExportDto;
+import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelExportDTO;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Excel 模板类: extends 本类直接使用; 或将类注解与 defaultExcelErrorMessage 字段添加到 ExcelClass 中
@@ -27,7 +28,7 @@ import lombok.Data;
  *   2) 未配置 {@link ExcelProperty} 的列会自动忽略, 可用于控制导入/导出列
  * 2. 配置下拉框:
  *   1) 静态下拉框注解: {@link ExcelDropDown#value}
- *   2) 动态下拉框注解: {@link ExcelDropDown#dynamicMenuName}, 需要配置 {@link EasyExcelExportDto#getDynamicMenuMap()}
+ *   2) 动态下拉框注解: {@link ExcelDropDown#dynamicMenuName}, 需要配置 {@link EasyExcelExportDTO#getDynamicMenuMap()}
  * 3. 自动校验:
  *   1) 常用注解(注解中 message 作为未通过校验的返回信息): {@link NotNull}, {@link NotBlank}, {@link PositiveOrZero} 等
  *   2) 校验类注解目录: {@link jakarta.validation.constraints} </pre>
@@ -66,4 +67,36 @@ public abstract class EasyExcelClassTemplate {
     @HeadFontStyle(color = 1)
     @ExcelProperty("错误信息")
     public String defaultExcelErrorMessage;
+
+    /** 转换 bool 为 string */
+    protected String convertBoolToStr(Boolean bool) {
+        if (bool != null && bool) {
+            return "是";
+        } else {
+            return "否";
+        }
+    }
+
+    /** 转换 bool 为 string */
+    protected String convertBoolToStr(Integer bool) {
+        if (bool != null && bool == 1) {
+            return "是";
+        } else {
+            return "否";
+        }
+    }
+
+    /** 转换 string 为 bool */
+    protected boolean convertStrToBool(String str) {
+        return StringUtils.isNotBlank(str) && str.trim().equals("是");
+    }
+
+    /** 转换 string 为 int(1-true, 0-false) */
+    protected Integer convertStrToBoolInt(String str) {
+        if (StringUtils.isNotBlank(str) && str.trim().equals("是")) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 }

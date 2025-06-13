@@ -14,7 +14,7 @@ import java.util.*;
  * @version 2024/1/30
  */
 @Data
-public class EasyExcelNoModelExportDto {
+public class EasyExcelNoModelExportDTO {
 
     /** 文件名, 无后缀时自动补充"时间 + .xlsx" */
     @Nullable

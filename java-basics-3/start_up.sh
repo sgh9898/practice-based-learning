@@ -1,29 +1,31 @@
 #!/bin/bash
-# 常用 jar 包部署命令 -- Sgh 2024
+# Java 应用部署脚本 -- Sgh 2025
 
-# 使用说明: sh start_up.sh + 命令参数(省略命令参数时为[启动]或[重启])
+# 使用说明:
+#   sh start_up.sh [start|stop|restart|status|start_dev|start_prod]
 
 # 命令参数:
 # 1) start   启动(可省略)
 # 2) stop    停止
 # 3) restart 重启(可省略, 停止和启动 10s 间隔, 如间隔不足以关闭应用, 需要手动 stop/start)
 # 4) status  应用状态
-# 5) start_dev/start_prod    启动, 且指定配置文件
+# 5) start_dev/start_prod   启动, 且指定配置文件
 
-#------------------------- 可变参数 -------------------------
-
-# 启动参数: 
+#------------------------- 全局配置 -------------------------
+# 启动参数:
 # 1. Xms 启动时占用内存
 # 2. Xmx 占用内存最大值(通常与 Xms 一致)
 # 3. Xss 每个线程堆栈大小
-JAVA_OPTS="-server -Xms1g -Xmx1g -Xss512k"
+JAVA_OPTS="-server -Xms1g -Xmx1g -Xss512k -XX:+DisableExplicitGC -XX:LargePageSizeInBytes=128m"
 
-# jar 包, JAR_NAME 为空时可自动获取当前目录下唯一[.jar]文件
-JAR_NAME="" # 例: sample-0.0.1.jar
+# 控制台日志
+LOG_DIR="./logs"
+LOG_FILE="${LOG_DIR}/console_log_$(date +%Y%m%d).log"
 
-# 当前激活的配置文件, PROP_NAME 为空时可自动获取当前目录下唯一[.yaml]文件
-PROP_PREFIX="--spring.profiles.active=" # 配置文件前缀, 不要改动
-PROP_NAME="" # 激活的配置文件名, 例: dev
+# Java 应用名, JAR_NAME 为空时可自动获取当前目录下唯一的 [.jar] 文件
+JAR_NAME=""    # 例: sample-0.0.1.jar
+# 当前激活的配置文件, PROFILE_NAME 为空时可自动获取当前目录下唯一 [.yml] 文件
+PROFILE_NAME="" # 激活的配置文件名, 例: dev
 
 #------------------------- 工具类 -------------------------
 
@@ -56,9 +58,9 @@ auto_get_jar() {
     fi
 }
 
-# 自动获取当前目录下唯一[.yml]文件名称, 仅未设置 $PROD_NAME 时生效
+# 自动获取当前目录下唯一的 [.yml] 文件名称, 仅在未设置 $PROD_NAME 时生效
 auto_get_prop() {
-    if [ "$PROP_NAME" == "" ]; then
+    if [ "$PROFILE_NAME" == "" ]; then
         i=0
         for str in `ls *.yml`
         do
@@ -67,15 +69,21 @@ auto_get_prop() {
         done
         if [ ${#str_list[@]} -eq 1 ]; then
             # 文件名取中间部分
-            PROP_NAME="${str_list[0]}"
+            PROFILE_NAME="${str_list[0]}"
         else
-            echo "当前目录下有多个[.yaml]文件, 请手动设置 PROP_NAME 或清理多余[.yaml]文件."
+            echo "当前目录下有多个 [.yml] 文件, 无法自动识别, 请手动指定 PROFILE_NAME 或仅保留一个 [.yml] 文件."
             exit
         fi
     fi
-    PROP_NAME="${PROP_NAME#*-}"
-    PROP_NAME="${PROP_NAME%.yml}"
-    active_prop=$PROP_PREFIX$PROP_NAME
+
+    # 仅截取 application-{profile}.yml 中的 {profile} 部分
+    local trimmed_profile_name="${PROFILE_NAME#*-}"
+    if [ "$trimmed_profile_name" = "PROFILE_NAME" ]; then
+      active_prop=""
+    else
+      PROFILE_NAME="${PROFILE_NAME%.yml}"
+      active_prop=--spring.profiles.active="${PROFILE_NAME}"
+    fi
 }
 
 #------------------------- 主方法 -------------------------
@@ -86,7 +94,7 @@ start() {
         echo "${JAR_NAME} 已在运行, pid = ${pid}."
     else
         auto_get_prop
-        nohup java "${JAVA_OPTS}" -jar ./"${JAR_NAME}" "${active_prop}" > /dev/null 2>&1 &
+        nohup java "${JAVA_OPTS}" -jar ./"${JAR_NAME}" "${active_prop}" > "$LOG_FILE" 2>&1 &
         is_exist
         if [ $? -eq 0 ]; then
             echo "${JAR_NAME} 启动, pid = ${pid}."
@@ -103,7 +111,7 @@ start_dev() {
         echo "${JAR_NAME} 已在运行, pid = ${pid}."
     else
         auto_get_prop
-        nohup java "${JAVA_OPTS}" -jar ./"${JAR_NAME}" ${PROP_PREFIX}dev > /dev/null 2>&1 &
+        nohup java "${JAVA_OPTS}" -jar ./"${JAR_NAME}" --spring.profiles.active=dev > "$LOG_FILE" 2>&1 &
         is_exist
         if [ $? -eq 0 ]; then
             echo "${JAR_NAME} 启动, pid = ${pid}."
@@ -120,7 +128,7 @@ start_prod() {
         echo "${JAR_NAME} 已在运行, pid = ${pid}."
     else
         auto_get_prop
-        nohup java "${JAVA_OPTS}" -jar ./"${JAR_NAME}" ${PROP_PREFIX}prod > /dev/null 2>&1 &
+        nohup java "${JAVA_OPTS}" -jar ./"${JAR_NAME}" --spring.profiles.active=prod > "$LOG_FILE" 2>&1 &
         is_exist
         if [ $? -eq 0 ]; then
             echo "${JAR_NAME} 启动, pid = ${pid}."

@@ -22,9 +22,9 @@ import java.util.*;
 @Getter
 public class ExcelColumnWidthHandler extends AbstractColumnWidthStyleStrategy {
 
-    /** 最小列宽 */
-    private static final int MIN_COLUMN_WIDTH = 5;
-    /** 最大列宽 */
+    /** 最小列宽(字符, 2.54 mm) */
+    private static final int MIN_COLUMN_WIDTH = 15;
+    /** 最大列宽(字符, 2.54 mm) */
     private static final int MAX_COLUMN_WIDTH = 255;
 
     /** 列宽总表, Map(sheetIndex, Map(columnIndex, width)) */
