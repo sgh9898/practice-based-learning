@@ -1,27 +1,29 @@
 //package com.sgh.demo.general.quartz.quartz.config;
 //
-//import jakarta.annotation.Resource;
 //import org.quartz.Scheduler;
+//import org.springframework.beans.factory.annotation.Value;
 //import org.springframework.beans.factory.config.PropertiesFactoryBean;
 //import org.springframework.context.annotation.Bean;
 //import org.springframework.context.annotation.Configuration;
 //import org.springframework.core.io.ClassPathResource;
 //import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 //
+//import javax.annotation.Resource;
 //import java.io.IOException;
 //import java.util.Objects;
 //
-/// **
+///**
 // * Quartz 定时任务配置
 // *
 // * @author Song gh
 // * @version 2024/01/24
 // */
 //@Configuration
-//public class QuartzConfig {
+//public class QuartzConfig1 {
 //
 //    /** 配置文件路径, Resource 目录下 */
-//    private static final String PROP_PATH = "quartz.properties";
+//    @Value("${quartz.prop-path:/quartz.properties}")
+//    private String propPath;
 //
 //    @Resource
 //    private QuartzJobFactory jobFactory;
@@ -30,7 +32,7 @@
 //    public SchedulerFactoryBean schedulerFactoryBean() throws IOException {
 //        // 获取配置属性
 //        PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
-//        propertiesFactoryBean.setLocation(new ClassPathResource(PROP_PATH));
+//        propertiesFactoryBean.setLocation(new ClassPathResource(propPath));
 //        // 在 quartz.properties 中的属性被读取并注入后再初始化对象
 //        propertiesFactoryBean.afterPropertiesSet();
 //

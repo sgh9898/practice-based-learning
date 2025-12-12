@@ -5,7 +5,7 @@ import com.alibaba.excel.annotation.format.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sgh.demo.general.database.db.entity.DemoEntity;
-import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
+import com.sgh.demo.general.excel.easyexcel.BaseEasyExcelClassTemplate;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -25,7 +25,7 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
 @ApiModel("[Excel 导入/导出] 测试数据")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ExcelDemoEntity extends EasyExcelClassTemplate {
+public class ExcelDemoEntity extends BaseEasyExcelClassTemplate {
 
     @NotBlank(message = "名称未填写")
     @JsonAlias("name")

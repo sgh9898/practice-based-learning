@@ -99,7 +99,7 @@ public class BaseEasyExcelUtils {
      * @param file        文件
      * @param request     HttpServletRequest
      * @param response    HttpServletResponse
-     * @param excelClass  Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass  Excel 类, 推荐 extends {@link BaseEasyExcelClassTemplate}
      * @param listener    ExcelListener, 允许 extends {@link ExcelListener}
      * @param exportError 是否自动导出报错
      * @param errorList   不自动导出时用于保存报错(exportError == false)
@@ -379,13 +379,13 @@ public class BaseEasyExcelUtils {
         // 单表(不使用标题与自定义说明)且需要动态列名时, 需要在 writer 中应用 head 样式
         // 标题
         if (StringUtils.isNotBlank(exportDto.getTitle())) {
-            writeTitle(excelWriter, sheetBuilder.build(), EasyExcelClassTemplate.class, exportDto.getTitle(), validColumnNum, mainTableIndex);
+            writeTitle(excelWriter, sheetBuilder.build(), BaseEasyExcelClassTemplate.class, exportDto.getTitle(), validColumnNum, mainTableIndex);
             // tableIndex 顺沿
             mainTableIndex++;
         }
         // 自定义说明
         if (StringUtils.isNotBlank(exportDto.getNote())) {
-            writeNote(excelWriter, sheetBuilder.build(), EasyExcelClassTemplate.class, exportDto.getNote(), validColumnNum, mainTableIndex);
+            writeNote(excelWriter, sheetBuilder.build(), BaseEasyExcelClassTemplate.class, exportDto.getNote(), validColumnNum, mainTableIndex);
             // tableIndex 顺沿
             mainTableIndex++;
         }

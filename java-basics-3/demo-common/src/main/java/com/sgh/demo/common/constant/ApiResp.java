@@ -30,7 +30,7 @@ public class ApiResp {
     /** 状态码, {@link ResultStatus#getCode()} */
     private Integer code;
 
-    /** 返回信息 or 报错描述, {@link ResultStatus#getMessage()} */
+    /** 返回信息或报错描述, {@link ResultStatus#getMessage()} */
     private String message;
 
 // ------------------------------ 构造 ------------------------------

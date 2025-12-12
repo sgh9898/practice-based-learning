@@ -15,12 +15,12 @@ import javax.annotation.Resource;
 
 
 /**
- * Quartz 定时任务
+ * Quartz 任务调度
  *
  * @author Song gh on 2023/12/11.
  */
 @Slf4j
-@Api(tags = "Quartz 定时任务")
+@Api(tags = "Quartz 任务调度")
 @RestController
 @RequestMapping("/quartz")
 public class QuartzController {

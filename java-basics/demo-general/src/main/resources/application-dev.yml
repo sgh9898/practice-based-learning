@@ -41,7 +41,6 @@ spring:
   jpa:
     show-sql: true        # log 中打印 sql 语句, 便于排查错误
     open-in-view: false   # true = 保持数据库连接直至 controller 执行完
-
   task:
     # 线程池
     execution:
@@ -124,6 +123,45 @@ spring:
   # Thymeleaf
   thymeleaf:
     check-template-location: false
+  # Quartz 任务调度
+  quartz:
+    scheduler-name: quartzScheduler   # 调度器名称(全局, 定时任务会在同名调度器间自动分配且不会重复执行)
+    job-store-type: jdbc              # 存储方式: jdbc(数据库), memory(内存)
+    auto-startup: true                # 是否在初始化后自动启动定时任务
+    wait-for-jobs-to-complete-on-shutdown: true   # 是否等待所有定时任务执行完毕后再关闭
+    startup-delay: 5s                 # 定时任务启动延迟(需要等待整个程序启动完成时使用)
+    overwrite-existing-jobs: false    # 是否允许覆盖已存在的定时任务
+    properties:
+      org:
+        quartz:
+          # 调度器相关配置
+          scheduler:
+            instanceId: AUTO           # 实例id, AUTO = 自动生成
+          # JobStore 相关配置
+          jobStore:
+            dataSource: quartzDataSource    # 使用的数据源名称
+            class: org.quartz.impl.jdbcjobstore.JobStoreTX    # JobStore 实现类
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate  # 数据库"方言"
+            tablePrefix: QRTZ_              # 表前缀, 默认 QRTZ_
+            isClustered: true               # 是否是集群模式
+            clusterCheckinInterval: 30000   # 集群检查间隔(毫秒)
+            misfireThreshold: 60000         # 最多容忍一次执行晚 x(毫秒), 超时视为错过一次执行
+            useProperties: true             # JobDataMaps 仅使用 string 格式处理其中数据
+          # 线程池相关配置
+          threadPool:
+            class: org.quartz.simpl.SimpleThreadPool  # 线程池类型
+            threadCount: 10       # 线程池大小, 1 ~ 100
+            threadPriority: 5     # 线程优先级, 1(最小) ~ 10(最大), 默认 5
+          # 数据源配置
+          dataSource:
+            # 这里的数据源名称需要与上文 spring.quartz.properties.org.quartz.jobStore.dataSource 对应
+            quartzDataSource:
+              connectionProvider:
+                class: com.alibaba.druid.support.quartz.DruidQuartzConnectionProvider   # 连接池提供者
+              url: jdbc:mysql://localhost:3306/quartz_jobs?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowPublicKeyRetrieval=true
+              username: root
+              password: "xaTqi5!moNzx#noZcYr"
+              validationQuery: "select 1 from dual"   # 验证可用性的 sql 查询语句
 
 # 日志
 logging:

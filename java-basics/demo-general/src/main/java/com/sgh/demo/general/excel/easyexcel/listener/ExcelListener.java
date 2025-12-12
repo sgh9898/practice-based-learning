@@ -5,7 +5,7 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.metadata.data.ReadCellData;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ConverterUtils;
-import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
+import com.sgh.demo.general.excel.easyexcel.BaseEasyExcelClassTemplate;
 import com.sgh.demo.general.excel.easyexcel.constants.ExcelConstants;
 import lombok.Getter;
 import lombok.Setter;
@@ -85,8 +85,8 @@ public class ExcelListener<T> implements ReadListener<T> {
         String errorMessage = validate(excelLine);
         // 记录报错数据
         if (StringUtils.isNotBlank(errorMessage)) {
-            if (excelLine instanceof EasyExcelClassTemplate) {
-                ((EasyExcelClassTemplate) excelLine).setDefaultExcelErrorMessage(errorMessage);
+            if (excelLine instanceof BaseEasyExcelClassTemplate) {
+                ((BaseEasyExcelClassTemplate) excelLine).setDefaultExcelErrorMessage(errorMessage);
             } else {
                 for (Field currField : excelLine.getClass().getDeclaredFields()) {
                     if (currField.getName().equals(ExcelConstants.DEFAULT_ERROR_PARAM)) {
@@ -113,8 +113,8 @@ public class ExcelListener<T> implements ReadListener<T> {
         } else if (validList.isEmpty()) {
             try {
                 T tempExcel = excelClass.getDeclaredConstructor().newInstance();
-                if (tempExcel instanceof EasyExcelClassTemplate) {
-                    ((EasyExcelClassTemplate) tempExcel).setDefaultExcelErrorMessage("文件内容为空或列名不匹配");
+                if (tempExcel instanceof BaseEasyExcelClassTemplate) {
+                    ((BaseEasyExcelClassTemplate) tempExcel).setDefaultExcelErrorMessage("文件内容为空或列名不匹配");
                 } else {
                     for (Field currField : tempExcel.getClass().getDeclaredFields()) {
                         if (currField.getName().equals(ExcelConstants.DEFAULT_ERROR_PARAM)) {

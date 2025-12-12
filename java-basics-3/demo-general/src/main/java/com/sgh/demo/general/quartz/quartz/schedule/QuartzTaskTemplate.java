@@ -1,12 +1,14 @@
 package com.sgh.demo.general.quartz.quartz.schedule;
 
+import com.sgh.demo.general.quartz.quartz.annotation.QuartzScheduled;
 import com.sgh.demo.general.quartz.quartz.service.QuartzJobService;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
+import org.springframework.stereotype.Component;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * [Quartz 定时任务] 示例(新任务需要初始化至数据库才会激活)
@@ -21,14 +23,20 @@ import java.util.Date;
  */
 @Slf4j
 @DisallowConcurrentExecution
+@QuartzScheduled(
+        jobName = "demoTask",
+        jobGroup = "quartzDemoGroup",
+        cronExpression = "0 0/10 * * * ?",
+        description = "定时任务示例")
+@Component
 public class QuartzTaskTemplate implements Job {
 
     @Override
     public void execute(JobExecutionContext context) {
         try {
-            log.info("十分钟 Quartz 定时任务示例, 执行时间: {}", new Date());
+            log.info("执行定时任务 [定时任务示例], 执行时间: {}", LocalDateTime.now());
         } catch (Exception e) {
-            log.error("任务执行失败", e);
+            log.error("任务 [定时任务示例] 执行失败", e);
         }
     }
 }

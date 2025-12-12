@@ -1,7 +1,7 @@
 package com.sgh.demo.general.excel.pojo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
+import com.sgh.demo.general.excel.easyexcel.BaseEasyExcelClassTemplate;
 import com.sgh.demo.general.excel.easyexcel.annotation.ExcelDropDown;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ApiModel("Excel 转 sql 建表语句")
-public class ExcelToDdl extends EasyExcelClassTemplate {
+public class ExcelToDdl extends BaseEasyExcelClassTemplate {
 
     @ExcelProperty("参数名称")
     private String name;

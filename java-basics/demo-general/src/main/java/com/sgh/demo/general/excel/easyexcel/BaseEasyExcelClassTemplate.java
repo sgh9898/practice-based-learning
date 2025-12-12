@@ -38,15 +38,13 @@ import javax.validation.constraints.PositiveOrZero;
  */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-// ------------------------------ 格式 ------------------------------
 @HeadStyle(fillForegroundColor = 26)
 @HeadFontStyle(fontHeightInPoints = 13)
 @ContentStyle(wrapped = BooleanEnum.TRUE,
         verticalAlignment = VerticalAlignmentEnum.CENTER,
         horizontalAlignment = HorizontalAlignmentEnum.CENTER)
 @ContentFontStyle(fontHeightInPoints = 12)
-// ============================== 格式 End ==============================
-public abstract class EasyExcelClassTemplate {
+public abstract class BaseEasyExcelClassTemplate {
 
 //    示例:
 //    @ColumnWidth(50)                         // 手动指定列宽

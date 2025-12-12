@@ -1,6 +1,6 @@
 package com.sgh.demo.general.excel.easyexcel.constants;
 
-import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
+import com.sgh.demo.general.excel.easyexcel.BaseEasyExcelClassTemplate;
 
 /**
  * EasyExcel 相关常数
@@ -13,7 +13,7 @@ public class ExcelConstants {
     /**
      * [默认字段] 报错信息
      *
-     * @see EasyExcelClassTemplate#defaultExcelErrorMessage
+     * @see BaseEasyExcelClassTemplate#defaultExcelErrorMessage
      */
     public static final String DEFAULT_ERROR_PARAM = "defaultExcelErrorMessage";
 
@@ -26,7 +26,7 @@ public class ExcelConstants {
     /**
      * [校验规则/严格] 当前行 head 中存在 @ExcelProperty 定义的有效字段, 且不存在未被定义的字段
      *
-     * @see EasyExcelClassTemplate
+     * @see BaseEasyExcelClassTemplate
      * @see com.alibaba.excel.annotation.ExcelProperty
      */
     public static final Integer HEAD_RULES_STRICTLY_CONTAINS = 0;
@@ -34,7 +34,7 @@ public class ExcelConstants {
     /**
      * [校验规则/宽松] 当前行 head 中存在 @ExcelProperty 定义的有效字段, 自动忽略未被定义的字段
      *
-     * @see EasyExcelClassTemplate
+     * @see BaseEasyExcelClassTemplate
      * @see com.alibaba.excel.annotation.ExcelProperty
      */
     public static final Integer HEAD_RULES_CONTAINS = 1;

@@ -2,7 +2,7 @@ package com.sgh.demo.general.excel.pojo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.format.DateTimeFormat;
-import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
+import com.sgh.demo.general.excel.easyexcel.BaseEasyExcelClassTemplate;
 import com.sgh.demo.general.excel.easyexcel.annotation.ExcelDropDown;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
@@ -20,7 +20,7 @@ import java.util.Date;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ApiModel("EasyExcel 测试类")
-public class EasyExcelTest extends EasyExcelClassTemplate {
+public class EasyExcelTest extends BaseEasyExcelClassTemplate {
 
     @NotNull(message = "参数名称不可为空")
     @ExcelProperty("参数名称")

@@ -8,12 +8,12 @@ import lombok.Data;
 import java.util.Map;
 
 /**
- * [DTO] Quartz 定时任务
+ * [DTO] Quartz 任务调度
  *
  * @author Song gh on 2023/12/11.
  */
 @Data
-@ApiModel("[DTO] Quartz 定时任务")
+@ApiModel("[DTO] Quartz 任务调度")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class QuartzConfigDto {
 

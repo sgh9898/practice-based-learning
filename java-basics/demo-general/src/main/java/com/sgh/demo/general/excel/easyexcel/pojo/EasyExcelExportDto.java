@@ -1,7 +1,7 @@
 package com.sgh.demo.general.excel.easyexcel.pojo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
+import com.sgh.demo.general.excel.easyexcel.BaseEasyExcelClassTemplate;
 import com.sgh.demo.general.excel.easyexcel.annotation.ExcelDropDown;
 import com.sgh.demo.general.excel.easyexcel.handler.ExcelColWidthStrategy;
 import lombok.Data;
@@ -16,7 +16,7 @@ import java.util.*;
  *
  * @author Song gh
  * @version 2024/1/30
- * @see EasyExcelClassTemplate 模板
+ * @see BaseEasyExcelClassTemplate 模板
  */
 @Data
 public class EasyExcelExportDto {

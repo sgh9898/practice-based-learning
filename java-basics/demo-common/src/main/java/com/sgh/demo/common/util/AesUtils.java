@@ -41,7 +41,7 @@ public class AesUtils {
     private static final String DEFAULT_IV_STR = "kvJRbJz7x5ycy+4V";
 
     /** 默认的 AES 加密/解密算法, 推荐使用 GCM */
-    private static final AesAlgorithms DEFAULT_AES_ALGORITHM = AesAlgorithms.CBC;
+    private static final AesAlgorithms DEFAULT_AES_ALGORITHM = AesAlgorithms.AES;
 
     /** 生成随机 Key 与 IV */
     public static void main(String[] args) {
@@ -74,7 +74,7 @@ public class AesUtils {
         byte[] result;
         try {
             Cipher cipher = Cipher.getInstance(AesAlgorithms.AES.getAlgorithms());
-            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(Arrays.copyOf(DigestUtils.sha1(keyStr), 16), "AES"));
+            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(Arrays.copyOf(DigestUtils.sha1(keyStr), 16), DEFAULT_AES_ALGORITHM.getAlgorithms()));
             result = cipher.doFinal(java.util.Base64.getDecoder().decode(encryptedStr.trim()));
             return new String(result, StandardCharsets.UTF_8);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException |
@@ -169,7 +169,7 @@ public class AesUtils {
         try {
             Cipher cipher = Cipher.getInstance(AesAlgorithms.AES.getAlgorithms());
             byte[] keyByte = Arrays.copyOf(DigestUtils.sha1(keyStr), 16);
-            SecretKey secretKey = new SecretKeySpec(keyByte, "AES");
+            SecretKey secretKey = new SecretKeySpec(keyByte, DEFAULT_AES_ALGORITHM.getAlgorithms());
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             encryptedStr = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException
@@ -249,7 +249,7 @@ public class AesUtils {
     private static Cipher generateCipher(String keyStr, String ivStr, int encryptMode, AesAlgorithms algorithms) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
         Cipher cipher = Cipher.getInstance(algorithms.getAlgorithms());
         // key
-        SecretKey secretKey = new SecretKeySpec(keyStr.getBytes(), "AES");
+        SecretKey secretKey = new SecretKeySpec(keyStr.getBytes(), DEFAULT_AES_ALGORITHM.getAlgorithms());
         // iv
         byte[] ivBytes = ivStr.getBytes(StandardCharsets.UTF_8);
         AlgorithmParameterSpec iv = null;

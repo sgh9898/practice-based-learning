@@ -3,16 +3,16 @@ package com.sgh.demo.general.quartz.quartz.service;
 import java.util.Map;
 
 /**
- * Quartz 定时任务
+ * [功能] Quartz 任务调度
  *
  * @author Song gh
- * @version 2024/01/24
+ * @version 2024/1/24
  */
 public interface QuartzJobService {
 
     /**
-     * [新增/更新] 添加任务并启动(任务已存在时转为更新)
-     * <br> 任务严格遵照设定时间执行, 不会在启动时执行一次
+     * [新增/更新] 添加定时任务并启动(任务已存在时转为更新)
+     * <br> 任务严格遵照设定时间执行, 不会在启动时额外执行一次
      *
      * @param clazzName 定时任务 class 名称, 需要 implements {@link org.quartz.Job}
      * @param jobName   定时任务名
@@ -50,6 +50,7 @@ public interface QuartzJobService {
      *
      * @param jobName   定时任务名
      * @param groupName 定时任务组名
+     * @return true-存在, false-不存在
      */
     boolean checkJobExists(String jobName, String groupName);
 

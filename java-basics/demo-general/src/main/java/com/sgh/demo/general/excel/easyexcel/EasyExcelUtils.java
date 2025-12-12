@@ -26,7 +26,7 @@ import java.util.Map;
  * EasyExcel 工具类
  * <pre>
  * [使用自定义的实体类 ExcelClass]
- *   0. 前置需求: {@code extends} {@link EasyExcelClassTemplate}, 或将类注解与"defaultExcelErrorMessage"字段直接配置于实体类中
+ *   0. 前置需求: {@code extends} {@link BaseEasyExcelClassTemplate}, 或将类注解与"defaultExcelErrorMessage"字段直接配置于实体类中
  *   1. 导入:
  *     * 导入并暂存报错的数据: {@link #importExcelSaveError}
  *     * 导入并下载报错的数据: {@link #importExcel}
@@ -108,7 +108,7 @@ public class EasyExcelUtils {
      * @param file       文件
      * @param request    HttpServletRequest
      * @param response   HttpServletResponse
-     * @param excelClass Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass Excel 类, 推荐 extends {@link BaseEasyExcelClassTemplate}
      * @return 全部通过校验时--返回数据; 存在报错数据时--返回空白List, 并以 Excel 形式下载报错数据
      */
     public static <T> List<T> importExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass) {
@@ -129,7 +129,7 @@ public class EasyExcelUtils {
      * @param file       文件
      * @param request    HttpServletRequest
      * @param response   HttpServletResponse
-     * @param excelClass excel 实体类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass excel 实体类, 推荐 extends {@link BaseEasyExcelClassTemplate}
      * @param errorList  存储报错信息
      * @return 返回通过校验的数据, 未通过校验的数据存储于 errorList 中
      */
@@ -186,7 +186,7 @@ public class EasyExcelUtils {
      *
      * @param request       HttpServletRequest
      * @param response      HttpServletResponse
-     * @param excelClass    Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass    Excel 类, 推荐 extends {@link BaseEasyExcelClassTemplate}
      * @param excelDataList 数据, 格式需与 excelClass 保持一致
      * @param exportDto     Excel 导出参数
      */
@@ -204,7 +204,7 @@ public class EasyExcelUtils {
      * @param request       HttpServletRequest
      * @param response      HttpServletResponse
      * @param fileName      文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
-     * @param excelClass    Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass    Excel 类, 推荐 extends {@link BaseEasyExcelClassTemplate}
      * @param excelDataList 数据, 格式需与 excelClass 保持一致
      */
     public static <T> void exportData(HttpServletRequest request, HttpServletResponse response,
@@ -225,7 +225,7 @@ public class EasyExcelUtils {
      * @param request       HttpServletRequest
      * @param response      HttpServletResponse
      * @param fileName      文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
-     * @param excelClass    Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass    Excel 类, 推荐 extends {@link BaseEasyExcelClassTemplate}
      * @param excelDataList 数据, 格式需与 excelClass 保持一致
      */
     public static <T> void exportErrorData(HttpServletRequest request, HttpServletResponse response,
@@ -243,7 +243,7 @@ public class EasyExcelUtils {
      *
      * @param request       HttpServletRequest
      * @param response      HttpServletResponse
-     * @param excelClass    Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass    Excel 类, 推荐 extends {@link BaseEasyExcelClassTemplate}
      * @param excelDataList 数据, 格式需与 excelClass 保持一致
      * @param exportDto     Excel 导出参数
      */
@@ -258,7 +258,7 @@ public class EasyExcelUtils {
      * @param request    HttpServletRequest
      * @param response   HttpServletResponse
      * @param fileName   文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
-     * @param excelClass Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass Excel 类, 推荐 extends {@link BaseEasyExcelClassTemplate}
      * @param note       需要添加的填表说明, 位于列名之上
      */
     public static void exportTemplate(HttpServletRequest request, HttpServletResponse response,
@@ -339,7 +339,7 @@ public class EasyExcelUtils {
     /**
      * 分页导出 Excel: 写入新的 sheet, 全部导出完成后必须手动调用 {@link #closeExcel} 关闭流
      *
-     * @param excelClass excel 实体类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass excel 实体类, 推荐 extends {@link BaseEasyExcelClassTemplate}
      * @param dataList   表内数据
      * @param exportDto  Excel 导出参数
      */

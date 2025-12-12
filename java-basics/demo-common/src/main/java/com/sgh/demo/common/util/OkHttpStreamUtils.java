@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
  * @since 2024/11/21
  */
 @Slf4j
-public class OkHttpUtils {
+public class OkHttpStreamUtils {
 
 // ------------------------------ 参数 ------------------------------
 

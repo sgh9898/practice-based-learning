@@ -1,6 +1,6 @@
 package com.sgh.demo.general.quartz.quartz.service.impl;
 
-import com.sgh.demo.general.quartz.quartz.service.QuartzJobService;
+import com.pubinfo.edu.schedule.quartz.service.QuartzJobService;
 import jakarta.annotation.Resource;
 import org.quartz.*;
 import org.springframework.stereotype.Service;
@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 /**
- * [功能] Quartz 定时任务
+ * [功能] Quartz 任务调度
  *
  * @author Song gh
- * @version 2024/01/24
+ * @since 2024/1/24
  */
 @Service
 public class QuartzJobServiceImpl implements QuartzJobService {
@@ -21,12 +21,12 @@ public class QuartzJobServiceImpl implements QuartzJobService {
 
     /**
      * [新增/更新] 添加任务并启动(任务已存在时转为更新)
-     * <br> 任务严格遵照设定时间执行, 不会在启动时执行一次
+     * <br> 任务严格遵照设定时间执行, 不会在启动时额外执行一次
      *
-     * @param clazzName 定时任务 class 名称, 需要 implements {@link org.quartz.Job}
+     * @param clazzName 定时任务 class 名称, 需要 implements {@link Job}
      * @param jobName   定时任务名
      * @param groupName 定时任务组名
-     * @param cronExp   时间表达式, {@link org.quartz.CronExpression}
+     * @param cronExp   时间表达式, {@link CronExpression}
      * @param jobParams 向定时任务传递的参数
      */
     @Override
@@ -44,10 +44,10 @@ public class QuartzJobServiceImpl implements QuartzJobService {
      * [新增] 添加任务并启动(任务已存在时不做任何操作)
      * <br> 任务严格遵照设定时间执行, 不会在启动时额外执行一次
      *
-     * @param clazzName 定时任务 class 名称, 需要 implements {@link org.quartz.Job}
+     * @param clazzName 定时任务 class 名称, 需要 implements {@link Job}
      * @param jobName   定时任务名
      * @param groupName 定时任务组名
-     * @param cronExp   时间表达式, {@link org.quartz.CronExpression}
+     * @param cronExp   时间表达式, {@link CronExpression}
      * @param jobParams 向定时任务传递的参数
      */
     @Override
@@ -88,7 +88,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
      *
      * @param jobName   定时任务名
      * @param groupName 定时任务组名
-     * @param cronExp   时间表达式, {@link org.quartz.CronExpression}
+     * @param cronExp   时间表达式, {@link CronExpression}
      * @param jobParams 向定时任务传递的参数
      */
     @Override
@@ -119,6 +119,7 @@ public class QuartzJobServiceImpl implements QuartzJobService {
      *
      * @param jobName   定时任务名
      * @param groupName 定时任务组名
+     * @return true-存在, false-不存在
      */
     @Override
     public boolean checkJobExists(String jobName, String groupName) {
