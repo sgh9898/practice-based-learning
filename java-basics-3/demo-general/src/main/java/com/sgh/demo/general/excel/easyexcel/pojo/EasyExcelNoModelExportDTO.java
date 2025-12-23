@@ -11,7 +11,7 @@ import java.util.*;
  * [不指定 ExcelClass] EasyExcel 导出时的参数配置
  *
  * @author Song gh
- * @version 2024/1/30
+ * @since 2024/9/20
  */
 @Data
 public class EasyExcelNoModelExportDTO {
@@ -38,7 +38,7 @@ public class EasyExcelNoModelExportDTO {
      * <br> 2. 优先级低于 {@link #enHeadList 多行英文列名}
      */
     @NonNull
-    private List<String> enSimpleHeadList = new LinkedList<>();
+    private List<String> enSimpleHeadList;
 
     /**
      * 多行英文列名, 相邻单元格的同名列名会自动合并
@@ -48,19 +48,19 @@ public class EasyExcelNoModelExportDTO {
      * 3. 示例: [["标题1", "标题2"], ["标题1", "标题3"]], 其中同名的"标题1"会自动合并, 下方为"标题2"和"标题3" </pre>
      */
     @NonNull
-    private List<List<String>> enHeadList = new LinkedList<>();
+    private List<List<String>> enHeadList;
 
     /** 列名英文转中文, 配合 {@link #enSimpleHeadList 单行英文列名} 或 {@link #enHeadList 多行英文列名} 生效 */
     @NonNull
-    private Map<String, String> enToCnHeadMap = new HashMap<>();
+    private Map<String, String> enToCnHeadMap;
 
     /** 下拉框, Map(英文列名, 选项) */
     @NonNull
-    private Map<String, String[]> dropDownMap = new HashMap<>();
+    private Map<String, String[]> dropDownMap;
 
     /** 需要重点标注的列名(英文, 标为橘红色) */
     @NonNull
-    private Set<String> importantHeadSet = new HashSet<>();
+    private Set<String> importantHeadSet;
 
     /**
      * 数据
@@ -68,7 +68,7 @@ public class EasyExcelNoModelExportDTO {
      * <br> 2. key 需要在 {@link #enSimpleHeadList 单行英文列名} 或 {@link #enHeadList 多行英文列名} 之中
      */
     @NonNull
-    private List<Map<String, Object>> dataList = new LinkedList<>();
+    private List<Map<String, Object>> dataList;
 
     /** 列宽选取方式 */
     @Nullable
@@ -76,16 +76,16 @@ public class EasyExcelNoModelExportDTO {
 
     /** 是否自动调整行高(需要手动指定时设为 false 即可) */
     @Nullable
-    private Boolean autoRowHeight = true;
+    private Boolean autoRowHeight;
 
     /**
-     * 是否使用 2007 版 Excel(仅在出现兼容问题时考虑使用, 默认使用 2003 版)
+     * 是否使用 xlsx 版 Excel(仅在出现兼容问题时考虑使用, 默认使用 xls 版)
      * <pre>
-     * 2007 版 excel 对应 ContentType: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-     * 2003 版 excel 对应 ContentType: application/vnd.ms-excel </pre>
+     * xlsx 版 excel 对应 ContentType: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+     * xls 版 excel 对应 ContentType: application/vnd.ms-excel </pre>
      */
     @NonNull
-    private Boolean useExcel07 = false;
+    private Boolean useXlsx;
 
     /**
      * 联动下拉框位置, 支持多组, Map(组名, 英文列名)
@@ -94,7 +94,7 @@ public class EasyExcelNoModelExportDTO {
      * 2. 需要配合 {@link #cascadeMenuMap 联动下拉框选项} 使用 </pre>
      */
     @NonNull
-    private Map<String, List<String>> cascadeColMap = new HashMap<>();
+    private Map<String, List<String>> cascadeColMap;
 
     /**
      * 联动下拉框选项, 支持多组, Map(组名, 选项)
@@ -103,5 +103,21 @@ public class EasyExcelNoModelExportDTO {
      * 2. 需要配合 {@link #cascadeColMap 联动下拉框位置} 使用 </pre>
      */
     @NonNull
-    private Map<String, List<ExcelCascadeOption>> cascadeMenuMap = new HashMap<>();
+    private Map<String, List<ExcelCascadeOption>> cascadeMenuMap;
+
+// ------------------------------ 构造 ------------------------------
+
+    /** [构造] 无参构造 */
+    public EasyExcelNoModelExportDTO() {
+        this.enSimpleHeadList = new LinkedList<>();
+        this.enHeadList = new LinkedList<>();
+        this.enToCnHeadMap = new HashMap<>(16);
+        this.dropDownMap = new HashMap<>(16);
+        this.importantHeadSet = new HashSet<>();
+        this.dataList = new LinkedList<>();
+        this.autoRowHeight = true;
+        this.useXlsx = false;
+        this.cascadeColMap = new HashMap<>(16);
+        this.cascadeMenuMap = new HashMap<>(16);
+    }
 }

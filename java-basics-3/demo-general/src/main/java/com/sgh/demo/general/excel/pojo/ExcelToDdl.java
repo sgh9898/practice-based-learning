@@ -1,7 +1,7 @@
 package com.sgh.demo.general.excel.pojo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
+import com.sgh.demo.general.excel.easyexcel.BaseEasyExcelClass;
 import com.sgh.demo.general.excel.easyexcel.annotation.ExcelDropDown;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
@@ -17,7 +17,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Schema(description = "Excel 转 sql 建表语句")
-public class ExcelToDdl extends EasyExcelClassTemplate {
+public class ExcelToDdl extends BaseEasyExcelClass {
 
     @ExcelProperty("参数名称")
     private String name;

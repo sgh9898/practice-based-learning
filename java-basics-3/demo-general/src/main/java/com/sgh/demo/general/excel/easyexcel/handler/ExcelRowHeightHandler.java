@@ -11,7 +11,7 @@ import java.util.Iterator;
  * Excel 自适应行高, 与工具类 EasyExcelUtil 配合使用
  *
  * @author Song gh
- * @version 2024/1/30
+ * @since 2024/1/30
  */
 public class ExcelRowHeightHandler extends AbstractRowHeightStyleStrategy {
 

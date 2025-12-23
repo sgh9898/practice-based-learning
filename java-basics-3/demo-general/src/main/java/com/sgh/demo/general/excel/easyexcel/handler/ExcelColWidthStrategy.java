@@ -6,7 +6,7 @@ import lombok.Getter;
  * Excel 列宽选取方式
  *
  * @author Song gh
- * @version 2024/1/30
+ * @since 2024/1/30
  */
 @Getter
 public enum ExcelColWidthStrategy {

@@ -2,7 +2,7 @@ package com.sgh.demo.general.work;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
+import com.sgh.demo.general.excel.easyexcel.BaseEasyExcelClass;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DataCenterModelExcel extends EasyExcelClassTemplate {
+public class DataCenterModelExcel extends BaseEasyExcelClass {
 
     @ExcelProperty("id")
     private long id;

@@ -4,7 +4,7 @@ package com.sgh.demo.general.temp;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
+import com.sgh.demo.general.excel.easyexcel.BaseEasyExcelClass;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
@@ -18,7 +18,7 @@ import lombok.Data;
 @Data
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class StudentFiles extends EasyExcelClassTemplate {
+public class StudentFiles extends BaseEasyExcelClass {
 
     /** 学生档案信息uid */
     @Id

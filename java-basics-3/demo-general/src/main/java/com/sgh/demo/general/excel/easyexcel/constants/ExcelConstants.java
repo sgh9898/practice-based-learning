@@ -1,22 +1,19 @@
 package com.sgh.demo.general.excel.easyexcel.constants;
 
-import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import com.sgh.demo.general.excel.easyexcel.BaseEasyExcelClass;
 
 /**
  * EasyExcel 相关常数
  *
  * @author Song gh
- * @version 2023/1/30
+ * @since 2023/1/30
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExcelConstants {
 
     /**
      * [默认字段] 报错信息
      *
-     * @see EasyExcelClassTemplate#defaultExcelErrorMessage
+     * @see BaseEasyExcelClass#defaultExcelErrorMessage
      */
     public static final String DEFAULT_ERROR_PARAM = "defaultExcelErrorMessage";
 
@@ -25,4 +22,23 @@ public class ExcelConstants {
 
     /** [默认] 联动下拉框页名 */
     public static final String DEFAULT_CASCADE_SHEET_NAME = "cascade_data";
+
+    /**
+     * [校验规则/严格] 当前行 head 中存在 @ExcelProperty 定义的有效字段, 且不存在未被定义的字段
+     *
+     * @see BaseEasyExcelClass
+     * @see com.alibaba.excel.annotation.ExcelProperty
+     */
+    public static final Integer HEAD_RULES_STRICTLY_CONTAINS = 0;
+
+    /**
+     * [校验规则/宽松] 当前行 head 中存在 @ExcelProperty 定义的有效字段, 自动忽略未被定义的字段
+     *
+     * @see BaseEasyExcelClass
+     * @see com.alibaba.excel.annotation.ExcelProperty
+     */
+    public static final Integer HEAD_RULES_CONTAINS = 1;
+
+    private ExcelConstants() {
+    }
 }

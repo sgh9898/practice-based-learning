@@ -16,7 +16,6 @@ import com.alibaba.excel.write.metadata.style.WriteFont;
 import com.alibaba.excel.write.style.HorizontalCellStyleStrategy;
 import com.sgh.demo.general.excel.easyexcel.annotation.ExcelDropDown;
 import com.sgh.demo.general.excel.easyexcel.constants.ExcelConstants;
-import com.sgh.demo.general.excel.easyexcel.constants.ExcelHeadRulesEnums;
 import com.sgh.demo.general.excel.easyexcel.handler.*;
 import com.sgh.demo.general.excel.easyexcel.listener.ExcelListener;
 import com.sgh.demo.general.excel.easyexcel.listener.ExcelNoModelListener;
@@ -25,11 +24,10 @@ import com.sgh.demo.general.excel.easyexcel.pojo.EasyExcelNoModelExportDTO;
 import com.sgh.demo.general.excel.easyexcel.pojo.ExcelCascadeOption;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,24 +46,25 @@ import java.util.*;
  * EasyExcel 工具类
  * <pre>
  * [使用自定义的实体类 ExcelClass]
- *   0. 前置需求: {@code extends} {@link EasyExcelClassTemplate}, 或将类注解与"defaultExcelErrorMessage"字段直接配置于实体类中
+ *   0. 前置需求: {@code extends} {@link BaseEasyExcelClass}, 或将类注解与"defaultExcelErrorMessage"字段直接配置于实体类中
  *   1. 导入:
  *     * 导入并暂存报错的数据: {@link #importExcelSaveError}
  *     * 导入并下载报错的数据: {@link #importExcel}
  *   2. 导出:
  *     * 导出空白模板: {@link #exportTemplate}
  *     * 导出数据: {@link #exportData}, 默认的"报错信息"列会被屏蔽
- *     * 导出报错数据: {@link #exportErrorExcel}, 不再屏蔽默认的"报错信息"列
+ *     * 导出报错数据: {@link #exportErrorData}, 不再屏蔽默认的"报错信息"列
  *   3. 自定义导出:
  *     1) 配置参数(部分未列出): {@link EasyExcelExportDTO}
  *     2) 导出:
- *       * 常规导出: {@link #exportLocalExcel}, 默认的"报错信息"列会被屏蔽
+ *       * 常规导出: {@link #exportExcel}, 默认的"报错信息"列会被屏蔽
  *       * 分页导出: {@link #writeSheet}--在新的一页写入数据, 数据写入全部完成后必须手动调用 {@link #closeExcel} 进行关闭
  *       * 导出报错数据: {@link #exportErrorExcel}, 不再屏蔽默认的"报错信息"列
  *
  * [不使用自定义的实体类 ExcelClass]
  *   1. 导入:
- *     * 导入数据: {@link #noModelImportExcel}
+ *     * 导入数据(宽松的 head 校验): {@link #noModelImportExcel}
+ *     * 导入数据(严格的 head 校验): {@link #noModelImportExcelStrictly}
  *   2. 导出:
  *     * 导出空白模板: {@link #noModelExportTemplate}
  *     * 导出数据: {@link #noModelExportData}
@@ -76,19 +75,25 @@ import java.util.*;
  *       * 分页导出: {@link #noModelWriteSheet}--在新的一页写入数据, 数据写入全部完成后必须手动调用 {@link #closeExcel} 进行关闭 </pre>
  *
  * @author Song gh
- * @version 2025/1/10
+ * @since 2024/8/16
  */
+@Slf4j
 public class EasyExcelUtils {
-
-    private static final Logger log = LoggerFactory.getLogger(EasyExcelUtils.class);
 
 // ------------------------------ 内部配置(不可修改) ------------------------------
 
+    /** 浏览器: IE */
+    private static final String USER_AGENT_MSIE = "MSIE";
+    /** 浏览器: IE */
+    private static final String USER_AGENT_TRIDENT = "Trident";
+    /** 浏览器: Chrome */
+    private static final String USER_AGENT_CHROME = "Chrome";
+
     /** 标题样式 */
-    private static final HorizontalCellStyleStrategy titleStrategy;
+    private static final HorizontalCellStyleStrategy TITLE_STRATEGY;
 
     /** 自定义说明样式 */
-    private static final HorizontalCellStyleStrategy noteStrategy;
+    private static final HorizontalCellStyleStrategy NOTE_STRATEGY;
 
     static {
         // 标题样式
@@ -97,10 +102,10 @@ public class EasyExcelUtils {
         titleFont.setFontHeightInPoints((short) 18);
         titleStyle.setWriteFont(titleFont);
         titleStyle.setHorizontalAlignment(HorizontalAlignment.CENTER);
-        titleStrategy = new HorizontalCellStyleStrategy();
+        TITLE_STRATEGY = new HorizontalCellStyleStrategy();
         List<WriteCellStyle> titleList = new ArrayList<>();
         titleList.add(titleStyle);
-        titleStrategy.setContentWriteCellStyleList(titleList);
+        TITLE_STRATEGY.setContentWriteCellStyleList(titleList);
 
         // 自定义说明样式
         WriteCellStyle noteStyle = new WriteCellStyle();
@@ -109,10 +114,10 @@ public class EasyExcelUtils {
         noteFont.setFontHeightInPoints((short) 12);
         noteStyle.setWriteFont(noteFont);
         noteStyle.setHorizontalAlignment(HorizontalAlignment.LEFT);
-        noteStrategy = new HorizontalCellStyleStrategy();
+        NOTE_STRATEGY = new HorizontalCellStyleStrategy();
         List<WriteCellStyle> noteList = new ArrayList<>();
         noteList.add(noteStyle);
-        noteStrategy.setContentWriteCellStyleList(noteList);
+        NOTE_STRATEGY.setContentWriteCellStyleList(noteList);
     }
 
     /** Excel 数据写入/编辑工具 */
@@ -127,14 +132,14 @@ public class EasyExcelUtils {
 // ------------------------------ 构造 ------------------------------
 
     /**
-     * [构造] 用于 http(s) 的工具
+     * [构造] 用于浏览器的工具
      *
      * @param request  http servlet request
      * @param response http servlet response
      * @param fileName 文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
      */
     public EasyExcelUtils(HttpServletRequest request, HttpServletResponse response, @Nullable String fileName) {
-        this.outStream = configureExcelFileName(request, response, null, fileName, false);
+        this.outStream = setUpExcelFileName(request, response, null, fileName, false);
         this.excelWriter = EasyExcelFactory.write(this.outStream).excelType(ExcelTypeEnum.XLSX).build();
     }
 
@@ -145,14 +150,8 @@ public class EasyExcelUtils {
      * @param fileName 文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
      */
     public EasyExcelUtils(@Nullable String fileDir, @Nullable String fileName) {
-        this.outStream = configureExcelFileName(null, null, fileDir, fileName, false);
+        this.outStream = setUpExcelFileName(null, null, fileDir, fileName, false);
         this.excelWriter = EasyExcelFactory.write(this.outStream).excelType(ExcelTypeEnum.XLSX).build();
-    }
-
-    /** [构造] 自定义输出流的工具 */
-    public EasyExcelUtils(OutputStream outputStream) {
-        this.outStream = outputStream;
-        this.excelWriter = EasyExcelFactory.write(outStream).excelType(ExcelTypeEnum.XLSX).build();
     }
 
 // ------------------------------ Static, 导入 ------------------------------
@@ -166,11 +165,12 @@ public class EasyExcelUtils {
      * @param file       文件
      * @param request    HttpServletRequest
      * @param response   HttpServletResponse
-     * @param excelClass Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass Excel 类, 推荐 extends {@link BaseEasyExcelClass}
      * @return 全部通过校验时--返回数据; 存在报错数据时--返回空白List, 并以 Excel 形式下载报错数据
      */
     @NonNull
-    public static <T> List<T> importExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass) {
+    public static <T> List<T> importExcel(MultipartFile file, HttpServletRequest request, HttpServletResponse response,
+                                          Class<T> excelClass) {
         ExcelListener<T> excelListener = new ExcelListener<>(excelClass);
         // 导入并进行初步校验: 成功 --> 返回数据; 失败 --> 自动下载报错信息
         if (Boolean.TRUE.equals(baseImportExcel(file, request, response, excelClass, excelListener, true, null))) {
@@ -182,20 +182,20 @@ public class EasyExcelUtils {
     /**
      * 导入 Excel 文件, 保存报错信息至 errorList
      * <pre>
-     *   1. 从第一行有效的 head 开始读取, 自动跳过在此之前无效的行
-     *   2. 导入完成后保存报错信息至 errorList
-     * </pre>
+     * 1. 从第一行有效的 head 开始读取, 自动跳过在此之前无效的行
+     * 2. 导入完成后保存报错信息至 errorList </pre>
      *
      * @param file       文件
      * @param request    HttpServletRequest
      * @param response   HttpServletResponse
-     * @param excelClass excel 实体类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass excel 实体类, 推荐 extends {@link BaseEasyExcelClass}
      * @param errorList  存储报错信息
      * @return 返回通过校验的数据, 未通过校验的数据存储于 errorList 中
      */
     @NonNull
-    public static <T> List<T> importExcelSaveError(@NonNull MultipartFile file, HttpServletRequest request, HttpServletResponse response,
-                                                   Class<T> excelClass, @NonNull List<T> errorList) {
+    public static <T> List<T> importExcelSaveError(@NonNull MultipartFile file, HttpServletRequest request,
+                                                   HttpServletResponse response, Class<T> excelClass,
+                                                   @NonNull List<T> errorList) {
         ExcelListener<T> excelListener = new ExcelListener<>(excelClass);
         // 导入成功
         baseImportExcel(file, request, response, excelClass, excelListener, false, errorList);
@@ -203,21 +203,18 @@ public class EasyExcelUtils {
     }
 
     /**
-     * [不指定 ExcelClass] 导入 Excel 文件
+     * [不指定 ExcelClass] 导入 Excel 文件, 宽松的 head 校验(忽略多余的列名)
      * <pre>
-     *   1. 从第一行有效的 head 开始读取, 自动跳过在此之前无效的行, 忽略未在 cnToEnHeadNameMap 中定义的 head
-     *   2. 存在数据未通过校验时: 生成 Excel 并自动下载(仅包含未通过校验的数据)
-     * </pre>
+     * 1. 从第一行有效的 head 开始读取, 自动跳过在此之前无效的行, 忽略未在 cnToEnHeadNameMap 中定义的 head
+     * 2. 存在数据未通过校验时: 生成 Excel 并自动下载(仅包含未通过校验的数据) </pre>
      *
      * @param file              文件
      * @param cnToEnHeadNameMap 中英列名对照, Map(中文, 英文)
-     * @param headRules         列名校验规则
      * @return 全部通过校验时--返回数据; 存在报错数据时--返回空白List, 并以 Excel 形式下载报错数据
      */
     @NonNull
-    public static List<Map<String, Object>> noModelImportExcel(@NonNull MultipartFile file, @Nullable Map<String, String> cnToEnHeadNameMap,
-                                                               ExcelHeadRulesEnums headRules) {
-        ExcelNoModelListener excelNoModelListener = new ExcelNoModelListener(cnToEnHeadNameMap, headRules);
+    public static List<Map<String, Object>> noModelImportExcel(@NonNull MultipartFile file, @Nullable Map<String, String> cnToEnHeadNameMap) {
+        ExcelNoModelListener excelNoModelListener = new ExcelNoModelListener(cnToEnHeadNameMap, ExcelConstants.HEAD_RULES_CONTAINS);
         // 导入成功
         if (Boolean.TRUE.equals(noModelBaseImportExcel(file, excelNoModelListener, null))) {
             return excelNoModelListener.getValidList();
@@ -226,24 +223,20 @@ public class EasyExcelUtils {
     }
 
     /**
-     * [不指定 ExcelClass] 导入 Excel 文件, 保存报错信息至 errorList
+     * [不指定 ExcelClass] 导入 Excel 文件, 严格的 head 校验(不允许存在多余的列名)
      * <pre>
-     *   1. 从第一行有效的 head 开始读取, 自动跳过在此之前无效的行, 忽略未在 cnToEnHeadNameMap 中定义的 head
-     *   2. 导入完成后保存报错信息至 errorList
-     * </pre>
+     * 1. 从第一行有效的 head 开始读取, 自动跳过在此之前无效的行, 忽略未在 cnToEnHeadNameMap 中定义的 head
+     * 2. 存在数据未通过校验时: 生成 Excel 并自动下载(仅包含未通过校验的数据) </pre>
      *
      * @param file              文件
      * @param cnToEnHeadNameMap 中英列名对照, Map(中文, 英文)
-     * @param errorList         存储报错信息
-     * @param headRules         列名校验规则
-     * @return 返回通过校验的数据, 未通过校验的数据存储于 errorList 中
+     * @return 全部通过校验时--返回数据; 存在报错数据时--返回空白List, 并以 Excel 形式下载报错数据
      */
     @NonNull
-    public static List<Map<String, Object>> noModelImportExcel(@NonNull MultipartFile file, @Nullable Map<String, String> cnToEnHeadNameMap,
-                                                               List<List<Object>> errorList, ExcelHeadRulesEnums headRules) {
-        ExcelNoModelListener excelNoModelListener = new ExcelNoModelListener(cnToEnHeadNameMap, headRules);
+    public static List<Map<String, Object>> noModelImportExcelStrictly(@NonNull MultipartFile file, @Nullable Map<String, String> cnToEnHeadNameMap) {
+        ExcelNoModelListener excelNoModelListener = new ExcelNoModelListener(cnToEnHeadNameMap, ExcelConstants.HEAD_RULES_STRICTLY_CONTAINS);
         // 导入成功
-        if (Boolean.TRUE.equals(noModelBaseImportExcel(file, excelNoModelListener, errorList))) {
+        if (Boolean.TRUE.equals(noModelBaseImportExcel(file, excelNoModelListener, null))) {
             return excelNoModelListener.getValidList();
         }
         return new LinkedList<>();
@@ -253,75 +246,41 @@ public class EasyExcelUtils {
 // ------------------------------ Static, 导出 ------------------------------
 
     /**
-     * [导出 Excel] http(s) 导出, 使用自定义配置
+     * 导出 Excel, 使用自定义配置
      *
      * @param request       HttpServletRequest
      * @param response      HttpServletResponse
-     * @param excelClass    Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass    Excel 类, 推荐 extends {@link BaseEasyExcelClass}
      * @param excelDataList 数据, 格式需与 excelClass 保持一致
-     * @param exportDto     Excel 导出参数
+     * @param exportDTO     Excel 导出参数
      */
     public static <T> void exportExcel(HttpServletRequest request, HttpServletResponse response,
-                                       Class<T> excelClass, @Nullable List<T> excelDataList, EasyExcelExportDTO exportDto) {
+                                       Class<T> excelClass, @Nullable List<T> excelDataList, EasyExcelExportDTO exportDTO) {
         // 默认排除"错误信息"列
-        exportDto.getExcludedCols().add(ExcelConstants.DEFAULT_ERROR_PARAM);
+        exportDTO.getExcludedCols().add(ExcelConstants.DEFAULT_ERROR_PARAM);
 
-        baseExportExcel(request, response, null, excelClass, exportDto, excelDataList);
+        baseExportExcel(request, response, excelClass, exportDTO, excelDataList);
     }
 
     /**
-     * [导出 Excel] 本地导出, 使用自定义配置
-     *
-     * @param fileDir       导出文件目录
-     * @param excelClass    Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
-     * @param excelDataList 数据, 格式需与 excelClass 保持一致
-     * @param exportDto     Excel 导出参数
-     */
-    public static <T> void exportLocalExcel(@Nullable String fileDir, Class<T> excelClass, @Nullable List<T> excelDataList, EasyExcelExportDTO exportDto) {
-        // 默认排除"错误信息"列
-        exportDto.getExcludedCols().add(ExcelConstants.DEFAULT_ERROR_PARAM);
-
-        baseExportExcel(null, null, fileDir, excelClass, exportDto, excelDataList);
-    }
-
-    /**
-     * [导出 Excel] http(s) 导出数据
+     * 导出 Excel 数据
      *
      * @param request       HttpServletRequest
      * @param response      HttpServletResponse
      * @param fileName      文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
-     * @param excelClass    Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass    Excel 类, 推荐 extends {@link BaseEasyExcelClass}
      * @param excelDataList 数据, 格式需与 excelClass 保持一致
      */
     public static <T> void exportData(HttpServletRequest request, HttpServletResponse response,
                                       @Nullable String fileName, Class<T> excelClass, @Nullable List<T> excelDataList) {
         // 配置参数
-        EasyExcelExportDTO exportDto = new EasyExcelExportDTO();
-        exportDto.setFileName(fileName);
-        exportDto.setSheetName(ExcelConstants.DEFAULT_SHEET_NAME);
+        EasyExcelExportDTO exportDTO = new EasyExcelExportDTO();
+        exportDTO.setFileName(fileName);
+        exportDTO.setSheetName(ExcelConstants.DEFAULT_SHEET_NAME);
         // 默认排除"错误信息"列
-        exportDto.getExcludedCols().add(ExcelConstants.DEFAULT_ERROR_PARAM);
+        exportDTO.getExcludedCols().add(ExcelConstants.DEFAULT_ERROR_PARAM);
 
-        baseExportExcel(request, response, null, excelClass, exportDto, excelDataList);
-    }
-
-    /**
-     * [导出 Excel] 本地导出数据
-     *
-     * @param fileDir       导出文件目录
-     * @param fileName      文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
-     * @param excelClass    Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
-     * @param excelDataList 数据, 格式需与 excelClass 保持一致
-     */
-    public static <T> void exportLocalData(@Nullable String fileDir, @Nullable String fileName, Class<T> excelClass, @Nullable List<T> excelDataList) {
-        // 配置参数
-        EasyExcelExportDTO exportDto = new EasyExcelExportDTO();
-        exportDto.setFileName(fileName);
-        exportDto.setSheetName(ExcelConstants.DEFAULT_SHEET_NAME);
-        // 默认排除"错误信息"列
-        exportDto.getExcludedCols().add(ExcelConstants.DEFAULT_ERROR_PARAM);
-
-        baseExportExcel(null, null, fileDir, excelClass, exportDto, excelDataList);
+        baseExportExcel(request, response, excelClass, exportDTO, excelDataList);
     }
 
     /**
@@ -329,13 +288,32 @@ public class EasyExcelUtils {
      *
      * @param request       HttpServletRequest
      * @param response      HttpServletResponse
-     * @param excelClass    Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param fileName      文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
+     * @param excelClass    Excel 类, 推荐 extends {@link BaseEasyExcelClass}
      * @param excelDataList 数据, 格式需与 excelClass 保持一致
-     * @param exportDto     Excel 导出参数
+     */
+    public static <T> void exportErrorData(HttpServletRequest request, HttpServletResponse response,
+                                           @Nullable String fileName, Class<T> excelClass, @NonNull List<T> excelDataList) {
+        // 配置参数
+        EasyExcelExportDTO exportDTO = new EasyExcelExportDTO();
+        exportDTO.setFileName(fileName);
+        exportDTO.setSheetName(ExcelConstants.DEFAULT_SHEET_NAME);
+
+        baseExportExcel(request, response, excelClass, exportDTO, excelDataList);
+    }
+
+    /**
+     * 导出含有报错的 Excel(不再屏蔽"错误信息"列)
+     *
+     * @param request       HttpServletRequest
+     * @param response      HttpServletResponse
+     * @param excelClass    Excel 类, 推荐 extends {@link BaseEasyExcelClass}
+     * @param excelDataList 数据, 格式需与 excelClass 保持一致
+     * @param exportDTO     Excel 导出参数
      */
     public static <T> void exportErrorExcel(HttpServletRequest request, HttpServletResponse response,
-                                            Class<T> excelClass, @Nullable List<T> excelDataList, EasyExcelExportDTO exportDto) {
-        baseExportExcel(request, response, null, excelClass, exportDto, excelDataList);
+                                            Class<T> excelClass, @Nullable List<T> excelDataList, EasyExcelExportDTO exportDTO) {
+        baseExportExcel(request, response, excelClass, exportDTO, excelDataList);
     }
 
     /**
@@ -344,46 +322,37 @@ public class EasyExcelUtils {
      * @param request    HttpServletRequest
      * @param response   HttpServletResponse
      * @param fileName   文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
-     * @param excelClass Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass Excel 类, 推荐 extends {@link BaseEasyExcelClass}
      * @param note       需要添加的填表说明, 位于列名之上
      */
     public static void exportTemplate(HttpServletRequest request, HttpServletResponse response,
                                       @Nullable String fileName, Class<?> excelClass, @Nullable String note) {
         // 配置参数
-        EasyExcelExportDTO exportDto = new EasyExcelExportDTO();
-        exportDto.setFileName(fileName);
-        exportDto.setSheetName(ExcelConstants.DEFAULT_SHEET_NAME);
-        exportDto.setNote(note);
-        exportDto.setWidthStrategy(ExcelColWidthStrategy.COL_WIDTH_HEAD);
+        EasyExcelExportDTO exportDTO = new EasyExcelExportDTO();
+        exportDTO.setFileName(fileName);
+        exportDTO.setSheetName(ExcelConstants.DEFAULT_SHEET_NAME);
+        exportDTO.setNote(note);
+        exportDTO.setWidthStrategy(ExcelColWidthStrategy.COL_WIDTH_HEAD);
         // 默认排除"错误信息"列
-        exportDto.getExcludedCols().add(ExcelConstants.DEFAULT_ERROR_PARAM);
+        exportDTO.getExcludedCols().add(ExcelConstants.DEFAULT_ERROR_PARAM);
 
-        baseExportExcel(request, response, null, excelClass, exportDto, null);
+        baseExportExcel(request, response, excelClass, exportDTO, null);
     }
 
     /**
-     * [不指定 ExcelClass]  http(s) 导出, 使用自定义配置
+     * [不指定 ExcelClass] 导出 Excel, 使用自定义配置
      *
      * @param request   http servlet request
      * @param response  http servlet response
-     * @param exportDto Excel 导出参数
+     * @param exportDTO Excel 导出参数
      */
-    public static void noModelExportExcel(HttpServletRequest request, HttpServletResponse response, EasyExcelNoModelExportDTO exportDto) {
-        noModelBaseExportExcel(request, response, null, exportDto);
+    public static void noModelExportExcel(HttpServletRequest request, HttpServletResponse response,
+                                          EasyExcelNoModelExportDTO exportDTO) {
+        noModelBaseExportExcel(request, response, exportDTO);
     }
 
     /**
-     * [不指定 ExcelClass] 本地导出, 使用自定义配置
-     *
-     * @param fileDir   导出文件目录
-     * @param exportDto Excel 导出参数
-     */
-    public static void noModelExportLocalExcel(String fileDir, EasyExcelNoModelExportDTO exportDto) {
-        noModelBaseExportExcel(null, null, fileDir, exportDto);
-    }
-
-    /**
-     * [不指定 ExcelClass] http(s) 导出数据, 使用自定义配置
+     * [不指定 ExcelClass] 导出 Excel 数据
      *
      * @param request       http servlet request
      * @param response      http servlet response
@@ -393,46 +362,22 @@ public class EasyExcelUtils {
      * @param enToCnHeadMap 列名对照, Map(英文, 中文)
      * @param dataList      表内数据
      */
-    public static void noModelExportData(HttpServletRequest request, HttpServletResponse response, @Nullable String fileName,
-                                         List<String> headList, @Nullable Map<String, String> enToCnHeadMap, @Nullable List<Map<String, Object>> dataList) {
+    public static void noModelExportData(HttpServletRequest request, HttpServletResponse response,
+                                         @Nullable String fileName, List<String> headList,
+                                         @Nullable Map<String, String> enToCnHeadMap,
+                                         @Nullable List<Map<String, Object>> dataList) {
         // 配置参数
-        EasyExcelNoModelExportDTO exportDto = new EasyExcelNoModelExportDTO();
-        exportDto.setFileName(fileName);
-        exportDto.setEnSimpleHeadList(headList);
+        EasyExcelNoModelExportDTO exportDTO = new EasyExcelNoModelExportDTO();
+        exportDTO.setFileName(fileName);
+        exportDTO.setEnSimpleHeadList(headList);
         if (enToCnHeadMap != null) {
-            exportDto.setEnToCnHeadMap(enToCnHeadMap);
+            exportDTO.setEnToCnHeadMap(enToCnHeadMap);
         }
         if (dataList != null) {
-            exportDto.setDataList(dataList);
+            exportDTO.setDataList(dataList);
         }
 
-        noModelBaseExportExcel(request, response, null, exportDto);
-    }
-
-    /**
-     * [不指定 ExcelClass] 本地导出数据, 使用自定义配置
-     *
-     * @param fileDir       导出文件目录
-     * @param fileName      文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
-     * @param headList      中文列名, 单行列名: List(string); 多行复合列名(相同标题自动合并): List(List(string));
-     *                      例: List(List(第一行, 第二行1),List(第一行, 第二行2)),其中"第一行"会自动合并
-     * @param enToCnHeadMap 列名对照, Map(英文, 中文)
-     * @param dataList      表内数据
-     */
-    public static void noModelExportLocalData(String fileDir, @Nullable String fileName,
-                                              List<String> headList, @Nullable Map<String, String> enToCnHeadMap, @Nullable List<Map<String, Object>> dataList) {
-        // 配置参数
-        EasyExcelNoModelExportDTO exportDto = new EasyExcelNoModelExportDTO();
-        exportDto.setFileName(fileName);
-        exportDto.setEnSimpleHeadList(headList);
-        if (dataList != null) {
-            exportDto.setDataList(dataList);
-        }
-        if (enToCnHeadMap != null) {
-            exportDto.setEnToCnHeadMap(enToCnHeadMap);
-        }
-
-        noModelBaseExportExcel(null, null, fileDir, exportDto);
+        noModelBaseExportExcel(request, response, exportDTO);
     }
 
     /**
@@ -447,12 +392,12 @@ public class EasyExcelUtils {
     public static void noModelExportTemplate(HttpServletRequest request, HttpServletResponse response,
                                              @Nullable String fileName, List<String> headList, @Nullable String note) {
         // 配置参数
-        EasyExcelNoModelExportDTO exportDto = new EasyExcelNoModelExportDTO();
-        exportDto.setFileName(fileName);
-        exportDto.setEnSimpleHeadList(headList);
-        exportDto.setNote(note);
+        EasyExcelNoModelExportDTO exportDTO = new EasyExcelNoModelExportDTO();
+        exportDTO.setFileName(fileName);
+        exportDTO.setEnSimpleHeadList(headList);
+        exportDTO.setNote(note);
 
-        noModelBaseExportExcel(request, response, null, exportDto);
+        noModelBaseExportExcel(request, response, exportDTO);
     }
 // ============================== Static, 导出 End ==============================
 
@@ -461,20 +406,20 @@ public class EasyExcelUtils {
     /**
      * 分页导出 Excel: 写入新的 sheet, 全部导出完成后必须手动调用 {@link #closeExcel} 关闭流
      *
-     * @param excelClass excel 实体类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass excel 实体类, 推荐 extends {@link BaseEasyExcelClass}
      * @param dataList   表内数据
-     * @param exportDto  Excel 导出参数
+     * @param exportDTO  Excel 导出参数
      */
-    public void writeSheet(Class<?> excelClass, List<?> dataList, EasyExcelExportDTO exportDto) {
+    public void writeSheet(Class<?> excelClass, List<?> dataList, EasyExcelExportDTO exportDTO) {
         // 默认排除"错误信息"列
-        exportDto.getExcludedCols().add(ExcelConstants.DEFAULT_ERROR_PARAM);
-        baseWriteSheet(excelWriter, excelClass, sheetIndex, exportDto, dataList);
+        exportDTO.getExcludedCols().add(ExcelConstants.DEFAULT_ERROR_PARAM);
+        baseWriteSheet(excelWriter, excelClass, sheetIndex, exportDTO, dataList);
         sheetIndex++;
     }
 
     /** [不指定 ExcelClass] 分页导出 Excel: 写入新的 sheet, 全部导出完成后必须手动调用 {@link #closeExcel} 关闭流 */
-    public void noModelWriteSheet(EasyExcelNoModelExportDTO exportDto) {
-        noModelBaseWriteSheet(excelWriter, sheetIndex, exportDto);
+    public void noModelWriteSheet(EasyExcelNoModelExportDTO exportDTO) {
+        noModelBaseWriteSheet(excelWriter, sheetIndex, exportDTO);
         sheetIndex++;
     }
 
@@ -501,20 +446,27 @@ public class EasyExcelUtils {
      * @param file        文件
      * @param request     HttpServletRequest
      * @param response    HttpServletResponse
-     * @param excelClass  Excel 类, 推荐 extends {@link EasyExcelClassTemplate}
+     * @param excelClass  Excel 类, 推荐 extends {@link BaseEasyExcelClass}
      * @param listener    ExcelListener, 允许 extends {@link ExcelListener}
      * @param exportError 是否自动导出报错
      * @param errorList   不自动导出时用于保存报错(exportError == false)
      * @return true = 全部数据通过校验, false = 文件为空或存在数据未通过校验
      */
     @Nullable
-    private static <T, U extends ExcelListener<T>> Boolean baseImportExcel(@NonNull MultipartFile file, HttpServletRequest request, HttpServletResponse response, Class<T> excelClass, U listener, Boolean exportError, List<T> errorList) {
+    private static <T, U extends ExcelListener<T>> Boolean baseImportExcel(@NonNull MultipartFile file,
+                                                                           HttpServletRequest request,
+                                                                           HttpServletResponse response,
+                                                                           Class<T> excelClass, U listener,
+                                                                           Boolean exportError, List<T> errorList) {
         try {
             // 读取数据
             EasyExcelFactory.read(file.getInputStream(), excelClass, listener).extraRead(CellExtraTypeEnum.MERGE).sheet().doRead();
             // head 无效时跳过前 x 行
             while (Boolean.FALSE.equals(listener.getValidHead())) {
-                EasyExcelFactory.read(file.getInputStream(), excelClass, listener).extraRead(CellExtraTypeEnum.MERGE).headRowNumber(listener.getHeadRowNum()).sheet().doRead();
+                EasyExcelFactory.read(file.getInputStream(), excelClass, listener)
+                        .extraRead(CellExtraTypeEnum.MERGE)
+                        .headRowNumber(listener.getHeadRowNum())
+                        .sheet().doRead();
             }
 
             // 报错处理
@@ -525,9 +477,9 @@ public class EasyExcelUtils {
             if (!listener.getInvalidList().isEmpty() && request != null && response != null) {
                 if (Boolean.TRUE.equals(exportError)) {
                     // 导出包含报错的 Excel
-                    EasyExcelExportDTO exportDto = new EasyExcelExportDTO();
-                    exportDto.setFileName(errorFileName);
-                    baseExportExcel(request, response, null, excelClass, exportDto, listener.getInvalidList());
+                    EasyExcelExportDTO exportDTO = new EasyExcelExportDTO();
+                    exportDTO.setFileName(errorFileName);
+                    baseExportExcel(request, response, excelClass, exportDTO, listener.getInvalidList());
                     return null;
                 } else {
                     // 仅保存报错信息
@@ -561,7 +513,10 @@ public class EasyExcelUtils {
             EasyExcelFactory.read(file.getInputStream(), listener).extraRead(CellExtraTypeEnum.MERGE).sheet().doRead();
             // head 无效时跳过前 x 行
             while (Boolean.FALSE.equals(listener.getValidHead())) {
-                EasyExcelFactory.read(file.getInputStream(), listener).extraRead(CellExtraTypeEnum.MERGE).headRowNumber(listener.getHeadRowNum()).sheet().doRead();
+                EasyExcelFactory.read(file.getInputStream(), listener)
+                        .extraRead(CellExtraTypeEnum.MERGE)
+                        .headRowNumber(listener.getHeadRowNum())
+                        .sheet().doRead();
             }
 
             // 记录报错信息
@@ -580,18 +535,22 @@ public class EasyExcelUtils {
      *
      * @param request   http servlet request
      * @param response  http servlet response
-     * @param fileDir   导出文件目录
-     * @param exportDto Excel 导出参数
+     * @param exportDTO Excel 导出参数
      */
-    private static void noModelBaseExportExcel(HttpServletRequest request, HttpServletResponse response, String fileDir, EasyExcelNoModelExportDTO exportDto) {
+    private static void noModelBaseExportExcel(HttpServletRequest request, HttpServletResponse response, EasyExcelNoModelExportDTO exportDTO) {
         // 创建 excel writer
-        String fileName = exportDto.getFileName();
-        OutputStream outputStream = configureExcelFileName(request, response, fileDir, fileName, exportDto.getUseExcel07());
+        String fileName = exportDTO.getFileName();
+        OutputStream outputStream = setUpExcelFileName(request, response, null, fileName, exportDTO.getUseXlsx());
         ExcelWriter excelWriter;
-        excelWriter = EasyExcelFactory.write(outputStream).excelType(ExcelTypeEnum.XLSX).build();
+        try {
+            excelWriter = EasyExcelFactory.write(response.getOutputStream()).excelType(ExcelTypeEnum.XLSX).build();
+        } catch (IOException e) {
+            log.error("创建 ExcelWriter 失败", e);
+            throw new UnsupportedOperationException("创建 ExcelWriter 失败", e);
+        }
 
         // 写入数据
-        noModelBaseWriteSheet(excelWriter, 1, exportDto);
+        noModelBaseWriteSheet(excelWriter, 1, exportDTO);
 
         // 关闭 excel writer
         closeExcelWriter(outputStream, excelWriter);
@@ -603,76 +562,49 @@ public class EasyExcelUtils {
      * @param excelWriter excel 主体
      * @param excelClass  待转换的实体类
      * @param sheetIndex  表序号
-     * @param exportDto   Excel 导出参数
+     * @param exportDTO   Excel 导出参数
      * @param dataList    表内数据
      */
-    private static void baseWriteSheet(ExcelWriter excelWriter, Class<?> excelClass, Integer sheetIndex, EasyExcelExportDTO exportDto, @Nullable List<?> dataList) {
+    private static void baseWriteSheet(ExcelWriter excelWriter, Class<?> excelClass, Integer sheetIndex,
+                                       EasyExcelExportDTO exportDTO, @Nullable List<?> dataList) {
         // 动态下拉框
-        Map<String, String[]> dynamicMenuMap = exportDto.getDynamicMenuMap();
-        Map<Integer, String[]> indexedDynamicMenuMap = new HashMap<>();
-        // 记录多选框的列序号
-        Set<Integer> indexMultipleDropDownSet = new HashSet<>();
+        Map<String, String[]> dynamicMenuMap = exportDTO.getDynamicMenuMap();
+        Map<Integer, String[]> indexedDynamicMenuMap = new HashMap<>(16);
         // 联动下拉框
-        Map<String, List<Integer>> cascadeMenuIndexMap = new HashMap<>();
-        // 统一配置下拉框
-        configureDropDownMenus(excelClass, exportDto, dynamicMenuMap, indexedDynamicMenuMap, cascadeMenuIndexMap, indexMultipleDropDownSet);
-
-        // 联动下拉框后续处理
-        Map<String, List<ExcelCascadeOption>> cascadeMenuMap = exportDto.getCascadeMenuMap();
-        // 仅存在一组联动下拉框, 进行默认配置
-        if (cascadeMenuMap.isEmpty()) {
-            if (cascadeMenuIndexMap.size() == 1) {
-                String cascadeGroupName = cascadeMenuIndexMap.keySet().iterator().next();
-                cascadeMenuMap.put(cascadeGroupName, exportDto.getCascadeMenu());
-            } else if (cascadeMenuIndexMap.size() > 1) {
-                throw new UnsupportedOperationException("存在多组联动下拉框, 请配置组名");
-            }
-        }
+        Map<String, List<Integer>> cascadeMenuIndexMap = new HashMap<>(16);
+        // 配置动态下拉框和联动下拉框
+        setUpDropDownMenus(excelClass, exportDTO, dynamicMenuMap, indexedDynamicMenuMap, cascadeMenuIndexMap);
+        exportDTO.fillCascadeMenuMapIfEmpty(exportDTO, cascadeMenuIndexMap);
+        Map<String, List<ExcelCascadeOption>> cascadeMenuMap = exportDTO.getCascadeMenuMap();
 
         // 排除指定的列, 自动忽略未使用 ExcelProperty 进行注解的列
-        int validColumnNum = 0;  // 计数, 未被排除的列
-        Set<String> excludedCols = exportDto.getExcludedCols();
-        List<String[]> originalHeadList = new ArrayList<>();  // 记录列名, 用于动态列名替换
-        Set<String> doNotChangeWidth = new HashSet<>();       // 记录手动指定列宽的字段
-        validColumnNum = configureValidCols(excelClass, excludedCols, originalHeadList, validColumnNum, doNotChangeWidth);
+        // 计数, 未被排除的列
+        int validColumnNum = 0;
+        Set<String> excludedCols = exportDTO.getExcludedCols();
+        // 记录列名, 用于动态列名替换
+        List<String[]> originalHeadList = new ArrayList<>();
+        // 记录手动指定列宽的字段
+        Set<String> fixedWidthColSet = new HashSet<>();
+        validColumnNum = setUpValidCols(excelClass, excludedCols, originalHeadList, validColumnNum, fixedWidthColSet);
 
         // 动态列名, 对旧列名进行替换
         List<List<String>> newHeadList = new ArrayList<>();
-        Map<String, String> replaceHeadMap = exportDto.getReplaceHeadMap();
+        Map<String, String> replaceHeadMap = exportDTO.getReplaceHeadMap();
         boolean isHeadReplaced = replaceHead(replaceHeadMap, originalHeadList, newHeadList);
 
         // 创建表单
-        String sheetName = exportDto.getSheetName();
+        String sheetName = exportDTO.getSheetName();
         String finalSheetName = StringUtils.isBlank(sheetName) ? "sheet" + sheetIndex : sheetName;
+        String title = exportDTO.getTitle();
+        String note = exportDTO.getNote();
         ExcelWriterSheetBuilder sheetBuilder = EasyExcelFactory.writerSheet(sheetIndex, finalSheetName);
-
-        // 需要排除的列
-        sheetBuilder.excludeColumnFieldNames(excludedCols);
-
-        // 调整下拉框位置
-        int skipRowNum = 0;
-        String title = exportDto.getTitle();
-        if (StringUtils.isNotBlank(title)) {
-            skipRowNum++;
-        }
-        String note = exportDto.getNote();
-        if (StringUtils.isNotBlank(note)) {
-            skipRowNum++;
-        }
-
-        // 表单设置: 列宽, 行高, 下拉框...
-        ExcelColWidthStrategy widthStrategy = exportDto.getWidthStrategy();
-        sheetBuilder.registerWriteHandler(new ExcelSheetWriteHandler(skipRowNum, indexedDynamicMenuMap,
-                cascadeMenuIndexMap, cascadeMenuMap, indexMultipleDropDownSet));
-        sheetBuilder.registerWriteHandler(new ExcelColumnWidthHandler(widthStrategy, doNotChangeWidth));
-        if (Boolean.TRUE.equals(exportDto.getAutoRowHeight())) {
-            sheetBuilder.registerWriteHandler(new ExcelRowHeightHandler());
-        }
+        // 表单设置
+        configureSheetBuilder(exportDTO, sheetBuilder, excludedCols, indexedDynamicMenuMap, cascadeMenuIndexMap, cascadeMenuMap, fixedWidthColSet);
 
         // 单表(不使用标题与自定义说明)且需要动态列名时, 需要在 writer 中应用 head 样式, 并且提前终止
         boolean needEarlyStop = isHeadReplaced && StringUtils.isBlank(title) && StringUtils.isBlank(note);
         if (needEarlyStop) {
-            sheetBuilder.head(excelClass).head(newHeadList).build();
+            sheetBuilder.head(excelClass).head(newHeadList);
             excelWriter.write(dataList, sheetBuilder.build());
             return;
         }
@@ -704,15 +636,51 @@ public class EasyExcelUtils {
     }
 
     /**
+     * 表单设置
+     *
+     * @param exportDTO             导出参数
+     * @param sheetBuilder          表单
+     * @param excludedCols          排除的列
+     * @param indexedDynamicMenuMap 动态下拉框在 Excel 的位置, Map(列, 选项)
+     * @param cascadeMenuIndexMap   联动下拉框在 Excel 的位置, Map(组名, 列)
+     * @param cascadeMenuMap        联动下拉框, Map(组名, 选项)
+     * @param fixedWidthColSet      定宽字段
+     */
+    private static void configureSheetBuilder(EasyExcelExportDTO exportDTO, ExcelWriterSheetBuilder sheetBuilder,
+                                              Set<String> excludedCols, Map<Integer, String[]> indexedDynamicMenuMap,
+                                              Map<String, List<Integer>> cascadeMenuIndexMap,
+                                              Map<String, List<ExcelCascadeOption>> cascadeMenuMap,
+                                              Set<String> fixedWidthColSet) {
+        // 需要排除的列
+        sheetBuilder.excludeColumnFieldNames(excludedCols);
+
+        // 调整下拉框位置
+        int skipRowNum = 0;
+        if (StringUtils.isNotBlank(exportDTO.getTitle())) {
+            skipRowNum++;
+        }
+        if (StringUtils.isNotBlank(exportDTO.getNote())) {
+            skipRowNum++;
+        }
+
+        // 表单设置: 列宽, 行高, 下拉框...
+        sheetBuilder.registerWriteHandler(new ExcelSheetWriteHandler(skipRowNum, indexedDynamicMenuMap, cascadeMenuIndexMap, cascadeMenuMap));
+        sheetBuilder.registerWriteHandler(new ExcelColumnWidthHandler(exportDTO.getWidthStrategy(), fixedWidthColSet));
+        if (Boolean.TRUE.equals(exportDTO.getAutoRowHeight())) {
+            sheetBuilder.registerWriteHandler(new ExcelRowHeightHandler());
+        }
+    }
+
+    /**
      * [不指定 ExcelClass] Excel 导出: 写入单张 Sheet(导出完成后需手动调用 {@link #closeExcelWriter} 关闭流)
      *
      * @param excelWriter Excel 导出主体
      * @param sheetIndex  [允许 null] 表序号
-     * @param exportDto   excel 参数
+     * @param exportDTO   excel 参数
      */
-    private static void noModelBaseWriteSheet(ExcelWriter excelWriter, Integer sheetIndex, EasyExcelNoModelExportDTO exportDto) {
+    private static void noModelBaseWriteSheet(ExcelWriter excelWriter, Integer sheetIndex, EasyExcelNoModelExportDTO exportDTO) {
         // 创建表单
-        String sheetName = exportDto.getSheetName();
+        String sheetName = exportDTO.getSheetName();
         String finalSheetName = StringUtils.isBlank(sheetName) ? "sheet" + sheetIndex : sheetName;
         ExcelWriterSheetBuilder sheetBuilder = EasyExcelFactory.writerSheet(sheetIndex, finalSheetName);
 
@@ -720,27 +688,27 @@ public class EasyExcelUtils {
         List<List<String>> cnHeadList = new LinkedList<>();
         List<List<Object>> finalDataList = new LinkedList<>();
         List<String> orderedEnHead = new LinkedList<>();
-        setHeadAndDataNoModel(exportDto, cnHeadList, finalDataList, orderedEnHead);
+        setHeadAndDataNoModel(exportDTO, cnHeadList, finalDataList, orderedEnHead);
 
         // 联动下拉框, 根据名称匹配下拉框所在列的序号
-        Map<String, Integer> colIndexMap = new HashMap<>();
+        Map<String, Integer> colIndexMap = new HashMap<>(16);
         for (int i = 0; i < orderedEnHead.size(); i++) {
             colIndexMap.put(orderedEnHead.get(i), i);
         }
-        Map<String, List<Integer>> cascadeMenuIndexMap = new HashMap<>();
-        for (Map.Entry<String, List<String>> cascadeGroup : exportDto.getCascadeColMap().entrySet()) {
+        Map<String, List<Integer>> cascadeMenuIndexMap = new HashMap<>(16);
+        for (Map.Entry<String, List<String>> cascadeGroup : exportDTO.getCascadeColMap().entrySet()) {
             List<Integer> indexList = new LinkedList<>();
             cascadeGroup.getValue().forEach(colName -> indexList.add(colIndexMap.get(colName)));
             cascadeMenuIndexMap.put(cascadeGroup.getKey(), indexList);
         }
 
         // 调整下拉框位置
-        Map<Integer, String[]> indexedDropDownMap = configureIndexedDropDownMap(exportDto.getDropDownMap(), orderedEnHead);
+        Map<Integer, String[]> indexedDropDownMap = setUpIndexedDropDownMap(exportDTO.getDropDownMap(), orderedEnHead);
         int skipRowNum = 0;
-        if (StringUtils.isNotBlank(exportDto.getTitle())) {
+        if (StringUtils.isNotBlank(exportDTO.getTitle())) {
             skipRowNum++;
         }
-        if (StringUtils.isNotBlank(exportDto.getNote())) {
+        if (StringUtils.isNotBlank(exportDTO.getNote())) {
             skipRowNum++;
         }
         int headRows = 0;
@@ -751,15 +719,15 @@ public class EasyExcelUtils {
 
         // 特殊标注的列名英文转中文, 无对应中文的保持英文
         Set<String> cnSpecialHeadSet = new HashSet<>();
-        for (String enSpecialHead : exportDto.getImportantHeadSet()) {
-            cnSpecialHeadSet.add(exportDto.getEnToCnHeadMap().getOrDefault(enSpecialHead, enSpecialHead));
+        for (String enSpecialHead : exportDTO.getImportantHeadSet()) {
+            cnSpecialHeadSet.add(exportDTO.getEnToCnHeadMap().getOrDefault(enSpecialHead, enSpecialHead));
         }
 
         // 表单设置: 列宽, 行高, 下拉框...
-        sheetBuilder.registerWriteHandler(new ExcelSheetWriteHandler(skipRowNum, indexedDropDownMap, cascadeMenuIndexMap, exportDto.getCascadeMenuMap()));
+        sheetBuilder.registerWriteHandler(new ExcelSheetWriteHandler(skipRowNum, indexedDropDownMap, cascadeMenuIndexMap, exportDTO.getCascadeMenuMap()));
         sheetBuilder.registerWriteHandler(new ExcelNoModelVerticalStyleHandler(cnSpecialHeadSet));
-        sheetBuilder.registerWriteHandler(new ExcelColumnWidthHandler(exportDto.getWidthStrategy()));
-        if (Boolean.TRUE.equals(exportDto.getAutoRowHeight())) {
+        sheetBuilder.registerWriteHandler(new ExcelColumnWidthHandler(exportDTO.getWidthStrategy()));
+        if (Boolean.TRUE.equals(exportDTO.getAutoRowHeight())) {
             sheetBuilder.registerWriteHandler(new ExcelRowHeightHandler());
         }
 
@@ -768,14 +736,14 @@ public class EasyExcelUtils {
         int validColumnNum = cnHeadList.size();
         // 单表(不使用标题与自定义说明)且需要动态列名时, 需要在 writer 中应用 head 样式
         // 标题
-        if (StringUtils.isNotBlank(exportDto.getTitle())) {
-            writeTitle(excelWriter, sheetBuilder.build(), EasyExcelClassTemplate.class, exportDto.getTitle(), validColumnNum, mainTableIndex);
+        if (StringUtils.isNotBlank(exportDTO.getTitle())) {
+            writeTitle(excelWriter, sheetBuilder.build(), BaseEasyExcelClass.class, exportDTO.getTitle(), validColumnNum, mainTableIndex);
             // tableIndex 顺沿
             mainTableIndex++;
         }
         // 自定义说明
-        if (StringUtils.isNotBlank(exportDto.getNote())) {
-            writeNote(excelWriter, sheetBuilder.build(), EasyExcelClassTemplate.class, exportDto.getNote(), validColumnNum, mainTableIndex);
+        if (StringUtils.isNotBlank(exportDTO.getNote())) {
+            writeNote(excelWriter, sheetBuilder.build(), BaseEasyExcelClass.class, exportDTO.getNote(), validColumnNum, mainTableIndex);
             // tableIndex 顺沿
             mainTableIndex++;
         }
@@ -791,21 +759,25 @@ public class EasyExcelUtils {
      *
      * @param request    http servlet request
      * @param response   http servlet response
-     * @param fileDir    导出文件目录
      * @param excelClass 待转换的实体类
-     * @param exportDto  Excel 导出参数
+     * @param exportDTO  Excel 导出参数
      * @param dataList   表内数据, 不填充传 null 即可
      */
-    private static void baseExportExcel(HttpServletRequest request, HttpServletResponse response, String fileDir, Class<?> excelClass,
-                                        EasyExcelExportDTO exportDto, @Nullable List<?> dataList) {
+    private static void baseExportExcel(HttpServletRequest request, HttpServletResponse response, Class<?> excelClass,
+                                        EasyExcelExportDTO exportDTO, @Nullable List<?> dataList) {
         // 创建 excel writer
         ExcelWriter excelWriter;
-        String fileName = exportDto.getFileName();
-        OutputStream outputStream = configureExcelFileName(request, response, fileDir, fileName, exportDto.getUseExcel07());
-        excelWriter = EasyExcelFactory.write(outputStream).excelType(ExcelTypeEnum.XLSX).build();
+        String fileName = exportDTO.getFileName();
+        OutputStream outputStream = setUpExcelFileName(request, response, null, fileName, exportDTO.getUseXlsx());
+        try {
+            excelWriter = EasyExcelFactory.write(response.getOutputStream()).excelType(ExcelTypeEnum.XLSX).build();
+        } catch (IOException e) {
+            log.error("创建 ExcelWriter 失败", e);
+            throw new UnsupportedOperationException("创建 ExcelWriter 失败", e);
+        }
 
         // 写入数据
-        baseWriteSheet(excelWriter, excelClass, 1, exportDto, dataList);
+        baseWriteSheet(excelWriter, excelClass, 1, exportDTO, dataList);
 
         // 关闭 excel writer
         closeExcelWriter(outputStream, excelWriter);
@@ -840,9 +812,14 @@ public class EasyExcelUtils {
     /**
      * 初步配置 excel 列(排除指定的列, 自动忽略未使用 ExcelProperty 进行注解的列)
      *
+     * @param excelClass       excel 目标类
+     * @param excludedCols     排除的列
+     * @param originalHeadList 原始列名
+     * @param validColumnNum   有效列的数量
+     * @param fixedWidthColSet 定宽字段
      * @return 有效列的数量
      */
-    private static int configureValidCols(Class<?> excelClass, Set<String> excludedCols, List<String[]> originalHeadList, int validColumnNum, Set<String> doNotChangeWidth) {
+    private static int setUpValidCols(Class<?> excelClass, Set<String> excludedCols, List<String[]> originalHeadList, int validColumnNum, Set<String> fixedWidthColSet) {
         for (Field field : excelClass.getDeclaredFields()) {
             // 仅记录 ExcelProperty 注解的列
             ExcelProperty excelAnnotation = field.getAnnotation(ExcelProperty.class);
@@ -855,7 +832,7 @@ public class EasyExcelUtils {
                     validColumnNum++;
                     // 记录手动指定的列宽
                     if (excelClass.getAnnotation(ColumnWidth.class) != null || field.getAnnotation(ColumnWidth.class) != null) {
-                        doNotChangeWidth.add(field.getName());
+                        fixedWidthColSet.add(field.getName());
                     }
                 }
             } else {
@@ -879,7 +856,7 @@ public class EasyExcelUtils {
         // 写入 Excel, 无需 head
         WriteTable noteTable = EasyExcelFactory.writerTable(mainTableIndex)
                 .registerWriteHandler(mergeTitleRow).head(targetClass)
-                .registerWriteHandler(titleStrategy).needHead(false).build();
+                .registerWriteHandler(TITLE_STRATEGY).needHead(false).build();
         excelWriter.write(titleContent, writeSheet, noteTable);
     }
 
@@ -892,7 +869,7 @@ public class EasyExcelUtils {
         noteContent.add(noteLine);
 
         // 写入 Excel
-        ExcelWriterTableBuilder tableBuilder = EasyExcelFactory.writerTable(mainTableIndex).head(targetClass).registerWriteHandler(noteStrategy).needHead(false);
+        ExcelWriterTableBuilder tableBuilder = EasyExcelFactory.writerTable(mainTableIndex).head(targetClass).registerWriteHandler(NOTE_STRATEGY).needHead(false);
         // 合并首行
         if (validColumnNum > 1) {
             OnceAbsoluteMergeStrategy mergeNoteRow = new OnceAbsoluteMergeStrategy(mainTableIndex, mainTableIndex, 0, validColumnNum - 1);
@@ -905,21 +882,20 @@ public class EasyExcelUtils {
     /**
      * 配置下拉框, 处理 {@link ExcelDropDown} 注解
      *
-     * @param targetClass              Excel 实体类
-     * @param exportDto                Excel 导出参数
-     * @param dynamicMenuMap           动态下拉框, Map(列名, 选项); 其中列名必须使用 {@link ExcelDropDown#dynamicMenuName} 在 ExcelClass 进行定义
-     * @param indexedDynamicMenuMap    记录动态下拉框在 Excel 中的位置, Map(列, 选项)
-     * @param cascadeMenuIndexMap      记录联动下拉框在 Excel 中的位置, Map(组名, 列)
-     * @param indexMultipleDropDownSet 记录多选框的列序号
+     * @param targetClass           Excel 实体类
+     * @param exportDTO             Excel 导出参数
+     * @param dynamicMenuMap        动态下拉框, Map(列名, 选项); 其中列名必须使用 {@link ExcelDropDown#dynamicMenuName} 在 ExcelClass 进行定义
+     * @param indexedDynamicMenuMap 动态下拉框在 Excel 的位置, Map(列, 选项)
+     * @param cascadeMenuIndexMap   联动下拉框在 Excel 的位置, Map(组名, 列)
      */
-    private static void configureDropDownMenus(Class<?> targetClass, EasyExcelExportDTO exportDto,
-                                               @NonNull Map<String, String[]> dynamicMenuMap, @NonNull Map<Integer, String[]> indexedDynamicMenuMap,
-                                               @NonNull Map<String, List<Integer>> cascadeMenuIndexMap, @NonNull Set<Integer> indexMultipleDropDownSet) {
+    private static void setUpDropDownMenus(Class<?> targetClass, EasyExcelExportDTO exportDTO,
+                                           @NonNull Map<String, String[]> dynamicMenuMap, @NonNull Map<Integer, String[]> indexedDynamicMenuMap,
+                                           @NonNull Map<String, List<Integer>> cascadeMenuIndexMap) {
 
         // 遍历 Class 所有字段
         Field[] fieldArray = targetClass.getDeclaredFields();
         // index 根据排除的列进行调整
-        Set<String> excludedCols = exportDto.getExcludedCols();
+        Set<String> excludedCols = exportDTO.getExcludedCols();
         int indexLeftShift = 0;
         // 查找有下拉框注解的字段, 填充相关数据
         for (int index = 0; index < fieldArray.length; index++) {
@@ -929,31 +905,31 @@ public class EasyExcelUtils {
                 indexLeftShift++;
                 continue;
             }
-            configureExcelDropDown(dynamicMenuMap, indexedDynamicMenuMap, cascadeMenuIndexMap, indexMultipleDropDownSet, field, index, indexLeftShift);
+            dealWithExcelDropDown(dynamicMenuMap, indexedDynamicMenuMap, cascadeMenuIndexMap, field, index, indexLeftShift);
         }
     }
 
     /**
      * [不指定 ExcelClass] 整理列名与数据格式
      *
-     * @param exportDto     excel 参数
+     * @param exportDTO     excel 参数
      * @param cnHeadList    整理后的中文列名
      * @param finalDataList 整理后的数据
      * @param orderedEnHead 整理后的最底层英文列名
      */
-    private static void setHeadAndDataNoModel(EasyExcelNoModelExportDTO exportDto, List<List<String>> cnHeadList,
+    private static void setHeadAndDataNoModel(EasyExcelNoModelExportDTO exportDTO, List<List<String>> cnHeadList,
                                               List<List<Object>> finalDataList, List<String> orderedEnHead) {
         // 不允许列名为空
-        if (exportDto.getEnSimpleHeadList().isEmpty() && exportDto.getEnHeadList().isEmpty()) {
+        if (exportDTO.getEnSimpleHeadList().isEmpty() && exportDTO.getEnHeadList().isEmpty()) {
             log.error("Excel 列名为空");
             return;
         }
 
         // 整理列名
-        orderedEnHead = configureEnglishHead(exportDto, cnHeadList, orderedEnHead);
+        orderedEnHead = setUpEnglishHead(exportDTO, cnHeadList, orderedEnHead);
 
         // 根据列名顺序整理数据
-        List<Map<String, Object>> srcDataList = exportDto.getDataList();
+        List<Map<String, Object>> srcDataList = exportDTO.getDataList();
         if (!srcDataList.isEmpty()) {
             for (Map<String, Object> currDataMap : srcDataList) {
                 List<Object> innerDataList = new LinkedList<>();
@@ -968,18 +944,18 @@ public class EasyExcelUtils {
     /**
      * [不指定 ExcelClass] 整理列名
      *
-     * @param exportDto     excel 参数
+     * @param exportDTO     excel 参数
      * @param cnHeadList    整理后的中文列名
      * @param orderedEnHead 整理后的最底层英文列名
      */
-    private static List<String> configureEnglishHead(EasyExcelNoModelExportDTO exportDto,
-                                                     @NonNull List<List<String>> cnHeadList, @NonNull List<String> orderedEnHead) {
+    private static List<String> setUpEnglishHead(EasyExcelNoModelExportDTO exportDTO,
+                                                 @NonNull List<List<String>> cnHeadList, @NonNull List<String> orderedEnHead) {
         // 获取列名对照
-        Map<String, String> enToCnHeadMap = exportDto.getEnToCnHeadMap();
+        Map<String, String> enToCnHeadMap = exportDTO.getEnToCnHeadMap();
 
-        if (!exportDto.getEnHeadList().isEmpty()) {
+        if (!exportDTO.getEnHeadList().isEmpty()) {
             // 优先处理多行列名
-            for (List<String> columnHeadList : exportDto.getEnHeadList()) {
+            for (List<String> columnHeadList : exportDTO.getEnHeadList()) {
                 List<String> newColumnHeadList = new LinkedList<>();
                 String bottomEnglishHead = "";
                 for (String currHead : columnHeadList) {
@@ -993,9 +969,9 @@ public class EasyExcelUtils {
                 // 记录最底层列名, 作为数据顺序依据
                 orderedEnHead.add(bottomEnglishHead);
             }
-        } else if (!exportDto.getEnSimpleHeadList().isEmpty()) {
+        } else if (!exportDTO.getEnSimpleHeadList().isEmpty()) {
             // 无多行列名时使用单行列名
-            orderedEnHead = exportDto.getEnSimpleHeadList();
+            orderedEnHead = exportDTO.getEnSimpleHeadList();
             // 单行列名
             for (String currHead : orderedEnHead) {
                 List<String> columnHeadList = new LinkedList<>();
@@ -1014,8 +990,9 @@ public class EasyExcelUtils {
      * @param dropDownMap        下拉框, Map(英文列名, 选项)
      * @param orderedEnglishHead 最底层英文列名
      */
-    private static Map<Integer, String[]> configureIndexedDropDownMap(@NonNull Map<String, String[]> dropDownMap, @NonNull List<String> orderedEnglishHead) {
-        Map<Integer, String[]> indexedDropDownMap = new HashMap<>();
+    private static Map<Integer, String[]> setUpIndexedDropDownMap(@NonNull Map<String, String[]> dropDownMap,
+                                                                  @NonNull List<String> orderedEnglishHead) {
+        Map<Integer, String[]> indexedDropDownMap = new HashMap<>(16);
         int index = 0;
         for (String head : orderedEnglishHead) {
             if (dropDownMap.containsKey(head)) {
@@ -1026,21 +1003,11 @@ public class EasyExcelUtils {
         return indexedDropDownMap;
     }
 
-    /**
-     * 处理 {@link ExcelDropDown} 注解
-     *
-     * @param dynamicMenuMap           动态下拉框, Map(列名, 选项); 其中列名必须使用 {@link ExcelDropDown#dynamicMenuName} 在 ExcelClass 进行定义
-     * @param indexedDynamicMenuMap    记录动态下拉框在 Excel 中的位置, Map(列, 选项)
-     * @param cascadeMenuIndexMap      记录联动下拉框在 Excel 中的位置, Map(组名, 列)
-     * @param indexMultipleDropDownSet 记录多选框的列序号
-     * @param field                    当前处理的 ExcelClass 字段
-     * @param index                    当前 Excel 列序号
-     * @param indexLeftShift           跳过的列数量(部分列会被 {@link EasyExcelExportDTO#getExcludedCols()} 排除)
-     */
-
-    private static void configureExcelDropDown(Map<String, String[]> dynamicMenuMap, Map<Integer, String[]> indexedDynamicMenuMap,
-                                               Map<String, List<Integer>> cascadeMenuIndexMap, Set<Integer> indexMultipleDropDownSet,
-                                               Field field, int index, int indexLeftShift) {
+    /** 处理 {@link ExcelDropDown} 注解 */
+    private static void dealWithExcelDropDown(Map<String, String[]> dynamicMenuMap,
+                                              Map<Integer, String[]> indexedDynamicMenuMap,
+                                              Map<String, List<Integer>> cascadeMenuIndexMap,
+                                              Field field, int index, int indexLeftShift) {
         // 检测到 @ExcelDropDown 注解, 进行下拉框配置
         ExcelDropDown excelDropDown = field.getAnnotation(ExcelDropDown.class);
         if (excelDropDown != null) {
@@ -1050,7 +1017,9 @@ public class EasyExcelUtils {
 
             // 动态下拉框配置
             String dynamicMenuName = excelDropDown.dynamicMenuName();
-            boolean hasDynamicOptions = !StringUtils.isEmpty(dynamicMenuName) && (dynamicMenuMap.get(dynamicMenuName) != null && dynamicMenuMap.get(dynamicMenuName).length > 0);
+            boolean hasDynamicOptions = !StringUtils.isEmpty(dynamicMenuName)
+                    && (dynamicMenuMap.get(dynamicMenuName) != null
+                    && dynamicMenuMap.get(dynamicMenuName).length > 0);
             if (hasDynamicOptions) {
                 dynamicOptions = dynamicMenuMap.get(dynamicMenuName);
             }
@@ -1064,73 +1033,20 @@ public class EasyExcelUtils {
             if (StringUtils.isNotBlank(cascadeGroupName)) {
                 cascadeMenuIndexMap.computeIfAbsent(cascadeGroupName, k -> new LinkedList<>()).add(shiftedIndex);
             }
-
-            // 多选下拉框配置
-            if (excelDropDown.multiple()) {
-                indexMultipleDropDownSet.add(shiftedIndex);
-            }
         }
     }
 
     /** 配置 Excel 文件名 */
-    private static OutputStream configureExcelFileName(@Nullable HttpServletRequest request, @Nullable HttpServletResponse response,
-                                                       @Nullable String fileDir, @Nullable String fileName, @Nullable Boolean useExcel07) {
+    private static OutputStream setUpExcelFileName(@Nullable HttpServletRequest request, @Nullable HttpServletResponse response,
+                                                   @Nullable String fileDir, @Nullable String fileName, @Nullable Boolean useExcel07) {
         // 设置文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx"
-        fileName = configureFileName(fileName);
+        if (StringUtils.isBlank(fileName)) {
+            fileName = "Excel 导出数据" + new SimpleDateFormat("-yyyyMMdd").format(new Date()) + ".xlsx";
+        } else if (!fileName.endsWith(ExcelTypeEnum.XLSX.getValue()) && !fileName.endsWith(ExcelTypeEnum.XLS.getValue())) {
+            fileName = fileName + new SimpleDateFormat("-yyyyMMdd").format(new Date()) + ".xlsx";
+        }
 
         // 配置文件路径
-        String filePath = configureFilePath(fileDir, fileName);
-
-        // http(s) 操作, 处理中文乱码
-        if (request != null && response != null) {
-            String userAgent = request.getHeader("User-Agent");
-            if (userAgent.contains("MSIE") || userAgent.contains("Trident") || userAgent.contains("Chrome")) {
-                fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8);
-            } else {
-                fileName = new String(fileName.getBytes(), StandardCharsets.ISO_8859_1);
-            }
-            response.setHeader("Content-disposition", "attachment; filename=" + fileName);
-
-            // 设置文件格式, 编码
-            if (useExcel07 == Boolean.TRUE) {
-                // 07 版 Excel, 可以解决部分 Excel 不兼容问题
-                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            } else {
-                // 03 版 Excel
-                response.setContentType("application/vnd.ms-excel");
-            }
-            response.setCharacterEncoding("utf-8");
-            try {
-                return response.getOutputStream();
-            } catch (IOException e) {
-                log.error("获取 http(s) 输出流失败, 文件名: {}", fileName, e);
-                throw new UnsupportedOperationException("获取 http(s) 输出流失败, 文件名: " + fileName);
-            }
-        } else {
-            // 本地文件操作
-            FileOutputStream fileOutputStream;
-            try {
-                fileOutputStream = new FileOutputStream(filePath);
-                return fileOutputStream;
-            } catch (IOException e) {
-                log.error("创建 Excel 文件失败, 请检查路径: {}", filePath, e);
-                throw new IllegalArgumentException("创建 Excel 文件失败, 请检查路径: " + filePath, e);
-            }
-        }
-    }
-
-    /** 设置文件名, 有后缀时不做处理, 无后缀时自动补充"时间 + .xlsx" */
-    private static String configureFileName(String fileName) {
-        if (StringUtils.isBlank(fileName)) {
-            fileName = "Excel 导出数据" + new SimpleDateFormat("yyyyMMdd").format(new Date()) + ".xlsx";
-        } else if (!fileName.endsWith(".xlsx") && !fileName.endsWith(".xls")) {
-            fileName = fileName + new SimpleDateFormat("yyyyMMdd").format(new Date()) + ".xlsx";
-        }
-        return fileName;
-    }
-
-    /** 配置文件路径 */
-    private static String configureFilePath(String fileDir, String fileName) {
         String filePath;
         if (StringUtils.isNotBlank(fileDir)) {
             if (fileDir.endsWith(File.separator)) {
@@ -1141,7 +1057,37 @@ public class EasyExcelUtils {
         } else {
             filePath = fileName;
         }
-        return filePath;
+
+        // 处理中文乱码
+        if (request != null && response != null) {
+            String userAgent = request.getHeader("User-Agent");
+            if (userAgent.contains(USER_AGENT_MSIE) || userAgent.contains(USER_AGENT_TRIDENT) || userAgent.contains(USER_AGENT_CHROME)) {
+                fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8);
+            } else {
+                fileName = new String(fileName.getBytes(), StandardCharsets.ISO_8859_1);
+            }
+            response.setHeader("Content-disposition", "attachment; filename=" + fileName);
+
+            // 设置文件格式, 编码
+            if (Boolean.TRUE.equals(useExcel07)) {
+                // 07 版 Excel, 可以解决部分 Excel 不兼容问题
+                response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            } else {
+                // 03 版 Excel
+                response.setContentType("application/vnd.ms-excel");
+            }
+            response.setCharacterEncoding("utf-8");
+        } else {
+            FileOutputStream fileOutputStream;
+            try {
+                fileOutputStream = new FileOutputStream(filePath);
+                return fileOutputStream;
+            } catch (IOException e) {
+                log.error("创建 Excel 文件失败, 请检查路径: {}", filePath, e);
+                throw new IllegalArgumentException("创建 Excel 文件失败, 请检查路径: " + filePath, e);
+            }
+        }
+        return null;
     }
 
     /** 关闭 Excel Writer 以及输出流 */

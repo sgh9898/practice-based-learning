@@ -17,14 +17,14 @@ import java.util.*;
  * Excel 自适应列宽, 与工具类 EasyExcelUtil 配合使用
  *
  * @author Song gh
- * @version 2024/1/30
+ * @since 2024/1/30
  */
 @Getter
 public class ExcelColumnWidthHandler extends AbstractColumnWidthStyleStrategy {
 
-    /** 最小列宽(字符, 2.54 mm) */
-    private static final int MIN_COLUMN_WIDTH = 15;
-    /** 最大列宽(字符, 2.54 mm) */
+    /** 最小列宽 */
+    private static final int MIN_COLUMN_WIDTH = 5;
+    /** 最大列宽 */
     private static final int MAX_COLUMN_WIDTH = 255;
 
     /** 列宽总表, Map(sheetIndex, Map(columnIndex, width)) */
@@ -87,8 +87,8 @@ public class ExcelColumnWidthHandler extends AbstractColumnWidthStyleStrategy {
         Integer maxColumnWidth = sheetColumnWidthMap.get(cell.getColumnIndex());
 
         // 更新列宽
-        boolean headCells = Boolean.TRUE.equals(isHead);
-        boolean columnCells = Boolean.FALSE.equals(isHead) && (maxColumnWidth == null || columnWidth > maxColumnWidth);
+        boolean headCells = isHead;
+        boolean columnCells = !isHead && (maxColumnWidth == null || columnWidth > maxColumnWidth);
         switch (widthStrategy) {
             // 使用 head 列宽
             case COL_WIDTH_HEAD:

@@ -4,12 +4,11 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.metadata.data.ReadCellData;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ConverterUtils;
-import com.sgh.demo.general.excel.easyexcel.constants.ExcelHeadRulesEnums;
+import com.sgh.demo.general.excel.easyexcel.constants.ExcelConstants;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
@@ -23,12 +22,11 @@ import java.util.*;
  * 3. 导入完成的数据保存于 {@link #validList} </pre>
  *
  * @author Song gh
- * @version 2024/1/30
+ * @since 2024/1/30
  */
+@Slf4j
 @Getter
 public class ExcelNoModelListener implements ReadListener<Map<Integer, String>> {
-
-    private static final Logger log = LoggerFactory.getLogger(ExcelNoModelListener.class);
 
 // ------------------------------ 常量 ------------------------------
     /** 无效的 head 行数上限 */
@@ -37,9 +35,9 @@ public class ExcelNoModelListener implements ReadListener<Map<Integer, String>> 
     protected Integer currentInvalidHeadRowNum = 0;
     /** 标准 head 行数 */
     protected Integer headRowNum;
-    /** head 校验规则, {@link ExcelHeadRulesEnums} */
+    /** head 校验规则, {@link ExcelConstants} */
     @Setter
-    protected ExcelHeadRulesEnums headRules = ExcelHeadRulesEnums.CONTAINS;
+    protected Integer headRules = ExcelConstants.HEAD_RULES_CONTAINS;
     /** 校准后 head 是否有效 */
     protected Boolean validHead = false;
 
@@ -49,7 +47,7 @@ public class ExcelNoModelListener implements ReadListener<Map<Integer, String>> 
     @NonNull
     protected Map<String, String> cnToEnHeadNameMap;
     /** Excel 读取的列名(含序号) */
-    protected Map<Integer, String> indexedCnHeadMap = new HashMap<>();
+    protected Map<Integer, String> indexedCnHeadMap = new HashMap<>(16);
     /** 有效数据暂存, Excel 类 */
     protected List<Map<String, Object>> validList = new LinkedList<>();
     /** 导入失败的数据, 默认仅文件无内容时报错, 可以 override 对应的校验方法 */
@@ -61,9 +59,9 @@ public class ExcelNoModelListener implements ReadListener<Map<Integer, String>> 
      * 构造: 附带中英列名对照
      *
      * @param cnToEnHeadNameMap Map(中文, 英文)
-     * @param headRules         校验规则 {@link ExcelHeadRulesEnums}
+     * @param headRules         校验规则 {@link ExcelConstants}
      */
-    public ExcelNoModelListener(@Nullable Map<String, String> cnToEnHeadNameMap, ExcelHeadRulesEnums headRules) {
+    public ExcelNoModelListener(@Nullable Map<String, String> cnToEnHeadNameMap, Integer headRules) {
         this.cnToEnHeadNameMap = cnToEnHeadNameMap == null ? new HashMap<>() : cnToEnHeadNameMap;
         if (headRules != null) {
             this.headRules = headRules;
@@ -77,7 +75,7 @@ public class ExcelNoModelListener implements ReadListener<Map<Integer, String>> 
     @Override
     public void invoke(Map<Integer, String> excelLine, AnalysisContext context) {
         // 格式转换
-        Map<String, Object> currDataMap = new HashMap<>();
+        Map<String, Object> currDataMap = new HashMap<>(16);
         if (cnToEnHeadNameMap.isEmpty()) {
             // 不存在中英列名转换时
             for (Map.Entry<Integer, String> currLine : excelLine.entrySet()) {
@@ -149,7 +147,7 @@ public class ExcelNoModelListener implements ReadListener<Map<Integer, String>> 
         List<String> readHeadList = new ArrayList<>(readHeadMap.values());
         Set<String> validHeadNameSet = new HashSet<>(cnToEnHeadNameMap.keySet());
         // 根据设定规则进行校验
-        if (Objects.equals(headRules, ExcelHeadRulesEnums.CONTAINS)) {
+        if (Objects.equals(headRules, ExcelConstants.HEAD_RULES_CONTAINS)) {
             // 存在有效字段即可
             for (String head : readHeadList) {
                 // head 有效
@@ -159,7 +157,7 @@ public class ExcelNoModelListener implements ReadListener<Map<Integer, String>> 
                     return;
                 }
             }
-        } else if (Objects.equals(headRules, ExcelHeadRulesEnums.STRICTLY_CONTAINS)) {
+        } else if (Objects.equals(headRules, ExcelConstants.HEAD_RULES_STRICTLY_CONTAINS)) {
             // 存在有效字段, 且没有无效字段
             validHead = true;
             for (String head : readHeadList) {
@@ -168,7 +166,7 @@ public class ExcelNoModelListener implements ReadListener<Map<Integer, String>> 
                     break;
                 }
             }
-            if (Boolean.TRUE.equals(validHead)) {
+            if (validHead) {
                 this.indexedCnHeadMap = readHeadMap;
                 return;
             }

@@ -8,7 +8,7 @@ import java.lang.annotation.*;
  * Excel 下拉框注解
  *
  * @author Song gh
- * @version 2024/1/30
+ * @since 2024/1/30
  */
 @Inherited
 @Documented
@@ -34,8 +34,5 @@ public @interface ExcelDropDown {
      * 2. 联动层级顺序: 从父级到子级 = Excel 实体类从上到下 = 导出后 Excel 从左到右
      */
     String cascadeGroupName() default "";
-
-    /** 是否为多选下拉框 */
-    boolean multiple() default false;
 }
 

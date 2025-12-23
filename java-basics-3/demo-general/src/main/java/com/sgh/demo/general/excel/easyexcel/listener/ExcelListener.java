@@ -5,17 +5,15 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.metadata.data.ReadCellData;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.ConverterUtils;
-import com.sgh.demo.general.excel.easyexcel.EasyExcelClassTemplate;
+import com.sgh.demo.general.excel.easyexcel.BaseEasyExcelClass;
 import com.sgh.demo.general.excel.easyexcel.constants.ExcelConstants;
-import com.sgh.demo.general.excel.easyexcel.constants.ExcelHeadRulesEnums;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.util.ReflectionUtils;
 
@@ -31,25 +29,24 @@ import java.util.*;
  * 3. 导入完成的数据保存于 {@link #validList} </pre>
  *
  * @author Song gh
- * @version 2024/1/30
+ * @since 2024/1/30
  */
+@Slf4j
 @Getter
 public class ExcelListener<T> implements ReadListener<T> {
 
-    private static final Logger log = LoggerFactory.getLogger(ExcelListener.class);
-
 // ------------------------------ 常量 ------------------------------
     /** 校验 */
-    private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    private static final Validator VALIDATOR = Validation.buildDefaultValidatorFactory().getValidator();
     /** 无效的 head 行数上限 */
     protected Integer maxInvalidHeadRowNum;
     /** 当前无效的 head 行数 */
     protected Integer currentInvalidHeadRowNum;
     /** 校准后 head 是否有效 */
     protected Boolean validHead;
-    /** head 校验规则, {@link ExcelHeadRulesEnums} */
+    /** head 校验规则, {@link ExcelConstants} */
     @Setter
-    protected ExcelHeadRulesEnums headRules;
+    protected Integer headRules;
     /** 标准 head 行数 */
     protected Integer headRowNum;
 
@@ -69,7 +66,7 @@ public class ExcelListener<T> implements ReadListener<T> {
         this.maxInvalidHeadRowNum = 0;
         this.currentInvalidHeadRowNum = 0;
         this.validHead = false;
-        this.headRules = ExcelHeadRulesEnums.CONTAINS;
+        this.headRules = ExcelConstants.HEAD_RULES_CONTAINS;
         this.headRowNum = null;
         // 变量
         this.validList = new LinkedList<>();
@@ -88,8 +85,8 @@ public class ExcelListener<T> implements ReadListener<T> {
         String errorMessage = validate(excelLine);
         // 记录报错数据
         if (StringUtils.isNotBlank(errorMessage)) {
-            if (excelLine instanceof EasyExcelClassTemplate) {
-                ((EasyExcelClassTemplate) excelLine).setDefaultExcelErrorMessage(errorMessage);
+            if (excelLine instanceof BaseEasyExcelClass) {
+                ((BaseEasyExcelClass) excelLine).setDefaultExcelErrorMessage(errorMessage);
             } else {
                 for (Field currField : excelLine.getClass().getDeclaredFields()) {
                     if (currField.getName().equals(ExcelConstants.DEFAULT_ERROR_PARAM)) {
@@ -116,8 +113,8 @@ public class ExcelListener<T> implements ReadListener<T> {
         } else if (validList.isEmpty()) {
             try {
                 T tempExcel = excelClass.getDeclaredConstructor().newInstance();
-                if (tempExcel instanceof EasyExcelClassTemplate) {
-                    ((EasyExcelClassTemplate) tempExcel).setDefaultExcelErrorMessage("文件内容为空或列名不匹配");
+                if (tempExcel instanceof BaseEasyExcelClass) {
+                    ((BaseEasyExcelClass) tempExcel).setDefaultExcelErrorMessage("文件内容为空或列名不匹配");
                 } else {
                     for (Field currField : tempExcel.getClass().getDeclaredFields()) {
                         if (currField.getName().equals(ExcelConstants.DEFAULT_ERROR_PARAM)) {
@@ -162,7 +159,7 @@ public class ExcelListener<T> implements ReadListener<T> {
         List<String> readHeadList = new ArrayList<>(readHeadMap.values());
         Set<String> validHeadNameSet = getHeadNameSet(excelClass);
         // 根据设定规则进行校验
-        if (Objects.equals(headRules, ExcelHeadRulesEnums.CONTAINS)) {
+        if (Objects.equals(headRules, ExcelConstants.HEAD_RULES_CONTAINS)) {
             // 存在有效字段即可
             for (String currHead : readHeadList) {
                 // head 有效
@@ -171,7 +168,7 @@ public class ExcelListener<T> implements ReadListener<T> {
                     return;
                 }
             }
-        } else if (Objects.equals(headRules, ExcelHeadRulesEnums.STRICTLY_CONTAINS)) {
+        } else if (Objects.equals(headRules, ExcelConstants.HEAD_RULES_STRICTLY_CONTAINS)) {
             // 存在有效字段, 且没有无效字段
             boolean tempValid = true;
             for (String currHead : readHeadList) {
@@ -213,7 +210,7 @@ public class ExcelListener<T> implements ReadListener<T> {
     /** 校验实体类: 通过返回 null, 未通过返回报错 */
     @NonNull
     private static String validate(Object entity) {
-        Set<ConstraintViolation<Object>> violationSet = validator.validate(entity);
+        Set<ConstraintViolation<Object>> violationSet = VALIDATOR.validate(entity);
         StringBuilder errorMsg = new StringBuilder();
         for (ConstraintViolation<Object> violation : violationSet) {
             errorMsg.append(violation.getMessage()).append(';');

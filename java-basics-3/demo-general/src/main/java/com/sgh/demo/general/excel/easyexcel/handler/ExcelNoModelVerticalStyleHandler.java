@@ -16,7 +16,7 @@ import java.util.Set;
  * Excel 不指定对象时的样式, 与工具类 EasyExcelUtil 配合使用
  *
  * @author Song gh
- * @version 2024/1/30
+ * @since 2024/1/30
  */
 @Getter
 public class ExcelNoModelVerticalStyleHandler extends AbstractVerticalCellStyleStrategy {

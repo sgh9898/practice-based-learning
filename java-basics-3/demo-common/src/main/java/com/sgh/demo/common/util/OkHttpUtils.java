@@ -36,7 +36,14 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class OkHttpUtils {
 
-// ------------------------------ 参数 ------------------------------
+    /** 文件扩展名: gif */
+    private static final String FILE_EXT_GIF = ".gif";
+    /** 文件扩展名: png */
+    private static final String FILE_EXT_PNG = ".png";
+    /** 文件扩展名: jpg */
+    private static final String FILE_EXT_JPG = ".jpg";
+    /** 文件扩展名: jpeg */
+    private static final String FILE_EXT_JPEG = ".jpeg";
 
     /** 参数类型: Json */
     private static final MediaType APPLICATION_JSON = MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE);
@@ -86,7 +93,7 @@ public class OkHttpUtils {
             // 信任所有 host
             .hostnameVerifier((hostName, session) -> true)
             // 信任所有证书, 默认协议版本 TLSv1.2, handshake_failure 需要考虑更换使用其他协议的 client
-            .sslSocketFactory(createSSLSocketFactory(), new TrustAllCerts())
+            .sslSocketFactory(createFactory(), new TrustAllCerts())
             .build();
 
     /** 构建 sse client, 注意协议版本 TLSVersion */
@@ -273,11 +280,11 @@ public class OkHttpUtils {
         RequestBody fileBody;
         String fileName = file.getName();
         // 设置文件类型
-        if (fileName.endsWith(".png")) {
+        if (fileName.endsWith(FILE_EXT_PNG)) {
             fileBody = RequestBody.create(file, APPLICATION_PNG);
-        } else if (fileName.endsWith(".gif")) {
+        } else if (fileName.endsWith(FILE_EXT_GIF)) {
             fileBody = RequestBody.create(file, APPLICATION_GIF);
-        } else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+        } else if (fileName.endsWith(FILE_EXT_JPG) || fileName.endsWith(FILE_EXT_JPEG)) {
             fileBody = RequestBody.create(file, APPLICATION_JPEG);
         } else {
             fileBody = RequestBody.create(file, APPLICATION_FILE);
@@ -372,7 +379,7 @@ public class OkHttpUtils {
     }
 
     /** 信任所有证书 */
-    private static SSLSocketFactory createSSLSocketFactory() {
+    private static SSLSocketFactory createFactory() {
         SSLSocketFactory ssfFactory;
         String tlsVersionStr = "TLS";
         try {

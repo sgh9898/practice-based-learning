@@ -8,6 +8,9 @@ import java.util.List;
 
 /**
  * Excel 多级联动菜单的单个选项
+ *
+ * @author Song gh
+ * @since 2024/9/20
  */
 @Data
 public class ExcelCascadeOption {
