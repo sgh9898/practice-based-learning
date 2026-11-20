@@ -7,10 +7,21 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.type.CollectionType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,38 +31,82 @@ import java.util.Map;
  * (基于 JacksonUtil 工具类优化)
  *
  * @author Song gh
- * @version 2025/3/5
+ * @since 2026/1/15
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class JsonUtils {
 
-    private static final Logger log = LoggerFactory.getLogger(JsonUtils.class);
-
-    /** 默认 mapper */
+    /** 默认 */
     private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    /** mapper: 忽略值为 null 的字段 */
+    /** 紧凑格式的输出 */
+    private static final ObjectMapper COMPACT_MAPPER;
+    /** 忽略值为 null 的字段 */
     private static final ObjectMapper NON_NULL_MAPPER;
 
+    /** 默认日期时间格式 */
+    private static final String DEFAULT_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    /** 默认仅日期格式 */
+    private static final String DEFAULT_DATE_ONLY_FORMAT = "yyyy-MM-dd";
+    /** 默认仅时间格式 */
+    private static final String DEFAULT_TIME_ONLY_FORMAT = "HH:mm:ss";
+
     static {
-        // 所有属性都可以访问到 (private/public)
+        // 创建 JavaTimeModule 并配置 LocalDateTime 的序列化和反序列化
+        JavaTimeModule javaTimeModule = new JavaTimeModule();
+
+        // 配置 LocalDateTime 序列化器
+        LocalDateTimeSerializer localDateTimeSerializer = new LocalDateTimeSerializer(
+                DateTimeFormatter.ofPattern(DEFAULT_DATE_TIME_FORMAT)
+        );
+        LocalDateSerializer localDateSerializer = new LocalDateSerializer(
+                DateTimeFormatter.ofPattern(DEFAULT_DATE_ONLY_FORMAT)
+        );
+        LocalTimeSerializer localTimeSerializer = new LocalTimeSerializer(
+                DateTimeFormatter.ofPattern(DEFAULT_TIME_ONLY_FORMAT)
+        );
+
+        // 配置 LocalDateTime 反序列化器
+        LocalDateTimeDeserializer localDateTimeDeserializer = new LocalDateTimeDeserializer(
+                DateTimeFormatter.ofPattern(DEFAULT_DATE_TIME_FORMAT)
+        );
+        LocalDateDeserializer localDateDeserializer = new LocalDateDeserializer(
+                DateTimeFormatter.ofPattern(DEFAULT_DATE_ONLY_FORMAT)
+        );
+        LocalTimeDeserializer localTimeDeserializer = new LocalTimeDeserializer(
+                DateTimeFormatter.ofPattern(DEFAULT_TIME_ONLY_FORMAT)
+        );
+
+        // 注册序列化和反序列化器
+        javaTimeModule.addSerializer(LocalDateTime.class, localDateTimeSerializer);
+        javaTimeModule.addSerializer(LocalDate.class, localDateSerializer);
+        javaTimeModule.addSerializer(LocalTime.class, localTimeSerializer);
+        javaTimeModule.addDeserializer(LocalDateTime.class, localDateTimeDeserializer);
+        javaTimeModule.addDeserializer(LocalDate.class, localDateDeserializer);
+        javaTimeModule.addDeserializer(LocalTime.class, localTimeDeserializer);
+
+        // 所有属性都可以访问到(private/public)
         MAPPER.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        // 禁止检测所有 get 方法
-        MAPPER.setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
-        // 仅序列化字段
-        MAPPER.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         // 反序列化时, 未知字段不报错
         MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         // 自动缩进生成的 Json
         MAPPER.enable(SerializationFeature.INDENT_OUTPUT);
+        // 注册 JavaTimeModule
+        MAPPER.registerModule(javaTimeModule);
+        // 禁用日期时间转换为时间戳
+        MAPPER.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        NON_NULL_MAPPER = MAPPER.copy();
         // 忽略值为 null 的字段
+        NON_NULL_MAPPER = MAPPER.copy();
         NON_NULL_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        // 紧凑格式的输出
+        COMPACT_MAPPER = MAPPER.copy();
+        COMPACT_MAPPER.configure(SerializationFeature.INDENT_OUTPUT, false);
     }
 
-// ------------------------------ Java Bean 转换其他类型 ------------------------------
+// ------------------------------ Java 对象 转换其他类型 ------------------------------
 
-    /** Java Bean --> Json String */
+    /** Java 对象 --> Json String */
     public static String beanToJson(Object bean) {
         try {
             return MAPPER.writeValueAsString(bean);
@@ -60,7 +115,16 @@ public class JsonUtils {
         }
     }
 
-    /** Java Bean --> Json String; 忽略值为 null 的字段 */
+    /** Java 对象 --> 紧凑的 Json String */
+    public static String beanToCompactJson(Object bean) {
+        try {
+            return COMPACT_MAPPER.writeValueAsString(bean);
+        } catch (Exception e) {
+            throw new UnsupportedOperationException("转换 Java Bean 为 Json 错误", e);
+        }
+    }
+
+    /** Java 对象 --> Json String; 忽略值为null的字段 */
     public static String beanToJsonIgnoreNull(Object bean) {
         try {
             return NON_NULL_MAPPER.writeValueAsString(bean);
@@ -69,18 +133,10 @@ public class JsonUtils {
         }
     }
 
-    /** Java Bean --> Map(String, Object) */
+    /** Java 对象 --> Map */
     @SuppressWarnings("unchecked")
-    public static <T, U> Map<T, U> beanToMap(Object bean) {
+    public static Map<String, Object> beanToMap(Object bean) {
         return MAPPER.convertValue(bean, Map.class);
-    }
-
-    /** Java Bean --> Map(String, Object), 移除值为 null 的字段 */
-    @SuppressWarnings("unchecked")
-    public static <T, U> Map<T, U> beanToMapNonnull(Object bean) {
-        Map<T, U> map = MAPPER.convertValue(bean, Map.class);
-        map.entrySet().removeIf(entry -> entry.getValue() == null);
-        return map;
     }
 
 // ------------------------------ Json 转换其他类型 ------------------------------
@@ -91,51 +147,30 @@ public class JsonUtils {
             return MAPPER.readValue(json, new TypeReference<HashMap<String, Object>>() {
             });
         } catch (JsonProcessingException e) {
-            log.error("转换 Json 为 Map 错误:{}", json, e);
             throw new UnsupportedOperationException("转换 Json 为 Map 错误:" + json, e);
         }
     }
 
-    /**
-     * Json String --> Java Bean
-     * <pre>
-     * 1. 返回数据类型不可包含泛型, 如 {@code OuterClass<InnerClass>}, 需要调用 {@link #jsonToBean(String, TypeReference)} </pre>
-     */
+    /** Json String --> Java 对象 */
     public static <T> T jsonToBean(String json, Class<T> beanType) {
         try {
             return MAPPER.readValue(json, beanType);
         } catch (Exception e) {
-            log.error("转换 Json 为 JavaBean 错误:{}", json, e);
-            throw new UnsupportedOperationException("转换 Json 为 JavaBean 错误: " + json, e);
+            throw new UnsupportedOperationException("转换 Json 为 Java Bean 错误: " + json, e);
         }
     }
 
-    /**
-     * Json String --> Java Bean
-     * <pre>
-     * 1. 返回数据类型可以包含泛型, 如 {@code OuterClass<InnerClass>} </pre>
-     */
-    public static <T> T jsonToBean(String json, TypeReference<T> typeReference) {
-        try {
-            return MAPPER.readValue(json, typeReference);
-        } catch (Exception e) {
-            log.error("转换 Json 为 JavaBean 错误:{}", json, e);
-            throw new UnsupportedOperationException("转换 Json 为 JavaBean 错误: " + json, e);
-        }
-    }
-
-    /** JsonArray String --> List(Java Bean) */
+    /** JsonArray String --> List(Java 对象) */
     public static <T> List<T> jsonToList(String json, Class<T> beanType) {
         try {
             CollectionType type = MAPPER.getTypeFactory().constructCollectionType(List.class, beanType);
             return MAPPER.readValue(json, type);
         } catch (Exception e) {
-            log.error("转换 Json 为 JavaList 错误:{}", json, e);
             throw new UnsupportedOperationException("转换 Json 为 JavaList 错误: " + json, e);
         }
     }
 
-    /** Java Bean --> Map */
+    /** Java 对象 --> Map */
     public static <T> T mapToBean(Object bean, Class<T> tClass) {
         return MAPPER.convertValue(bean, tClass);
     }
@@ -151,17 +186,14 @@ public class JsonUtils {
         }
     }
 
-    /** JsonNode --> Java Bean */
+    /** JsonNode --> Java 对象 */
     public static <T> T jsonNodeToBean(JsonNode jsonNode, Class<T> beanType) {
         return MAPPER.convertValue(jsonNode, beanType);
     }
 
-    /** JsonNode --> Java Bean, 次级结构包含泛型 */
+    /** JsonNode --> Java 对象, 次级结构包含泛型 */
     public static <T> T jsonNodeToBean(JsonNode jsonNode, Class<T> beanType, Class<?> subBeanType) {
         JavaType type = MAPPER.getTypeFactory().constructParametricType(beanType, subBeanType);
         return MAPPER.convertValue(jsonNode, type);
-    }
-
-    private JsonUtils() {
     }
 }
